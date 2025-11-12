@@ -1,36 +1,150 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## 🚀 Template Overview Website
 
-## Getting Started
+A modern, scalable website built using **Next.js 14**, **TypeScript**, **Tailwind CSS**, **Shadcn UI**, **Lucide Icons**, **Zod**, **Axios**, **TanStack Query**, and **Sonner Toast** — with a clean architecture and modular folder structure.
 
-First, run the development server:
+---
 
-```bash
+## 🚀 Tech Stack
+
+- **Framework:** [Next.js 14](https://nextjs.org/)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + Shadcn/UI
+- **Icons:** Lucide Icons
+- **Form Validation:** Zod
+- **Data Fetching:** Axios + TanStack Query
+- **Notifications:** Sonner Toast
+- **Linting & Commit Hooks:** ESLint, Husky, Commitlint, Lint-staged
+
+---
+
+## 🏗️ Project Structure
+
+Tamplate-Overview/
+│
+├── .husky/ # Git hooks for pre-commit checks
+├── .next/ # Next.js build output
+├── node_modules/ # Project dependencies
+├── public/ # Static assets
+│
+├── src/
+│ ├── app/
+│ │ ├── (website)/ # Main website routes
+│ │ │ ├── (auth)/ # Authentication routes
+│ │ │ │ ├── create-new-password/
+│ │ │ │ ├── create-your-account/
+│ │ │ │ ├── login/
+│ │ │ │ ├── reset-your-password/
+│ │ │ │ ├── verify-otp/
+│ │ │ │ └── layout.tsx
+│ │ │ ├── contact-us/
+│ │ │ ├── privacy-policy/
+│ │ │ ├── products/
+│ │ │ ├── terms-conditions/
+│ │ │ ├── layout.tsx
+│ │ │ └── page.tsx
+│ │ ├── api/
+│ │ │ └── auth/[...nextauth]/route.ts
+│ │ ├── globals.css
+│ │ ├── layout.tsx
+│ │ └── not-found.tsx
+│ │
+│ ├── components/
+│ │ ├── ReusableSection/
+│ │ │ ├── ContactInformation.tsx
+│ │ │ ├── GetInTouch.tsx
+│ │ │ └── Review.tsx
+│ │ ├── ui/ # Reusable UI components (shadcn)
+│ │ └── website/
+│ │ ├── Auth/
+│ │ │ ├── CreateNewPassword.tsx
+│ │ │ ├── CreateYourAccount.tsx
+│ │ │ ├── Login.tsx
+│ │ │ ├── ResetYourPassword.tsx
+│ │ │ └── VerifyOTP.tsx
+│ │ ├── Common/
+│ │ │ ├── Footer.tsx
+│ │ │ └── Navbar.tsx
+│ │ └── PageSections/
+│ │ ├── HomePage/
+│ │ ├── PrivacyPolicy/
+│ │ ├── ProductsPage/
+│ │ └── TermsConditions/
+│ │
+│ ├── hooks/ # Custom React hooks
+│ ├── lib/ # API and utility functions
+│ │ ├── api.ts
+│ │ └── utils.ts
+│ └── Providers/ # Global providers
+│ ├── MainProviders.tsx
+│ └── Provider.tsx
+│
+├── .gitignore
+├── .lintstagedrc.json
+├── commitlint.config.js
+├── components.json
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── package.json
+├── postcss.config.mjs
+├── README.md
+├── tsconfig.json
+└── tailwind.config.ts
+
+---
+
+## ⚙️ Setup & Installation
+
+# 1️⃣ Clone the repository
+
+git clone https://github.com/yourusername/POLSPOCH-WEBSITE.git
+
+# 2️⃣ Navigate to the project
+
+cd POLSPOCH-WEBSITE
+
+# 3️⃣ Install dependencies
+
+npm install
+
+# 4️⃣ Run development server
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Then open http://localhost:3000 in your browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+🧩 Features
+✨ Modern UI built with Tailwind + Shadcn
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+🔐 Authentication with NextAuth.js
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+⚡ API integration with Axios
 
-## Learn More
+🔍 Data fetching & caching using TanStack Query
 
-To learn more about Next.js, take a look at the following resources:
+🧠 Strong validation using Zod
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+💬 Beautiful toasts with Sonner
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+🧰 Modular, scalable folder structure
 
-## Deploy on Vercel
+🔒 Husky pre-commit hook + Commitlint setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+📦 Scripts
+Command Description
+npm run dev Start development server
+npm run build Create production build
+npm run start Run production build
+npm run lint Run ESLint
+npm run format Prettify code (if configured)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+🧪 Husky Setup (Pre-commit)
+This project uses Husky and Lint-staged to enforce clean commits.
+
+# Add a new hook
+
+npx husky add .husky/pre-commit "npm run lint"
+git add .husky/pre-commit
+
+🧑‍💻 Author
+Rashedul Haque Rasel
+Built with ❤️ using Next.js, TypeScript, and Tailwind CSS.
