@@ -2,14 +2,19 @@
 
 export default function Banner() {
   return (
-    <section
-      className="relative bg-cover bg-center bg-no-repeat lg:grid lg:h-screen lg:place-content-center"
-      style={{
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1920&q=80')",
-      }}
-    >
-      {/* Overlay for better text contrast */}
+    <section className="relative lg:grid lg:h-screen lg:place-content-center overflow-hidden">
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+      >
+        <source src="/banner-video.mp4" type="video/mp4" />
+      </video>
+
+      {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/40 dark:bg-black/60"></div>
 
       <div className="relative z-10 mx-auto w-screen max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
@@ -27,17 +32,10 @@ export default function Banner() {
 
           <div className="mt-6 flex justify-center gap-4">
             <a
-              className="inline-block rounded border border-indigo-600 bg-indigo-600 px-5 py-3 font-medium text-white shadow-sm transition-colors hover:bg-indigo-700"
+              className="rounded border border-gray-200 px-5 py-3 font-medium text-gray-200 shadow-sm bg-[#7E1800] hover:bg-[#9E2200] focus:outline-none "
               href="#"
             >
-              Get Started
-            </a>
-
-            <a
-              className="inline-block rounded border border-gray-200 bg-white/10 px-5 py-3 font-medium text-gray-200 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-900"
-              href="#"
-            >
-              Learn More
+              Discover our services
             </a>
           </div>
         </div>
