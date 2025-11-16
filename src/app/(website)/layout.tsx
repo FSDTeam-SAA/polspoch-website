@@ -4,9 +4,9 @@ import Navbar from "@/components/website/Common/Navbar";
 import Footer from "@/components/website/Common/Footer";
 
 export const metadata: Metadata = {
-  title: "Services Services",
+    title: "Hierro A Medida",
   description:
-    "Elite craftsmanship in custom stone, tile, and masonry for homes & businesses across the Valley.",
+    "Design amazing digital experiences that create more happy in the world.",
 };
 
 export default function RootLayout({
