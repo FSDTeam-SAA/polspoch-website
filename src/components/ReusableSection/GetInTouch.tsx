@@ -56,31 +56,22 @@ export default function GetInTouch() {
   }
 
   return (
-    <div className="bg-gray-50 py-10">
-      <div className="container mx-auto bg-white rounded-2xl shadow-sm grid grid-cols-1 md:grid-cols-2">
-        {/* Left side: Image with gradient overlay */}
-        <div className="relative h-64 md:h-auto rounded-l-2xl overflow-hidden">
-          <Image
-            src="/image/GetInTouch.png"
-            alt="Contact Image"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/20 rounded-l-2xl" />
-        </div>
+    <div className=" py-10 bg-white ">
+      <div className="container mx-auto  grid grid-cols-1 md:grid-cols-2">
+        
 
         {/* Right side: Form */}
-        <div className="p-10">
-          <h2
+        <div className="p-10 h-full ">
+          {/* <h2
             className="text-xl font-bold mb-2"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
             Contact Us <span className="text-[#E0A523]">Builders AZ LLC</span>
-          </h2>
-          <p className="text-[#000000BA] mb-6   md:text-4xl">
+          </h2> */}
+          <h2 className="text-[#000000BA] mb-2  md:text-4xl">
             Get in touch with us
-          </p>
+          </h2>
+          <p className="mb-4">Our friendly team would love to hear from you.</p>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -104,7 +95,7 @@ export default function GetInTouch() {
               />
 
               {/* Email & Phone */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
                 <FormField
                   control={form.control}
                   name="email"
@@ -164,12 +155,23 @@ export default function GetInTouch() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#E0A523] hover:bg-[#c68c1a] text-white rounded-md py-3 font-semibold cursor-pointer"
+                className="w-full bg-[#7E1800] hover:bg-[#831e08] text-white rounded-md py-3 font-semibold cursor-pointer"
               >
                 {loading ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </Form>
+        </div>
+        {/* Left side: Image with gradient overlay */}
+        <div className="relative h-96 md:h-auto rounded-l-2xl overflow-hidden">
+          <Image
+            src="/images/contact.jpg"
+            alt="Contact Image"
+            fill
+            className="object-cover aspect-square rounded-md "
+            priority
+          />
+          {/* <div className="absolute inset-0 bg-black/20 rounded-l-2xl" /> */}
         </div>
       </div>
     </div>

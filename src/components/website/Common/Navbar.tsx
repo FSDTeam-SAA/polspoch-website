@@ -74,7 +74,7 @@ export default function Navbar() {
         </div>
 
         {/* <div className="flex justify-between items-center gap-6"> */}
-        <div  className={`hidden flex justify-between items-center gap-6 md:flex space-x-8 font-medium transition-colors duration-300 ${
+        <div  className={`hidden flex justify-between items-center gap-6 cursor-pointer md:flex space-x-8 font-medium transition-colors duration-300 ${
             scrolled ? "text-white" : "text-primary"
           }`}>
           <Search />
