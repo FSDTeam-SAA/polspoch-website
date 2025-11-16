@@ -44,10 +44,10 @@ export default function FaqSection() {
 
   return (
     <section className="bg-[#F8F9FA]">
-      <div className="mx-auto container py-8">
+      <div className="mx-auto container py-16 ">
         <div className=" flex flex-col text-center justify-center mb-8">
-          <h2 className="text-3xl font-semibold mb-2">Frequently Asked Equations</h2>
-          <p className="text-gray-500">Everything you need to know about the product and billing</p>
+          <h2 className="text-xl sm:text-3xl font-semibold mb-2">Frequently Asked Equations</h2>
+          <p className=" text-sm sm:text-base text-gray-500">Everything you need to know about the product and billing</p>
         </div>
         <div className=" ">
           <div className="flex flex-col rounded-xl ">

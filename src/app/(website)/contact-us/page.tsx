@@ -1,4 +1,3 @@
-import ContactInformation from "@/components/ReusableSection/ContactInformation";
 import FaqSection from "@/components/ReusableSection/FaqSection";
 import GetInTouch from "@/components/ReusableSection/GetInTouch";
 import HeadingText from "@/components/ReusableSection/HeadingText";

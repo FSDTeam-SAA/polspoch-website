@@ -155,7 +155,7 @@ export default function GetInTouch() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#7E1800] hover:bg-[#831e08] text-white rounded-md py-3 font-semibold cursor-pointer"
+                className="w-full bg-[#7E1800] hover:bg-[#c23f22] text-white rounded-md py-3 font-semibold cursor-pointer"
               >
                 {loading ? "Sending..." : "Send Message"}
               </Button>

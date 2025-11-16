@@ -1,23 +1,23 @@
+import HeadingText from "@/components/ReusableSection/HeadingText";
+import Newsletter from "@/components/ReusableSection/Newsletter";
+import OurServices from "@/components/ReusableSection/OurServices";
+import AboutInfo from "@/components/website/PageSections/AboutUs/AboutInfo";
+import Companies from "@/components/website/PageSections/AboutUs/Companies";
 import React from "react";
 
 export default function page() {
   return (
-    <div >
-        <div className="container mx-auto">
-            <h2 className="">
-                About Us Page
-            </h2>
-            <div>
-                <h2 className="text-2xl">
-                    Who We Are
-                </h2>
-                <p className="mt-4 text-gray-600">
-                    We are a leading company in our industry, committed to providing top-notch products and services to our valued customers. Our team of dedicated professionals works tirelessly to ensure customer satisfaction and excellence in every aspect of our business.
-                </p>
-            </div>
-            
-        </div>
+    <div>
+      <HeadingText
+        subHeading="About Us"
+        heading="Who We Are"
+        description="Delivering premium iron and steel products with precision, innovation, and a commitment to excellence for B2C and B2B customers."
+        align="center"
+      />
+      <AboutInfo />
+      <Companies />
+      <OurServices />
+      <Newsletter />
     </div>
-
   );
 }
