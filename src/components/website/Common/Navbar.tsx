@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, Search, ShoppingCart, UserCircle2, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
@@ -47,8 +47,8 @@ export default function Navbar() {
             <Image
               src="/images/logo.png"
               alt="logo"
-              width={50}
-              height={50}
+              width={80}
+              height={80}
               className="cursor-pointer"
             />
           </Link>
@@ -73,17 +73,13 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="">
-          <Link href="/contact-us">
-            <Button
-              variant="outline"
-              className="w-35  text-white bg-[#CA9520] rounded-lg font-medium
-                             transition-all duration-300
-                             group-hover:bg-[#CA9520] cursor-pointer group-hover:text-black "
-            >
-              Contact Us
-            </Button>
-          </Link>
+        {/* <div className="flex justify-between items-center gap-6"> */}
+        <div  className={`hidden flex justify-between items-center gap-6 cursor-pointer md:flex space-x-8 font-medium transition-colors duration-300 ${
+            scrolled ? "text-white" : "text-primary"
+          }`}>
+          <Search />
+          <ShoppingCart />
+          <UserCircle2 />
         </div>
 
         {/* Mobile Hamburger Menu */}
