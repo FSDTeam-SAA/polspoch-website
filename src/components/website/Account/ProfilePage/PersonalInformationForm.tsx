@@ -331,7 +331,7 @@ export function PersonalInformationForm() {
   };
 
   return (
-    <Card className="rounded-2xl shadow-sm">
+    <Card className="rounded-2xl border-none! ">
       {/* Header: title + subtitle + Edit Profile button aligned right */}
       <CardHeader className="flex items-start justify-between space-y-0 pb-6">
         <div>

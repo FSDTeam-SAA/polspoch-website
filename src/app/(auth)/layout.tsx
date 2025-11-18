@@ -14,19 +14,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="h-screen flex flex-col-reverse md:flex-row items-center justify-center  p-4 md:p-0 my-20 md:my-0">
-      {/* Image */}
-      <div className="w-full md:w-1/2 flex justify-center">
+    <div className="h-screen flex flex-col-reverse md:flex-row items-center justify-center p-4 md:p-0 my-20 md:my-0">
+      {/* Image Section with Logo Positioned */}
+      <div className="w-full md:w-1/2 relative flex justify-center">
+        {/* Logo Positioned on Image */}
+        
+
+        {/* Image */}
         <Image
-          src={"/images/login.jpg"}
+          src="/images/login.jpg"
           width={1024}
           height={1024}
-          alt="Man Diving"
-          className="w-full h-auto max-h-[300px] md:max-h-full object-cover "
+          alt="Login Image"
+          className="w-full h-auto max-h-[300px] md:max-h-full object-cover"
           priority
         />
       </div>
 
+      {/* Form Section */}
       <div className="w-full md:w-1/2 flex items-center justify-start pl-4 md:pl-2 lg:p-32">
         {children}
       </div>
