@@ -1,12 +1,12 @@
 "use client";
-import Image from "next/image";
-import Link from "next/link";
-import React, { useState, useEffect } from "react";
-import { Menu, Search, ShoppingCart, UserCircle2, X } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react'
 
-export default function Navbar() {
+const ProfileNav = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -25,11 +25,10 @@ export default function Navbar() {
   }, []);
 
   const menuItems = [
-    { href: "/", label: "Home" },
-    { href: "/products", label: "Products" },
-    { href: "/services", label: "Services" },
-    { href: "/about-us", label: "About" },
-    { href: "/contact-us", label: "Contact Us" },
+    { href: "/account/profile", label: "Profile" },
+    { href: "/account/change-password", label: "Change Password" },
+    { href: "/account/order-history", label: "Order History" },
+    { href: "/logout", label: "Log Out" },
   ];
 
   return (
@@ -73,18 +72,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* <div className="flex justify-between items-center gap-6"> */}
-        <div
-          className={`hidden flex justify-between items-center gap-6 cursor-pointer md:flex space-x-8 font-medium transition-colors duration-300 ${
-            scrolled ? "text-white" : "text-primary"
-          }`}
-        >
-          <Search />
-          <Link href="/cart">
-            <ShoppingCart />
-          </Link>
-          <UserCircle2 />
-        </div>
+        
 
         {/* Mobile Hamburger Menu */}
         <div className="md:hidden">
@@ -117,3 +105,5 @@ export default function Navbar() {
     </nav>
   );
 }
+
+export default ProfileNav
