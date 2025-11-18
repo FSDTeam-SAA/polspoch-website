@@ -36,7 +36,7 @@ const ProfileNav = () => {
       className={`sticky top-0 z-50 transition-all duration-300 backdrop-blur-md ${
         scrolled
           ? "bg-primary/80 backdrop-opacity-90 shadow-md"
-          : "bg-transparent backdrop-grayscale"
+          : "bg-gray-200 backdrop-grayscale"
       }`}
     >
       <div className="container mx-auto px-8 flex justify-between items-center py-4">
