@@ -87,7 +87,7 @@ export default function CreateYourAccount() {
         </p>
 
         {/* Sign Up Button */}
-        <Button className="w-full h-12 bg-[#8a1f0b] hover:bg-[#8a1f0ba0] text-white rounded-md text-[16px]">
+        <Button className="w-full h-12 cursor-pointer bg-[#8a1f0b] hover:bg-[#8a1f0ba0] text-white rounded-md text-[16px]">
           Sign Up
         </Button>
 

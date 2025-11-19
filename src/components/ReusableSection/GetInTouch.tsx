@@ -20,7 +20,9 @@ import {
 
 // Zod schema using union of literals
 const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  
+  fname: z.string().min(1, "First Name is required"),
+  lname: z.string().min(1, "Last Name is required"),
   email: z.string().email("Invalid email address"),
   phone: z
     .string()
@@ -35,7 +37,8 @@ export default function GetInTouch() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      fname: "",
+      lname: "",
       email: "",
       phone: "",
       message: "",
@@ -58,72 +61,53 @@ export default function GetInTouch() {
   return (
     <div className=" py-10 bg-white ">
       <div className="container mx-auto  grid grid-cols-1 md:grid-cols-2">
-        
-
         {/* Right side: Form */}
         <div className="p-10 h-full ">
-          {/* <h2
-            className="text-xl font-bold mb-2"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
-            Contact Us <span className="text-[#E0A523]">Builders AZ LLC</span>
-          </h2> */}
-          <h2 className="text-[#000000BA] mb-2  md:text-4xl">
-            Get in touch with us
+          {/* Title */}
+          <h2 className="text-4xl font-semibold text-[#1a1a1a] mb-2">
+            Get in touch
           </h2>
-          <p className="mb-4">Our friendly team would love to hear from you.</p>
+          <p className="text-[#606060] mb-8">
+            Our friendly team would love to hear from you.
+          </p>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* Name */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Your Name"
-                        {...field}
-                        className="py-3 rounded-md"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Email & Phone */}
-              <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* First + Last Name */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="fname"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel className="text-sm text-[#4a4a4a]">
+                        First name
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="hello@example.com"
+                          placeholder="First name"
                           {...field}
-                          className="py-3 rounded-md"
+                          className="h-12 rounded-lg border border-[#d3d3d3]"
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
-                  name="phone"
+                  name="lname"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
+                      <FormLabel className="text-sm text-[#4a4a4a]">
+                        Last name
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="+1234567890"
+                          placeholder="Last name"
                           {...field}
-                          className="py-3 rounded-md"
+                          className="h-12 rounded-lg border border-[#d3d3d3]"
                         />
                       </FormControl>
                       <FormMessage />
@@ -132,18 +116,20 @@ export default function GetInTouch() {
                 />
               </div>
 
-              {/* Message */}
+              {/* Email */}
               <FormField
                 control={form.control}
-                name="message"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Message</FormLabel>
+                    <FormLabel className="text-sm text-[#4a4a4a]">
+                      Email
+                    </FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Write your message here..."
+                      <Input
+                        placeholder="olivia@untitledui.com"
                         {...field}
-                        className="h-[150px] rounded-md"
+                        className="h-12 rounded-lg border border-[#d3d3d3]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -151,13 +137,84 @@ export default function GetInTouch() {
                 )}
               />
 
-              {/* Submit */}
+              {/* Phone */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm text-[#4a4a4a]">
+                      Phone number
+                    </FormLabel>
+
+                    <div className="flex gap-2">
+                      {/* Country Dropdown */}
+                      <select className="h-12 w-28 rounded-lg border border-[#d3d3d3] px-2">
+                        <option>US</option>
+                        <option>UK</option>
+                        <option>CA</option>
+                        <option>AU</option>
+                      </select>
+
+                      {/* Actual Number */}
+                      <FormControl>
+                        <Input
+                          placeholder="+1 (555) 000–0000"
+                          {...field}
+                          className="h-12 rounded-lg border border-[#d3d3d3] flex-1"
+                        />
+                      </FormControl>
+                    </div>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Message */}
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm text-[#4a4a4a]">
+                      Message
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder=""
+                        {...field}
+                        className="h-[140px] rounded-lg border border-[#d3d3d3] p-3"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Checkbox */}
+              <div className="flex justify-sta items-center  gap-3 pt-2">
+                <div className="">
+                  <input type="checkbox" className="mt-1 h-5 w-5" />
+                </div>
+                <div className="">
+                  <p className="text-sm text-[#4a4a4a]">
+                    You agree to our friendly{" "}
+                    <span className="text-[#b62400] font-medium cursor-pointer">
+                      privacy policy
+                    </span>
+                    .
+                  </p>
+                </div>
+              </div>
+
+              {/* Submit Button */}
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#7E1800] hover:bg-[#c23f22] text-white rounded-md py-3 font-semibold cursor-pointer"
+                className="w-full bg-[#7E1800] hover:bg-[#c23f22] text-white h-12 rounded-lg text-lg font-medium"
               >
-                {loading ? "Sending..." : "Send Message"}
+                {loading ? "Sending..." : "Send message"}
               </Button>
             </form>
           </Form>

@@ -46,14 +46,14 @@ export default function Login() {
             </label>
           </div>
           <Link href="/reset-your-password">
-            <button className="text-red-400 hover:underline">
+            <button className="text-red-400 cursor-pointer hover:underline">
               Forgot password?
             </button>
           </Link>
         </div>
 
         {/* Sign In Button */}
-        <Button className="w-full h-12 bg-[#8a1f0b] hover:bg-[#8a1f0bcc] text-white rounded-md text-[16px]">
+        <Button className="w-full h-12 cursor-pointer bg-[#8a1f0b] hover:bg-[#8a1f0bcc] text-white rounded-md text-[16px]">
           Sign In
         </Button>
 
