@@ -83,7 +83,9 @@ export default function Navbar() {
           <Link href="/cart">
             <ShoppingCart />
           </Link>
-          <UserCircle2 />
+          <Link href="/account/profile">
+            <UserCircle2 />
+          </Link>
         </div>
 
         {/* Mobile Hamburger Menu */}

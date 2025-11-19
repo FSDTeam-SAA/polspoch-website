@@ -71,7 +71,7 @@ export default function ShippingPolicy() {
         </header>
 
         {/* Comparison Card */}
-        <Card className="overflow-hidden rounded-2xl">
+        <Card className="overflow-hidden py-0! rounded-2xl">
           <div className="bg-[rgb(105,23,7)] px-6 py-6 text-white">
             <h3 className="text-lg font-semibold">Shipping Methods Comparison</h3>
             <p className="text-sm text-orange-100/80 mt-1">
