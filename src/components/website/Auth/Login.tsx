@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye } from "lucide-react";
+import Link from "next/link";
 
 export default function Login() {
   return (
@@ -44,9 +45,11 @@ export default function Login() {
               Remember me
             </label>
           </div>
-          <button className="text-red-400 hover:underline">
-            Forgot password?
-          </button>
+          <Link href="/reset-your-password">
+            <button className="text-red-400 hover:underline">
+              Forgot password?
+            </button>
+          </Link>
         </div>
 
         {/* Sign In Button */}
@@ -56,10 +59,13 @@ export default function Login() {
 
         {/* Divider space */}
         <div className="mt-8 text-center text-sm text-slate-400">
-          Don’t have an account?{' '}
-          <a href="#" className="text-red-400 font-semibold hover:underline">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/singup"
+            className="text-red-400 font-semibold hover:underline"
+          >
             Sign Up
-          </a>
+          </Link>
         </div>
       </div>
     </div>
