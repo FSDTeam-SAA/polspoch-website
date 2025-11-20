@@ -1,9 +1,12 @@
+import AuthLayout from "@/components/website/Auth/AuthLayout";
 import ResetYourPassword from "@/components/website/Auth/ResetYourPassword";
 
 export default function page() {
   return (
     <div>
-      <ResetYourPassword />
+      <AuthLayout imageSrc="/images/reset-password.jpg">
+        <ResetYourPassword />
+      </AuthLayout>
     </div>
   );
 }
