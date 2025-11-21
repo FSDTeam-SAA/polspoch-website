@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import Image from "next/image";
-import { useState } from "react";
+// import { useState } from "react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,10 +17,11 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import { useContact } from "@/lib/hooks/useContact";
+import { Loader2 } from "lucide-react";
 
 // Zod schema using union of literals
 const formSchema = z.object({
-  
   fname: z.string().min(1, "First Name is required"),
   lname: z.string().min(1, "Last Name is required"),
   email: z.string().email("Invalid email address"),
@@ -29,10 +30,13 @@ const formSchema = z.object({
     .min(10, "Phone number must be at least 10 digits")
     .max(15, "Phone number is too long"),
   message: z.string().min(1, "Message is required"),
+  agree: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the privacy policy",
+  }),
 });
 
 export default function GetInTouch() {
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,19 +46,32 @@ export default function GetInTouch() {
       email: "",
       phone: "",
       message: "",
+      agree: false,
     },
   });
 
+  const { submitContact, loading } = useContact();
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setLoading(true);
     try {
-      console.log(values);
-      toast.success("Your message has been sent successfully!");
-      form.reset();
-    } catch {
-      toast.error("Failed to send message.");
-    } finally {
-      setLoading(false);
+      const payload = {
+        firstName: values.fname,
+        lastName: values.lname,
+        email: values.email,
+        phone: values.phone,
+        message: values.message,
+      };
+
+      const res = await submitContact(payload);
+
+      if (res?.success) {
+        toast.success("Your message has been sent successfully! ");
+        form.reset();
+      } else {
+        toast.error("Failed to send message ");
+      }
+    } catch (error) {
+      toast.error("Something went wrong while sending the message.");
     }
   }
 
@@ -193,28 +210,50 @@ export default function GetInTouch() {
               />
 
               {/* Checkbox */}
-              <div className="flex justify-sta items-center  gap-3 pt-2">
-                <div className="">
-                  <input type="checkbox" className="mt-1 h-5 w-5" />
-                </div>
-                <div className="">
-                  <p className="text-sm text-[#4a4a4a]">
-                    You agree to our friendly{" "}
-                    <span className="text-[#b62400] font-medium cursor-pointer">
-                      privacy policy
-                    </span>
-                    .
-                  </p>
-                </div>
-              </div>
+              <FormField
+                control={form.control}
+                name="agree"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-start items-center gap-3 pt-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="mt-1 h-5 w-5"
+                        />
+                      </FormControl>
+
+                      <p className="text-sm text-[#4a4a4a]">
+                        You agree to our friendly{" "}
+                        <span className="text-[#b62400] font-medium cursor-pointer">
+                          privacy policy
+                        </span>
+                        .
+                      </p>
+                    </div>
+
+                    {/* Error message */}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Submit Button */}
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#7E1800] hover:bg-[#c23f22] text-white h-12 rounded-lg text-lg font-medium"
+                className="w-full bg-[#7E1800] cursor-pointer hover:bg-[#c23f22] text-white h-12 rounded-lg text-lg font-medium flex items-center justify-center gap-2"
               >
-                {loading ? "Sending..." : "Send message"}
+                {loading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send message"
+                )}
               </Button>
             </form>
           </Form>
