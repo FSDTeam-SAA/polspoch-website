@@ -32,7 +32,7 @@ export default function Banner() {
 
           <div className="mt-6 flex justify-center gap-4">
             <a
-              className="rounded border border-gray-200 px-5 py-3 font-medium text-gray-200 shadow-sm bg-[#7E1800] hover:bg-[#9E2200] focus:outline-none "
+              className="rounded  px-5 py-3 font-medium text-gray-200 shadow-sm bg-[#7E1800] hover:bg-[#9E2200] focus:outline-none "
               href="#"
             >
               Discover our services
