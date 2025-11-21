@@ -17,3 +17,22 @@ export async function getAllReview(page = 1, limit = 10) {
     throw new Error("Failed to fetch all reviews with pagination");
   }
 }
+
+
+
+// POST: Send Contact Message
+export async function sendContactMessage(payload: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  message: string;
+}) {
+  try {
+    const res = await api.post("/contact/send-message", payload);
+    return res.data;
+  } catch (err) {
+    console.error("Error sending contact message:", err);
+    throw new Error("Failed to send contact message");
+  }
+}

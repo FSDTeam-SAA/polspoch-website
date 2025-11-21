@@ -1,11 +1,11 @@
 import AuthLayout from "@/components/website/Auth/AuthLayout";
-import VerifyOTP from "@/components/website/Auth/VerifyOTP";
+import VerfityEmailOTP from "@/components/website/Auth/VerfityEmailOTP";
 
 export default function page() {
   return (
     <div>
       <AuthLayout imageSrc="/images/Verify-OTP.jpg">
-        <VerifyOTP />
+        <VerfityEmailOTP />
       </AuthLayout>
     </div>
   );
