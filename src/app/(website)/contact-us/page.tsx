@@ -1,7 +1,7 @@
 import FaqSection from "@/components/ReusableSection/FaqSection";
 import GetInTouch from "@/components/ReusableSection/GetInTouch";
 import HeadingText from "@/components/ReusableSection/HeadingText";
-import React from "react";
+
 
 export default function page() {
   return (

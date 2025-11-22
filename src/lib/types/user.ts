@@ -3,7 +3,7 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   email: string;
-  role: "admin" | "manager" | "user";
+  role: "admin" | "user";
   isVerified: boolean;
   createdAt: string;
   updatedAt: string;
