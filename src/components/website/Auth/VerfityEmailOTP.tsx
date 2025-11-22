@@ -67,7 +67,7 @@ export default function VerfityEmailOTP() {
     const res = await handleResendEmailOtp();
 
     if (res?.success) {
-      toast.success("OTP sent again successfully ✔");
+      toast.success("OTP sent again successfully");
     } else {
       toast.error("Failed to resend OTP");
     }
