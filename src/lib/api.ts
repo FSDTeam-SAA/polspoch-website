@@ -22,7 +22,6 @@ export async function getAllReview(page = 1, limit = 10) {
 }
 
 
-
 // POST: Send Contact Message
 export async function sendContactMessage(payload: {
   firstName: string;
@@ -39,3 +38,4 @@ export async function sendContactMessage(payload: {
     throw new Error("Failed to send contact message");
   }
 }
+
