@@ -148,6 +148,7 @@ export default function useAuth() {
 //     setLoading(false);
 //   }
 // };
+
 const handleSignup = async (userData: { firstName: string; lastName: string; email: string; password: string; }) => {
   setLoading(true);
   setError(null);
