@@ -1,102 +1,71 @@
+// path: app/components/PersonalInformationForm.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Pencil } from "lucide-react";
-import { toast } from "sonner";
-import { useSession } from "next-auth/react";
+import { Loader2 } from "lucide-react";
+import { startTransition } from "react";
+import { FormDataType } from "@/lib/types/profile";
+import { useUpdateProfile } from "@/lib/hooks/useUpdateProfile";
+import { useUserProfile } from "@/lib/hooks/useSserProfile";
 
-type FormDataType = {
-  gender: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNum: string;
-  bio: string;
-  address: string;
-  location: string;
-  postCode: string;
-  photo: File | string | null;
-};
-
-const initialFormData: FormDataType = {
+const emptyForm: FormDataType = {
   gender: "female",
-  firstName: "Olivia",
-  lastName: "Rhye",
-  email: "bessieedwards@gmail.com",
-  phoneNum: "+1 (555) 123-4567",
-  bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  address: "1234 Oak Avenue, San Francisco, CA 94102A",
-  location: "Florida, USA",
-  postCode: "30301",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phoneNum: "",
+  bio: "",
+  address: "",
+  location: "",
+  postCode: "",
   photo: null,
 };
 
-const updateUserProfile = async (
-  userData: FormDataType,
-  accessToken: string
-) => {
-  if (!accessToken) throw new Error("Session expired. Please login again.");
-
-  const formData = new FormData();
-  formData.append("firstName", userData.firstName);
-  formData.append("lastName", userData.lastName);
-  formData.append("email", userData.email);
-  formData.append("phoneNum", userData.phoneNum);
-  formData.append("bio", userData.bio);
-  formData.append("address", userData.address);
-  formData.append("location", userData.location);
-  formData.append("postCode", userData.postCode);
-  if (userData.photo instanceof File) {
-    formData.append("photo", userData.photo);
-  }
-
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/user/update`,
-    {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: formData,
-    }
-  );
-
-  if (!response.ok) {
-    if (response.status === 401)
-      throw new Error("Session expired. Please login again.");
-    throw new Error("Failed to update profile");
-  }
-
-  return response.json();
-};
-
 export function PersonalInformationForm() {
-  const [formData, setFormData] = useState<FormDataType>(initialFormData);
-  const [hasChanges, setHasChanges] = useState(false);
-  const queryClient = useQueryClient();
   const { data: session } = useSession();
+  const accessToken = (session as any)?.accessToken || "";
 
-  const updateProfileMutation = useMutation({
-    mutationFn: () =>
-        //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      updateUserProfile(formData, (session as any)?.accessToken || ""),
-    onSuccess: (data) => {
-      toast.success("Profile updated successfully!");
-      setHasChanges(false);
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
-    },
-    onError: (error: unknown) => {
-      const msg =
-        error instanceof Error ? error.message : "Failed to update profile";
-      toast.error(msg);
-    },
-  });
+  // fetch profile from API
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    isError: profileError,
+  } = useUserProfile();
+
+  // mutation hook (handles toast + invalidation internally)
+  const updateProfileMutation = useUpdateProfile(accessToken);
+
+  const [formData, setFormData] = useState<FormDataType>(emptyForm);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // when profile arrives, populate form (one-time)
+  useEffect(() => {
+    if (profile) {
+      startTransition(() => {
+        setFormData({
+          gender: (profile as any).gender ?? "female",
+          firstName: profile.firstName ?? "",
+          lastName: profile.lastName ?? "",
+          email: profile.email ?? "",
+          phoneNum: (profile as any).phoneNum ?? "",
+          bio: (profile as any).bio ?? "",
+          address: (profile as any).address ?? "",
+          location: (profile as any).location ?? "",
+          postCode: (profile as any).postCode ?? "",
+          photo: (profile as any).image ?? null,
+        });
+        setHasChanges(false);
+      });
+    }
+  }, [profile]);
 
   const handleInputChange = (
     field: keyof FormDataType,
@@ -106,11 +75,49 @@ export function PersonalInformationForm() {
     setHasChanges(true);
   };
 
-  const handleSave = () => updateProfileMutation.mutate();
+  const handleSave = () => {
+    // Optionally, you can validate here before mutate
+    updateProfileMutation.mutate(formData);
+  };
+
   const handleDiscard = () => {
-    setFormData(initialFormData);
+    if (profile) {
+      // reset to profile values
+      setFormData({
+        gender: (profile as any).gender ?? "female",
+        firstName: profile.firstName ?? "",
+        lastName: profile.lastName ?? "",
+        email: profile.email ?? "",
+        phoneNum: (profile as any).phoneNum ?? "",
+        bio: (profile as any).bio ?? "",
+        address: (profile as any).address ?? "",
+        location: (profile as any).location ?? "",
+        postCode: (profile as any).postCode ?? "",
+        photo: (profile as any).image ?? null,
+      });
+    } else {
+      // no profile — reset to empty
+      setFormData(emptyForm);
+    }
     setHasChanges(false);
   };
+
+  if (profileLoading) {
+    return (
+      <Card className="rounded-2xl border-none! p-6 flex items-center justify-center">
+        <Loader2 className="animate-spin" />
+        <span className="ml-3">Loading profile...</span>
+      </Card>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <Card className="rounded-2xl border-none! p-6">
+        <div className="text-red-600">Failed to load profile.</div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="rounded-2xl border-none! ">
@@ -125,13 +132,12 @@ export function PersonalInformationForm() {
           </p>
         </div>
 
-        {/* Edit Profile button (matches screenshot style) */}
+        {/* Edit Profile button */}
         <div className="ml-4">
           <Button
             className="bg-[#7a200e] hover:bg-[#6a1a0f] text-white shadow-sm px-4 py-2 rounded-md flex items-center gap-2"
             onClick={() => {
-              /* optional: open edit mode */
-              toast("Edit profile clicked");
+              /* optional: toggle edit-only mode */
             }}
           >
             <Pencil className="w-4 h-4" />
@@ -217,11 +223,9 @@ export function PersonalInformationForm() {
               Company Name
             </Label>
             <Input
-            //eslint-disable-next-line @typescript-eslint/no-explicit-any
               value={(formData as any).company || "Company Name Here"}
-              onChange={(e) =>
-                // keep compatibility; if your FormDataType had company, replace properly
-                handleInputChange("bio", e.target.value) // placeholder mapping
+              onChange={
+                (e) => handleInputChange("bio", e.target.value) // placeholder mapping
               }
               className="w-full"
             />
@@ -229,7 +233,9 @@ export function PersonalInformationForm() {
 
           {/* Location */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">Location</Label>
+            <Label className="text-sm font-medium text-gray-700">
+              Location
+            </Label>
             <Input
               value={formData.location}
               onChange={(e) => handleInputChange("location", e.target.value)}
@@ -250,26 +256,6 @@ export function PersonalInformationForm() {
           </div>
         </div>
 
-        {/* Photo upload (keeps existing behavior) */}
-        {/* <div className="space-y-2">
-          <Label className="text-sm font-medium text-gray-700">
-            Profile Photo
-          </Label>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) =>
-              handleInputChange("photo", e.target.files?.[0] || null)
-            }
-            className="w-full"
-          />
-          {formData.photo instanceof File && (
-            <p className="text-xs text-gray-500">
-              Selected: {formData.photo.name}
-            </p>
-          )}
-        </div> */}
-
         {/* Buttons row (aligned to the right) */}
         <div className="flex justify-end gap-4 pt-4">
           <Button
@@ -285,7 +271,9 @@ export function PersonalInformationForm() {
             disabled={!hasChanges || updateProfileMutation.status === "pending"}
             className="px-6 py-2 rounded-md bg-[#7a200e] hover:bg-[#6a1a0f] text-white"
           >
-            {updateProfileMutation.status === "pending" ? "Saving..." : "Save Changes"}
+            {updateProfileMutation.status === "pending"
+              ? "Saving..."
+              : "Save Changes"}
           </Button>
         </div>
       </CardContent>

@@ -1,27 +1,26 @@
-// src/lib/hooks/useUpdateProfile.ts
+"use client";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateUserProfileApi } from "@/lib/api";
-import { FormDataType } from "@/lib/types/profile";
+import { updateUserProfileAPI } from "@/lib/api";
+// import { UserProfilePayload } from "@/types/profile";
 import { toast } from "sonner";
+import { UserProfilePayload } from "../types/profile";
 
-type Payload = {
-  data: FormDataType;
-  accessToken?: string; // optional — axios interceptor can also provide token
-};
-
-export function useUpdateProfile() {
-  const qc = useQueryClient();
+export function useUpdateProfile(accessToken: string) {
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ data, accessToken }: Payload) =>
-      updateUserProfileApi(data, accessToken),
-    onSuccess: (res) => {
+    mutationFn: (payload: UserProfilePayload) =>
+      updateUserProfileAPI(payload, accessToken),
+
+    onSuccess: () => {
       toast.success("Profile updated successfully!");
-      // invalidate profile query so UI refreshes
-      qc.invalidateQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
     },
-    onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : "Failed to update profile";
+
+    onError: (error) => {
+      const msg =
+        error instanceof Error ? error.message : "Failed to update profile";
       toast.error(msg);
     },
   });
