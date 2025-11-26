@@ -3,6 +3,7 @@ import Newsletter from "@/components/ReusableSection/Newsletter";
 import OurServices from "@/components/ReusableSection/OurServices";
 import AboutInfo from "@/components/website/PageSections/AboutUs/AboutInfo";
 import Companies from "@/components/website/PageSections/AboutUs/Companies";
+import OurPolicy from "@/components/website/PageSections/AboutUs/OurPolicy";
 import React from "react";
 
 export default function page() {
@@ -16,6 +17,7 @@ export default function page() {
       />
       <AboutInfo />
       <Companies />
+      <OurPolicy />
       <OurServices />
       <Newsletter />
     </div>

@@ -117,3 +117,43 @@ export const changePassword = async (
     };
   }
 };
+
+
+
+// Add to src/lib/api.ts (near other exported functions)
+
+export type GetProductsParams = {
+  family?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+};
+
+export async function getProducts(params: GetProductsParams = {}) {
+  const { family, search, page = 1, limit = 12 } = params;
+  const query = new URLSearchParams();
+  if (family) query.append("family", family);
+  if (search) query.append("search", search);
+  if (page) query.append("page", String(page));
+  if (limit) query.append("limit", String(limit));
+
+  try {
+    const res = await api.get(`/product?${query.toString()}`);
+    // API returns { success: true, data: [...] }
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    throw err;
+  }
+}
+
+
+export async function getProductById(productId: string) {
+  try {
+    const res = await api.get(`/product/${productId}`);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching product by ID:", err);
+    throw err;
+  }
+}
