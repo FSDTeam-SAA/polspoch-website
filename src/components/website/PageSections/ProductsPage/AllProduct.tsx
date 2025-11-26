@@ -6,7 +6,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { Product } from "@/lib/types/product";
 import Image from "next/image";
-import { ShoppingCart, ShoppingBag } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Filter } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,17 @@ const AllProduct: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [limit] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  const [windowWidth, setWindowWidth] = useState(1024);
+
+React.useEffect(() => {
+  const handleResize = () => setWindowWidth(window.innerWidth);
+  handleResize();
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+
 
   const params = useMemo(() => {
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,6 +58,7 @@ const AllProduct: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      
       <div className="flex flex-col md:flex-row gap-6">
         {/* Filter column */}
         <aside className="w-full md:w-80">
@@ -69,7 +81,12 @@ const AllProduct: React.FC = () => {
             })}
           >
             <Card className="p-4 mb-6">
-              <CardTitle className="text-sm mb-2">Filter</CardTitle>
+              <CardTitle className="text-sm mb-2">
+                <div className="flex justify-between items-center">
+                  <p className="text-2xl font-semibold">Filter</p>
+                  {/* <Filter className="ml-2" size={16} /> */}
+                </div>
+              </CardTitle>
 
               <div className="space-y-4">
                 {/* <div>
@@ -87,24 +104,25 @@ const AllProduct: React.FC = () => {
                     />
                   </div>
                 </div> */}
-                <div>
-                  <label className="text-xs block mb-1">Search</label>
+                <div className="flex  justify-between items-center gap-4">
+                  <label className="text-base block mb-1">Search</label>
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Type here..."
-                    className="w-full input input-bordered"
+                    className="w-full input input-bordered border p-2 rounded border-gray-300"
                   />
                 </div>
                 <div>
-                  <label className="text-xs block mb-1">Family Product</label>
+                  <label className="text-base block mb-1">Family Product</label>
                   <select
-                    className="w-full input input-bordered"
+                    className="w-full p-2 input input-bordered border px-2 rounded border-gray-300"
+                    // className="w-full input input-bordered"
                     value={family || ""}
                     onChange={(e) => setFamily(e.target.value || undefined)}
                   >
-                    <option value="">Select Family Product</option>
+                    <option value="">Select  </option>
                     <option value="Family 1">Family 1</option>
                     <option value="Family 2">Family 2</option>
                     <option value="Tiles">Tiles</option>
@@ -113,22 +131,22 @@ const AllProduct: React.FC = () => {
                 </div>
 
                 <div className="flex gap-3">
-                  <button
+                  <Button
                     onClick={() => {
                       setFamily(undefined);
                       setSearch("");
                       setPage(1);
                     }}
-                    className="flex-1 btn btn-ghost border border-red-300 text-red-600"
+                    className="flex-1 bg-transparent cursor-pointer hover:bg-[#7E1800] hover:text-white btn btn-ghost border border-[#7E1800] text-[#7E1800]"
                   >
                     Clear All Filters
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleApplyFilter}
-                    className="flex-1 btn bg-rose-800 text-white"
+                    className="flex-1 btn bg-[#7E1800] hover:bg-red-800 cursor-pointer text-white"
                   >
                     Apply Filter
-                  </button>
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -175,61 +193,6 @@ const AllProduct: React.FC = () => {
             )}
 
             {products.map((p) => (
-              // <Card key={p._id} className="p-0  shadow-md">
-              //   <div className="flex flex-col">
-              //     {/* Image */}
-              //     {/* <div className="w-full h-48 rounded-md relative bg-gray-100"> */}
-              //       <div className="w-full h-[250px] rounded-md relative bg-gray-100">
-              //         {p.productImage && p.productImage[0]?.url ? (
-              //           <Image
-              //             src={p.productImage[0].url}
-              //             alt={p.productName}
-              //             fill
-              //             // style={{ objectFit: "cover" }}
-              //             className="object-cover rounded-md"
-              //             sizes="(max-width: 768px) 100vw, 33vw"
-              //           />
-              //         ) : (
-              //           <div className="flex items-center justify-center h-full text-sm text-gray-400">
-              //             No Image
-              //           </div>
-              //         )}
-              //       </div>
-              //     {/* </div> */}
-
-              //     <div className="p-4 flex flex-col gap-3">
-              //       <div className="flex items-start justify-between">
-              //         <h3 className="text-sm font-semibold">{p.productName}</h3>
-              //         {/* Price — show first feature price if available */}
-              //         {/* <div className="text-sm font-semibold">
-              //            €{p.features?.[0]?.miterPerUnitPrice ?? "—"}/1 kg
-              //         </div> */}
-              //       </div>
-
-              //       <p className="text-xs text-gray-500 line-clamp-3">
-              //         {p.unitSizeCustomizationNote ??
-              //           "Lorem Ipsum is simply dummy text of the printing and typesetting industry."}
-              //       </p>
-
-              //       <div className="flex items-center justify-between gap-2 mt-2">
-              //         <Button className="btn btn-ghost bg-transparent cursor-pointer text-gray-800 hover:text-white border rounded-md p-2">
-              //           <ShoppingCart size={16} />
-              //         </Button>
-
-              //         <Link href={`/products/${p._id}`}>
-              //           <Button
-              //             className="btn w-full hover:bg-rose-600 cursor-pointer bg-rose-800 text-white rounded-md flex items-center justify-center gap-2"
-              //             // onClick={() => console.log(p._id)}
-              //           >
-              //             <ShoppingBag size={16} />
-              //             <span>Buy Now</span>
-              //           </Button>
-              //         </Link>
-              //       </div>
-              //     </div>
-              //   </div>
-              // </Card>
-
               <Card
                 key={p._id}
                 className="p-0 shadow-md rounded-xl overflow-hidden"
