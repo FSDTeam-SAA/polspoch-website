@@ -22,14 +22,12 @@ const AllProduct: React.FC = () => {
 
   const [windowWidth, setWindowWidth] = useState(1024);
 
-React.useEffect(() => {
-  const handleResize = () => setWindowWidth(window.innerWidth);
-  handleResize();
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
-
-
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const params = useMemo(() => {
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,7 +42,7 @@ React.useEffect(() => {
 
   const total = data?.total ?? products.length;
   const ids = data?.data.map((item) => item._id);
-  console.log(ids);
+  console.log("dataaa", data);
 
   const lastPage = Math.max(
     1,
@@ -58,7 +56,6 @@ React.useEffect(() => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      
       <div className="flex flex-col md:flex-row gap-6">
         {/* Filter column */}
         <aside className="w-full md:w-80">
@@ -122,7 +119,7 @@ React.useEffect(() => {
                     value={family || ""}
                     onChange={(e) => setFamily(e.target.value || undefined)}
                   >
-                    <option value="">Select  </option>
+                    <option value="">Select </option>
                     <option value="Family 1">Family 1</option>
                     <option value="Family 2">Family 2</option>
                     <option value="Tiles">Tiles</option>
@@ -195,7 +192,7 @@ React.useEffect(() => {
             {products.map((p) => (
               <Card
                 key={p._id}
-                className="p-0 shadow-md rounded-xl overflow-hidden"
+                className="p-3 hover:shadow-md rounded-xl overflow-hidden"
               >
                 <div className="flex flex-col">
                   {/* Image */}
@@ -243,15 +240,19 @@ React.useEffect(() => {
                     <div className="flex items-center justify-between gap-3 mt-2">
                       {/* Small Cart Button */}
                       <Link href={`/cart`} className="w-10 h-10">
-                        <Button className="w-10 h-10 cursor-pointer flex items-center justify-center bg-transparent border border-gray-300 hover:bg-[#7E1800] hover:text-white text-gray-700 rounded-md">
+                        <Button className="w-10 h-10 cursor-pointer flex items-center justify-center bg-transparent border border-gray-300 hover:bg-[#7E1800] hover:text-white text-gray-700 rounded-none">
                           <ShoppingCart size={16} />
                         </Button>
                       </Link>
                       {/* Buy Now Button */}
                       <Link href={`/products/${p._id}`} className="w-full">
-                        <Button className="w-full bg-[#7E1800] hover:bg-red-800 cursor-pointer text-white rounded-lg flex items-center justify-center gap-2 py-2">
-                          <ShoppingBag size={16} />
+                        <Button className="group w-full bg-[#7E1800] hover:bg-red-800 cursor-pointer text-white rounded-none flex items-center justify-center gap-2 py-2 transition-all">
                           <span>Buy Now</span>
+
+                          <ShoppingBag
+                            size={16}
+                            className="opacity-0 translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
+                          />
                         </Button>
                       </Link>
                     </div>
