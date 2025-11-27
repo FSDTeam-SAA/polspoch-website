@@ -6,8 +6,10 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { Product } from "@/lib/types/product";
 import Image from "next/image";
-import { ShoppingCart, ShoppingBag } from "lucide-react";
+import { ShoppingCart, ShoppingBag, Filter } from "lucide-react";
 import clsx from "clsx";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const DEFAULT_LIMIT = 12;
 
@@ -17,6 +19,15 @@ const AllProduct: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [limit] = useState<number>(12);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  const [windowWidth, setWindowWidth] = useState(1024);
+
+  React.useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const params = useMemo(() => {
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,10 +40,9 @@ const AllProduct: React.FC = () => {
   const { data, isLoading, isError } = useProducts(params, true);
   const products: Product[] = (data?.data as Product[]) || [];
 
-  
   const total = data?.total ?? products.length;
-  const ids = data?.data.map(item => item._id);
-console.log(ids);
+  const ids = data?.data.map((item) => item._id);
+  console.log("dataaa", data);
 
   const lastPage = Math.max(
     1,
@@ -68,10 +78,15 @@ console.log(ids);
             })}
           >
             <Card className="p-4 mb-6">
-              <CardTitle className="text-sm mb-2">Filter</CardTitle>
+              <CardTitle className="text-sm mb-2">
+                <div className="flex justify-between items-center">
+                  <p className="text-2xl font-semibold">Filter</p>
+                  {/* <Filter className="ml-2" size={16} /> */}
+                </div>
+              </CardTitle>
 
               <div className="space-y-4">
-                <div>
+                {/* <div>
                   <label className="text-xs block mb-1">Price Range</label>
                   <div className="flex gap-2">
                     <input
@@ -85,16 +100,26 @@ console.log(ids);
                       className="w-1/2 input input-bordered"
                     />
                   </div>
+                </div> */}
+                <div className="flex  justify-between items-center gap-4">
+                  <label className="text-base block mb-1">Search</label>
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Type here..."
+                    className="w-full input input-bordered border p-2 rounded border-gray-300"
+                  />
                 </div>
-
                 <div>
-                  <label className="text-xs block mb-1">Family Product</label>
+                  <label className="text-base block mb-1">Family Product</label>
                   <select
-                    className="w-full input input-bordered"
+                    className="w-full p-2 input input-bordered border px-2 rounded border-gray-300"
+                    // className="w-full input input-bordered"
                     value={family || ""}
                     onChange={(e) => setFamily(e.target.value || undefined)}
                   >
-                    <option value="">Select Family Product</option>
+                    <option value="">Select </option>
                     <option value="Family 1">Family 1</option>
                     <option value="Family 2">Family 2</option>
                     <option value="Tiles">Tiles</option>
@@ -102,34 +127,23 @@ console.log(ids);
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-xs block mb-1">Search</label>
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Type here..."
-                    className="w-full input input-bordered"
-                  />
-                </div>
-
                 <div className="flex gap-3">
-                  <button
+                  <Button
                     onClick={() => {
                       setFamily(undefined);
                       setSearch("");
                       setPage(1);
                     }}
-                    className="flex-1 btn btn-ghost border border-red-300 text-red-600"
+                    className="flex-1 bg-transparent cursor-pointer hover:bg-[#7E1800] hover:text-white btn btn-ghost border border-[#7E1800] text-[#7E1800]"
                   >
                     Clear All Filters
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleApplyFilter}
-                    className="flex-1 btn bg-rose-800 text-white"
+                    className="flex-1 btn bg-[#7E1800] hover:bg-red-800 cursor-pointer text-white"
                   >
                     Apply Filter
-                  </button>
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -176,16 +190,19 @@ console.log(ids);
             )}
 
             {products.map((p) => (
-              <Card key={p._id} className="p-0 shadow-md">
+              <Card
+                key={p._id}
+                className="p-3 hover:shadow-md rounded-xl overflow-hidden"
+              >
                 <div className="flex flex-col">
                   {/* Image */}
-                  <div className="w-full h-48 relative bg-gray-100">
+                  <div className="w-full h-[220px] relative bg-gray-100">
                     {p.productImage && p.productImage[0]?.url ? (
                       <Image
                         src={p.productImage[0].url}
                         alt={p.productName}
                         fill
-                        style={{ objectFit: "cover" }}
+                        className="object-cover"
                         sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     ) : (
@@ -195,29 +212,49 @@ console.log(ids);
                     )}
                   </div>
 
+                  {/* Content */}
                   <div className="p-4 flex flex-col gap-3">
+                    {/* Name + Price */}
                     <div className="flex items-start justify-between">
-                      <h3 className="text-sm font-semibold">{p.productName}</h3>
-                      {/* Price — show first feature price if available */}
-                      <div className="text-sm font-semibold">
-                        €{p.features?.[0]?.miterPerUnitPrice ?? "—"}/1 kg
-                      </div>
+                      <h3 className="text-base font-semibold text-gray-800">
+                        {p.productName}
+                      </h3>
+
+                      {/* {p.features?.[0]?.miterPerUnitPrice ? (
+                        <div className="text-base font-semibold text-gray-900">
+                          €{p.features[0].miterPerUnitPrice}
+                          <span className="text-xs text-gray-500 ml-1">
+                            /1 kg
+                          </span>
+                        </div>
+                      ) : null} */}
                     </div>
 
-                    <p className="text-xs text-gray-500 line-clamp-3">
+                    {/* Description */}
+                    <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">
                       {p.unitSizeCustomizationNote ??
-                        "Lorem Ipsum is simply dummy text of the printing and typesetting industry."}
+                        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum been the standard dummy text..."}
                     </p>
 
-                    <div className="flex items-center justify-between gap-2 mt-2">
-                      <button className="btn btn-ghost border rounded-md p-2">
-                        <ShoppingCart size={16} />
-                      </button>
+                    {/* Buttons */}
+                    <div className="flex items-center justify-between gap-3 mt-2">
+                      {/* Small Cart Button */}
+                      <Link href={`/cart`} className="w-10 h-10">
+                        <Button className="w-10 h-10 cursor-pointer flex items-center justify-center bg-transparent border border-gray-300 hover:bg-[#7E1800] hover:text-white text-gray-700 rounded-none">
+                          <ShoppingCart size={16} />
+                        </Button>
+                      </Link>
+                      {/* Buy Now Button */}
+                      <Link href={`/products/${p._id}`} className="w-full">
+                        <Button className="group w-full bg-[#7E1800] hover:bg-red-800 cursor-pointer text-white rounded-none flex items-center justify-center gap-2 py-2 transition-all">
+                          <span>Buy Now</span>
 
-                      <button className="btn w-full bg-rose-800 text-white rounded-md flex items-center justify-center gap-2" onClick={() => console.log(p._id)}>
-                        <ShoppingBag size={16} />
-                        <span>Buy Now</span>
-                      </button>
+                          <ShoppingBag
+                            size={16}
+                            className="opacity-0 translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
+                          />
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </div>

@@ -28,21 +28,21 @@ export const useProducts = (params: GetProductsParams, enabled = true) => {
 };
 
 
-export const useProduct = (id: string, enabled = true) => {
-  const key = ["product", id];
+// export const useProduct = (id: string, enabled = true) => {
+//   const key = ["product", id];
 
-  return useQuery<Product, Error>({
-    queryKey: key,
-    queryFn: async () => {
-      const product = await getProductById(id);
-      if (!product) {
-        throw new Error("Product not found");
-      }
-      return product;
-    },
-    enabled: !!id && enabled,
-  } as UseQueryOptions<Product, Error, Product, readonly unknown[]>);
-}
+//   return useQuery<Product, Error>({
+//     queryKey: key,
+//     queryFn: async () => {
+//       const product = await getProductById(id);
+//       if (!product) {
+//         throw new Error("Product not found");
+//       }
+//       return product;
+//     },
+//     enabled: !!id && enabled,
+//   } as UseQueryOptions<Product, Error, Product, readonly unknown[]>);
+// }
 
 
 // export default useProducts;
