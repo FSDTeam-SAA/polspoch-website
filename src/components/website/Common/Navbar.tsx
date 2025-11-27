@@ -14,7 +14,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
 import { useUserProfile } from "@/lib/hooks/useSserProfile";
-
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -133,7 +132,17 @@ export default function Navbar() {
                   className="h-9 w-9 rounded-full bg-[#7E1800] text-white flex items-center justify-center cursor-pointer font-medium"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  {getInitials(user.firstName, user.lastName)}
+                  {user?.image?.url ? (
+                    <Image
+                      src={user.image.url}
+                      alt="User Avatar"
+                      width={36}
+                      height={36}
+                      className="h-full w-full rounded-full  object-cover"
+                    />
+                  ) : (
+                    getInitials(user.firstName, user.lastName)
+                  )}
                 </button>
 
                 {/* Clickable Dropdown */}
@@ -208,9 +217,20 @@ export default function Navbar() {
                       className="flex items-center gap-3 cursor-pointer"
                       onClick={() => setMobileUserOpen(!mobileUserOpen)}
                     >
-                      <div className="h-10 w-10 rounded-full bg-[#7E1800] text-white flex items-center justify-center font-medium">
-                        {getInitials(user.firstName, user.lastName)}
+                      <div className="h-10 w-10 rounded-full overflow-hidden bg-[#7E1800] text-white flex items-center justify-center font-medium">
+                        {user?.image?.url ? (
+                          <Image
+                            src={user.image.url}
+                            alt="User Avatar"
+                            width={40}
+                            height={40}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          getInitials(user.firstName, user.lastName)
+                        )}
                       </div>
+
                       <div>
                         <p className="font-medium">
                           {user.firstName} {user.lastName}

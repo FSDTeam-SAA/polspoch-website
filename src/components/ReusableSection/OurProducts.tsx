@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 export default function OurProducts() {
   const products = [
@@ -49,9 +51,10 @@ export default function OurProducts() {
 
         {/* Button */}
         <div className="mt-10">
-          <button className="px-6 py-2 border border-red-400 rounded-md text-red-700 hover:bg-[#7E1800] hover:text-white cursor-pointer">
+          <Link href={'/product'}></Link>
+          <Button className="px-6 py-2 border border-red-400 rounded-md bg-transparent text-red-700 hover:bg-[#7E1800] hover:text-white cursor-pointer">
             See all Products
-          </button>
+          </Button>
         </div>
       </div>
     </section>
