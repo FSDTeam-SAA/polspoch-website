@@ -52,9 +52,9 @@ export default function OurProducts() {
         {/* Button */}
         <div className="mt-10">
           <Link href={'/product'}></Link>
-          <Button className="px-6 py-2 border border-red-400 rounded-md bg-transparent text-red-700 hover:bg-[#7E1800] hover:text-white cursor-pointer">
+          <button  className="px-6 py-2 border border-red-400 rounded-md bg-transparent text-red-700 hover:bg-[#7E1800] hover:text-white cursor-pointer">
             See all Products
-          </Button>
+          </button>
         </div>
       </div>
     </section>

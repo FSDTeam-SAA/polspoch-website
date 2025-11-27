@@ -10,6 +10,7 @@ import { ShoppingCart, ShoppingBag, Filter } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DEFAULT_LIMIT = 12;
 
@@ -180,15 +181,53 @@ const AllProduct: React.FC = () => {
 
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {isLoading && <div>Loading products...</div>}
+            {/* Skeleton Loading State */}
+            {isLoading &&
+              [...Array(3)].map((_, i) => (
+                <Card
+                  key={`skeleton-${i}`}
+                  className="p-3 rounded-xl overflow-hidden"
+                >
+                  <div className="flex flex-col">
+                    {/* Image Skeleton */}
+                    <Skeleton className="w-full h-[220px]" />
+
+                    {/* Content */}
+                    <div className="p-4 flex flex-col gap-3">
+                      {/* Name + Price Skeleton */}
+                      <div className="flex items-start justify-between">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+
+                      {/* Description Skeleton */}
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-4/5" />
+                        <Skeleton className="h-4 w-3/4" />
+                      </div>
+
+                      {/* Buttons Skeleton */}
+                      <div className="flex items-center justify-between gap-3 mt-2">
+                        <Skeleton className="w-10 h-10" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+
+            {/* Error */}
             {isError && <div>Error loading products.</div>}
 
+            {/* No Products Found */}
             {!isLoading && products.length === 0 && (
               <div className="col-span-full text-center py-8">
                 No products found.
               </div>
             )}
 
+            {/* Products */}
             {products.map((p) => (
               <Card
                 key={p._id}
@@ -219,15 +258,6 @@ const AllProduct: React.FC = () => {
                       <h3 className="text-base font-semibold text-gray-800">
                         {p.productName}
                       </h3>
-
-                      {/* {p.features?.[0]?.miterPerUnitPrice ? (
-                        <div className="text-base font-semibold text-gray-900">
-                          €{p.features[0].miterPerUnitPrice}
-                          <span className="text-xs text-gray-500 ml-1">
-                            /1 kg
-                          </span>
-                        </div>
-                      ) : null} */}
                     </div>
 
                     {/* Description */}
@@ -238,13 +268,12 @@ const AllProduct: React.FC = () => {
 
                     {/* Buttons */}
                     <div className="flex items-center justify-between gap-3 mt-2">
-                      {/* Small Cart Button */}
-                      <Link href={`/cart`} className="w-10 h-10">
+                      {/* <Link href={`/cart`} className="w-10 h-10">
                         <Button className="w-10 h-10 cursor-pointer flex items-center justify-center bg-transparent border border-gray-300 hover:bg-[#7E1800] hover:text-white text-gray-700 rounded-none">
                           <ShoppingCart size={16} />
                         </Button>
-                      </Link>
-                      {/* Buy Now Button */}
+                      </Link> */}
+
                       <Link href={`/products/${p._id}`} className="w-full">
                         <Button className="group w-full bg-[#7E1800] hover:bg-red-800 cursor-pointer text-white rounded-none flex items-center justify-center gap-2 py-2 transition-all">
                           <span>Buy Now</span>

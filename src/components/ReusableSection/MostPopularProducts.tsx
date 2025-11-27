@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 const products = [
   {
@@ -132,9 +134,11 @@ export default function MostPopularProducts() {
         </div>
 
         {/* Footer Button */}
-        <button className="mt-10 px-6 py-3 border border-[#8B1D13] text-[#8B1D13] rounded-full hover:bg-[#8B1D13] hover:text-white transition cursor-pointer">
+        <Link href="/product">
+        <button className="mt-10 px-6 py-3 border border-[#8B1D13] text-[#8B1D13] rounded-md hover:bg-[#8B1D13] bg-transparent hover:text-white transition cursor-pointer">
           See All Products
         </button>
+        </Link>
       </div>
     </section>
   );
