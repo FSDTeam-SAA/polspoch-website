@@ -207,7 +207,7 @@ const ProfileNav = () => {
                         }}
                         className="text-gray-700 px-5 text-lg hover:underline hover:text-primary"
                       >
-                        {item.label}
+                        {item.onClick ? item.label : <Link href={item.href}>{item.label}</Link>}
                       </button>
                     ))}
                 </nav>

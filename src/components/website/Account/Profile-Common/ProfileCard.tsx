@@ -3,7 +3,7 @@
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // import { Card } from "@/components/ui/card";
 // import { Pencil } from "lucide-react";
-// import React, { useRef } from "react";
+// import React, { useRef, useState } from "react";
 // import { useSession } from "next-auth/react";
 // import { useUpdateProfileImage } from "@/lib/hooks/useUpdateProfileImage";
 // import { useUserProfile } from "@/lib/hooks/useSserProfile";
@@ -17,6 +17,8 @@
 //   const updateImageMutation = useUpdateProfileImage(token);
 //   const fileInputRef = useRef<HTMLInputElement>(null);
 
+//   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
 //   const handleEditAvatar = () => {
 //     fileInputRef.current?.click();
 //   };
@@ -24,7 +26,16 @@
 //   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 //     const file = e.target.files?.[0];
 //     if (file) {
-//       updateImageMutation.mutate(file);
+//       // Set local preview immediately
+//       setPreviewImage(URL.createObjectURL(file));
+
+//       // Upload to server
+//       updateImageMutation.mutate(file, {
+//         onSuccess: () => {
+//           // Optionally clear preview or keep it — query will refetch latest image
+//           setPreviewImage(null);
+//         },
+//       });
 //     }
 //   };
 
@@ -38,12 +49,12 @@
 //         <div className="relative mx-auto w-max">
 //           <Avatar className="h-36 w-36 ring-8 ring-white shadow-xl">
 //             <AvatarImage
-//               src={profile?.image?.url || ""}
-//               alt={`${profile?.firstName} ${profile?.lastName}`}
+//               src={previewImage || profile.image?.url || ""}
+//               alt={`${profile.firstName} ${profile.lastName}`}
 //               className="object-cover"
 //             />
 //             <AvatarFallback className="text-lg font-semibold">
-//               {`${profile?.firstName[0] || ""}${profile?.lastName[0] || ""}`}
+//               {`${profile.firstName[0] || ""}${profile.lastName[0] || ""}`}
 //             </AvatarFallback>
 //           </Avatar>
 
@@ -67,9 +78,9 @@
 //           <h2 className="text-2xl font-semibold text-[#7a200e]">
 //             {profile.firstName} {profile.lastName}
 //           </h2>
-//           <p className="text-xs text-gray-400 mt-1">
-//             ID: <span className="text-gray-500 font-medium">{profile.id}</span>
-//           </p>
+//           {/* <p className="text-xs text-gray-400 mt-1">
+//             ID: <span className="text-gray-500 font-medium">{profile._id}</span>
+//           </p> */}
 //         </div>
 
 //         <div className="mt-6 px-2">
@@ -121,6 +132,41 @@ import React, { useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useUpdateProfileImage } from "@/lib/hooks/useUpdateProfileImage";
 import { useUserProfile } from "@/lib/hooks/useSserProfile";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// ⭐ SKELETON COMPONENT
+function ProfileCardSkeleton() {
+  return (
+    <Card className="overflow-hidden py-0! rounded-2xl shadow-[0_6px_18px_rgba(45,52,54,0.08)] animate-pulse">
+      {/* Top Banner */}
+      <div className="h-32 w-full bg-gradient-to-r from-gray-200 to-gray-100" />
+
+      <div className="relative px-8 pb-8 -mt-16">
+        <div className="relative mx-auto w-max">
+          {/* Avatar Skeleton */}
+          <Skeleton className="h-36 w-36 rounded-full ring-8 ring-white shadow-xl" />
+
+          {/* Edit Button Skeleton */}
+          <Skeleton className="absolute -bottom-1 right-0 h-9 w-9 rounded-full bg-gray-300 ring-2 ring-white" />
+        </div>
+
+        <div className="text-center mt-4 space-y-2">
+          <Skeleton className="h-6 w-40 mx-auto" />
+        </div>
+
+        {/* Info Rows */}
+        <div className="mt-6 px-2 space-y-5">
+          {[...Array(4)].map((_, i) => (
+            <div className="flex gap-4" key={i}>
+              <Skeleton className="w-28 h-5 rounded-md" />
+              <Skeleton className="flex-1 h-5 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export function ProfileCard() {
   const { data: session } = useSession();
@@ -140,20 +186,18 @@ export function ProfileCard() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Set local preview immediately
       setPreviewImage(URL.createObjectURL(file));
 
-      // Upload to server
       updateImageMutation.mutate(file, {
         onSuccess: () => {
-          // Optionally clear preview or keep it — query will refetch latest image
           setPreviewImage(null);
         },
       });
     }
   };
 
-  if (isLoading || !profile) return <div>Loading...</div>;
+  // ⭐ Replace loading with skeleton
+  if (isLoading || !profile) return <ProfileCardSkeleton />;
 
   return (
     <Card className="overflow-hidden py-0! rounded-2xl shadow-[0_6px_18px_rgba(45,52,54,0.08)]">
@@ -192,9 +236,6 @@ export function ProfileCard() {
           <h2 className="text-2xl font-semibold text-[#7a200e]">
             {profile.firstName} {profile.lastName}
           </h2>
-          {/* <p className="text-xs text-gray-400 mt-1">
-            ID: <span className="text-gray-500 font-medium">{profile._id}</span>
-          </p> */}
         </div>
 
         <div className="mt-6 px-2">
