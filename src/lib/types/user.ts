@@ -1,6 +1,11 @@
 import { ReactNode } from "react";
 
 export interface UserProfile {
+  companyName: string;
+  bio: string;
+  street: string;
+  postalCode: string;
+  gender: string;
   id: ReactNode;
   company: string;
   phone: string;

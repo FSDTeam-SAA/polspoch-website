@@ -8,7 +8,7 @@ const Companies = () => {
             <div className="text-center mb-8">
                 <p className="text-gray-700">From startups to the world&apos;s largest companies</p>
             </div>
-            <div className="flex justify-between items-center gap-30 flex-wrap">
+            <div className="flex justify-center sm:justify-between items-center gap-30 flex-wrap">
                 <Image src="/images/Layer-logo.png" alt="Company 1" width={150} height={50} className="mx-4"/>
                 <Image src="/images/sisyphus-logo.png" alt="Company 2" width={150} height={50} className="mx-4"/>
                 <Image src="/images/circlooes-logo.png" alt="Company 3" width={150} height={50} className="mx-4"/>

@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUserProfileAPI } from "@/lib/api";
-// import { UserProfilePayload } from "@/types/profile";
 import { toast } from "sonner";
 import { UserProfilePayload } from "../types/profile";
 
