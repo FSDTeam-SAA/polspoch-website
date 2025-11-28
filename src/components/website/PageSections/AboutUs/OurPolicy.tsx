@@ -58,15 +58,15 @@ const LEFT_FEATURES = [
 
 const OurPolicy = () => {
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto sm:py-10 p-2 ">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* LEFT SIDE */}
         <div>
-          <h2 className="font-bold text-3xl mb-6 text-[#2C0800]">
+          <h2 className="font-bold text-center sm:text-start text-3xl mb-6 text-[#2C0800]">
             Our Shipping Policy
           </h2>
 
-          <div className="space-y-5 text-gray-700 leading-relaxed">
+          <div className="space-y- sm:px-2 px-0 text-gray-700 leading-relaxed">
             <p>
               We understand that timely delivery is crucial for your operations.
               Our shipping policy is designed to ensure your industrial
