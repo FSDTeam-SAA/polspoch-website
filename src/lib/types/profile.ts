@@ -4,12 +4,13 @@ export type FormDataType = {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNum: string;
+  phone: string;
   bio: string;
   address: string;
   location: string;
-  postCode: string;
+  postalCode: string;
   photo: File | string | null;
+  companyName?: string;
 };
 
 export type UserProfilePayload = {
@@ -17,10 +18,11 @@ export type UserProfilePayload = {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNum: string;
+  phone: string;
   bio: string;
   address: string;
   location: string;
-  postCode: string;
+  postalCode: string;
   photo: File | string | null;
+  companyName?: string;
 };
