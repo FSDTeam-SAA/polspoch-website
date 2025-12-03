@@ -121,9 +121,9 @@ export default function MostPopularProducts() {
 
                 {/* Buttons */}
                 <div className="mt-4 flex items-center gap-3">
-                  <button className="p-2 border rounded-md hover:bg-gray-100 transition cursor-pointer">
+                  {/* <button className="p-2 border rounded-md hover:bg-gray-100 transition cursor-pointer">
                     🛒
-                  </button>
+                  </button> */}
                   <button className="flex-1 bg-[#8B1D13] text-white py-2 rounded-md font-semibold hover:bg-[#6f170f] transition cursor-pointer">
                     Buy Now
                   </button>

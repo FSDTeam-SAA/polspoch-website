@@ -499,7 +499,7 @@ export default function ProductDetailsCard() {
                 >
                   <div className="relative w-full h-full">
                     <Image
-                      src={img.url}
+                      src={img?.url}
                       alt={`${product.productName}-${idx}`}
                       fill
                       style={{ objectFit: "cover" }}

@@ -20,7 +20,7 @@ export interface ProductFeature {
 }
 
 export interface Product {
-  data: any;
+  // data: any;
   _id: string;
   family: string;
   productName: string;
