@@ -19,6 +19,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { usePathname } from "next/navigation";
+import SearchModal from "./SearchModal";
 
 // 🟢 Get Initials helper
 function getInitials(firstName?: string, lastName?: string) {
@@ -30,6 +31,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const { data: user, isLoading: userLoading } = useUserProfile();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -101,11 +103,21 @@ export default function Navbar() {
 
           {/* Right Side Icons (Desktop) */}
           <div
-            className={`hidden md:flex items-center gap-6 cursor-pointer transition-colors duration-300 ${
+            className={`hidden md:flex items-center gap-6 cursor-pointer transition-colors duration-300  ${
               scrolled ? "text-white" : "text-primary"
             }`}
           >
-            <Search />
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="cursor-pointer"
+            >
+              <Search />
+            </button>
+
+            <SearchModal
+              isOpen={searchOpen}
+              onClose={() => setSearchOpen(false)}
+            />
 
             <Link href="/cart">
               <ShoppingCart />
