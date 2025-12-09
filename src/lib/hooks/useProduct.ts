@@ -12,7 +12,7 @@ export const useProduct = (id: string, enabled = true) => {
         throw new Error("Product not found");
       }
 
-      return response.data; // backend returns { success, data }
+      return response?.data; // backend returns { success, data }
     },
     enabled: Boolean(id) && enabled,
   });

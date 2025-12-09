@@ -20,10 +20,11 @@ export interface ProductFeature {
 }
 
 export interface Product {
-  data: any;
+  // data: any;
   _id: string;
   family: string;
   productName: string;
+  productDescription?: string;
   features: ProductFeature[];
   unitSizeCustomizationNote?: string;
   minRange?: number;

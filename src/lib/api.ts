@@ -138,9 +138,11 @@ export async function getProducts(params: GetProductsParams = {}) {
   if (limit) query.append("limit", String(limit));
 
   try {
-    const res = await api.get(`/product?${query.toString()}`);
-    // API returns { success: true, data: [...] }
-    return res.data;
+    // const res = await api.get(`/product?${query.toString()}`);
+    const res = await api.get(`/product`);
+    console.log("response",res);
+    // API returns { success: true, data: [...], total, page, limit }
+    return res?.data;
   } catch (err) {
     console.error("Error fetching products:", err);
     throw err;
@@ -151,9 +153,9 @@ export async function getProducts(params: GetProductsParams = {}) {
 export async function getProductById(productId: string) {
   try {
     const res = await api.get(`/product/${productId}`);
-    return res.data;
+    return res?.data;
   } catch (err) {
-    console.error("Error fetching product by ID:", err);
+    // console.error("Error fetching product by ID:", err);
     throw err;
   }
 }
