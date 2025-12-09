@@ -2,14 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import {
-  Menu,
-  Search,
-  ShoppingCart,
-  UserCircle2,
-  X,
-  Loader2,
-} from "lucide-react";
+import { Menu, Search, ShoppingCart, UserCircle2, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { signOut } from "next-auth/react";
@@ -122,9 +115,9 @@ export default function Navbar() {
                 USER / AVATAR / DROPDOWN
             ================================= */}
             {userLoading ? (
-              <div className="h-9 w-9 rounded-full flex items-center justify-center bg-white/10">
-                <Loader2 className="h-5 w-5 " />
-              </div>
+              <Link href="/account/profile">
+                <UserCircle2 />
+              </Link>
             ) : user ? (
               <div className="relative">
                 {/* Avatar Button */}
@@ -206,10 +199,14 @@ export default function Navbar() {
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 {/* Mobile User Section */}
                 {userLoading ? (
-                  <div className="flex items-center gap-3 px-5 mt-6">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Checking account...</span>
-                  </div>
+                  <Link
+                    href="/account/profile"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-3 px-5 mt-6"
+                  >
+                    <UserCircle2 />
+                    <span>Sign in</span>
+                  </Link>
                 ) : user ? (
                   <div className="px-5 mt-6">
                     {/* Clickable User Header */}
