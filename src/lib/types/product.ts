@@ -24,6 +24,7 @@ export interface Product {
   _id: string;
   family: string;
   productName: string;
+  productDescription?: string;
   features: ProductFeature[];
   unitSizeCustomizationNote?: string;
   minRange?: number;

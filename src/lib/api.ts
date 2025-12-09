@@ -138,7 +138,9 @@ export async function getProducts(params: GetProductsParams = {}) {
   if (limit) query.append("limit", String(limit));
 
   try {
-    const res = await api.get(`/product?${query.toString()}`);
+    // const res = await api.get(`/product?${query.toString()}`);
+    const res = await api.get(`/product`);
+    console.log("response",res);
     // API returns { success: true, data: [...], total, page, limit }
     return res?.data;
   } catch (err) {
