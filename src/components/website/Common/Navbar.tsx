@@ -123,7 +123,7 @@ export default function Navbar() {
             ================================= */}
             {userLoading ? (
               <div className="h-9 w-9 rounded-full flex items-center justify-center bg-white/10">
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-5 w-5 " />
               </div>
             ) : user ? (
               <div className="relative">
