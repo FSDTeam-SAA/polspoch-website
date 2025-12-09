@@ -39,11 +39,11 @@ const AllProduct: React.FC = () => {
   }, [family, search, page, limit]);
 
   const { data, isLoading, isError } = useProducts(params, true);
-  const products: Product[] = (data?.data as Product[]) || [];
+  const products: Product[] = data?.data || [];
 
   const total = data?.total ?? products.length;
-  const ids = data?.data.map((item) => item._id);
-  console.log("dataaa", data);
+  const ids = products?.map((item) => item._id);
+  console.log("dataaa", products);
 
   const lastPage = Math.max(
     1,
