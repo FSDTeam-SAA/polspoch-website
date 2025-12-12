@@ -5,6 +5,7 @@ import { Sparkles, ShoppingCart, Zap } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { createService } from "@/lib/api";
 import { ServicePayload } from "@/lib/services/createservice";
+import { useSession } from "next-auth/react";
 
 const Rebar = () => {
   // State for user selections
@@ -19,11 +20,14 @@ const Rebar = () => {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [quantity, setQuantity] = useState(1);
+const { data: session } = useSession();
+const token = session?.accessToken || '';
 
-  const servieMutation = useMutation({
-    mutationKey: ["createService"],
-    mutationFn: (data: ServicePayload) => createService(data),
-  });
+const servieMutation = useMutation({
+  mutationFn: ({ data, token }: { data: ServicePayload; token: string }) =>
+    createService(data, token),
+});
+
 
   // Product configurations
   const productConfig = {
@@ -449,7 +453,7 @@ const Rebar = () => {
       },
     };
     console.log("visible dimension", dimensions[0]);
-    servieMutation.mutate(data);
+   servieMutation.mutate({ data, token });
   };
 
   return (
