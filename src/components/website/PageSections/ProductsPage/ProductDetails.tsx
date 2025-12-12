@@ -961,7 +961,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 function calculateShippingCost(
   weightKg: number,
   lengthMm: number,
-  isCourier: boolean
+  isCourier: boolean,
 ): number {
   if (isCourier) {
     // COURIER SHIPPING (Green Sizes)
@@ -1055,7 +1055,7 @@ export default function ProductDetailsCard() {
 
   // Progressive filtering state
   const [selectedThickness, setSelectedThickness] = useState<number | null>(
-    null
+    null,
   );
   const [selectedSize1, setSelectedSize1] = useState<number | null>(null);
   const [selectedSize2, setSelectedSize2] = useState<number | null>(null);
@@ -1065,7 +1065,7 @@ export default function ProductDetailsCard() {
 
   // Length and shipping
   const [selectedUnitSizeMm, setSelectedUnitSizeMm] = useState<number | null>(
-    null
+    null,
   );
   const [rangeLengthMeters, setRangeLengthMeters] = useState<number>(1);
   const [quantity, setQuantity] = useState<number>(1);
@@ -1163,7 +1163,7 @@ export default function ProductDetailsCard() {
           f.thickness === selectedThickness &&
           f.size1 === selectedSize1 &&
           f.size2 === selectedSize2 &&
-          f.finishQuality === selectedFinishQuality
+          f.finishQuality === selectedFinishQuality,
       ) || null
     );
   }, [

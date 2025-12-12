@@ -110,7 +110,7 @@ const Rebar = () => {
       dimensions.sizeA || 0,
       dimensions.sizeB || 0,
       dimensions.sizeC || 0,
-      dimensions.sizeD || 0
+      dimensions.sizeD || 0,
     );
 
     // Target max rendered size in pixels (to fit safely in 400x350 with margins)
@@ -362,7 +362,7 @@ const Rebar = () => {
   };
 
   const currentMaterial = productConfig.materials.find(
-    (m) => m.id === material
+    (m) => m.id === material,
   );
 
   // Mapping shapes to required dimensions
@@ -396,7 +396,7 @@ const Rebar = () => {
 
     const sizesum = visibleDimensions.reduce(
       (sum, key) => sum + dimensions[key],
-      0
+      0,
     );
 
     // const baseprice = 29.81;
@@ -687,7 +687,7 @@ const Rebar = () => {
                         value={quantity}
                         onChange={(e) =>
                           setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1)
+                            Math.max(1, parseInt(e.target.value) || 1),
                           )
                         }
                         className="w-20 text-center p-3 border-2 border-slate-200 rounded-xl font-bold text-lg text-slate-900 focus:border-rose-600 focus:ring-4 focus:ring-rose-100 transition-all"
