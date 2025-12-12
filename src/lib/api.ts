@@ -1,8 +1,8 @@
 // src/lib/api.ts
 
-
 import axios from "axios";
 import { UserProfilePayload } from "./types/profile";
+import { ServicePayload } from "./services/createservice";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -21,7 +21,6 @@ export async function getAllReview(page = 1, limit = 10) {
     throw new Error("Failed to fetch all reviews with pagination");
   }
 }
-
 
 // POST: Send Contact Message
 export async function sendContactMessage(payload: {
@@ -45,7 +44,7 @@ export async function sendContactMessage(payload: {
 // ===========================
 export async function updateUserProfileAPI(
   payload: UserProfilePayload,
-  accessToken: string
+  accessToken: string,
 ) {
   if (!accessToken) throw new Error("Session expired. Please login again.");
 
@@ -74,8 +73,6 @@ export async function updateUserProfileAPI(
   }
 }
 
-
-
 export async function uploadProfileImage(file: File, token: string) {
   const formData = new FormData();
   formData.append("image", file);
@@ -90,12 +87,10 @@ export async function uploadProfileImage(file: File, token: string) {
   return response.data;
 }
 
-
-
 export const changePassword = async (
   currentPassword: string,
   newPassword: string,
-  token: string
+  token: string,
 ) => {
   try {
     const response = await api.post(
@@ -105,7 +100,7 @@ export const changePassword = async (
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     return response.data;
@@ -117,8 +112,6 @@ export const changePassword = async (
     };
   }
 };
-
-
 
 // Add to src/lib/api.ts (near other exported functions)
 
@@ -140,7 +133,7 @@ export async function getProducts(params: GetProductsParams = {}) {
   try {
     // const res = await api.get(`/product?${query.toString()}`);
     const res = await api.get(`/product`);
-    console.log("response",res);
+    console.log("response", res);
     // API returns { success: true, data: [...], total, page, limit }
     return res?.data;
   } catch (err) {
@@ -149,10 +142,19 @@ export async function getProducts(params: GetProductsParams = {}) {
   }
 }
 
-
 export async function getProductById(productId: string) {
   try {
     const res = await api.get(`/product/${productId}`);
+    return res?.data;
+  } catch (err) {
+    // console.error("Error fetching product by ID:", err);
+    throw err;
+  }
+}
+
+export async function createService(data: ServicePayload) {
+  try {
+    const res = await api.post(`/service/create-service`, data);
     return res?.data;
   } catch (err) {
     // console.error("Error fetching product by ID:", err);
