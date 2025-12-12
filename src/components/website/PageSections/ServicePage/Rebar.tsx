@@ -460,7 +460,7 @@ const Rebar = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-rose-100 to-orange-100 rounded-full mb-4">
             <Sparkles className="w-4 h-4 text-rose-600" />
             <span className="text-sm font-semibold text-rose-800">
-              Premium Metal Configurator
+              Premium Steel
             </span>
           </div>
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
