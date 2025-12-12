@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { Sparkles, ShoppingCart, Zap } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { createService } from "@/lib/api";
+import { addToCart, createService } from "@/lib/api";
 import { ServicePayload } from "@/lib/services/createservice";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 const Rebar = () => {
   // State for user selections
@@ -21,12 +22,42 @@ const Rebar = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [quantity, setQuantity] = useState(1);
 const { data: session } = useSession();
-const token = session?.accessToken || '';
+const token = session?.accessToken || "";
 
-const servieMutation = useMutation({
-  mutationFn: ({ data, token }: { data: ServicePayload; token: string }) =>
-    createService(data, token),
+const orderMutation = useMutation({
+  mutationFn: ({
+    data,
+    token,
+  }: {
+    data: { serviceId: string; type: string };
+    token: string;
+  }) => addToCart(data, token),
+  onSuccess:(data)=>{
+    toast.success(`${data?.message}`|| 'Succssesfuly Added')
+  }
 });
+
+const serviceMutation = useMutation({
+  mutationFn: ({
+    data,
+    token,
+  }: {
+    data: ServicePayload;
+    token: string;
+  }) => createService(data, token),
+
+  onSuccess: (res) => {
+    console.log('respons data for ',res)
+    orderMutation.mutate({
+      data: {
+        serviceId: res?.data?._id,
+        type: "service",
+      },
+      token,
+    });
+  },
+});
+
 
 
   // Product configurations
@@ -453,7 +484,7 @@ const servieMutation = useMutation({
       },
     };
     console.log("visible dimension", dimensions[0]);
-   servieMutation.mutate({ data, token });
+   serviceMutation.mutate({ data, token });
   };
 
   return (
