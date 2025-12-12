@@ -3,6 +3,7 @@
 
 import axios from "axios";
 import { UserProfilePayload } from "./types/profile";
+import { ServicePayload } from "./services/createservice";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -153,6 +154,18 @@ export async function getProducts(params: GetProductsParams = {}) {
 export async function getProductById(productId: string) {
   try {
     const res = await api.get(`/product/${productId}`);
+    return res?.data;
+  } catch (err) {
+    // console.error("Error fetching product by ID:", err);
+    throw err;
+  }
+}
+
+
+
+export async function createService(data: ServicePayload) {
+  try {
+    const res = await api.post(`/service/create-service`,data);
     return res?.data;
   } catch (err) {
     // console.error("Error fetching product by ID:", err);
