@@ -1,7 +1,12 @@
+import BendingPage from "@/components/website/PageSections/BendingPage/BendingPage";
 import React from "react";
 
 const page = () => {
-  return <div>bending page</div>;
+  return (
+    <div>
+      <BendingPage />
+    </div>
+  );
 };
 
 export default page;
