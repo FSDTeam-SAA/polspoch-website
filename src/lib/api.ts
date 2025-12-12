@@ -179,3 +179,21 @@ export async function createService(data: ServicePayload, token: string) {
     throw err;
   }
 }
+
+export async function addToCart(data: {serviceId:string;type:string}, token: string) {
+  try {
+    const res = await api.post(
+      "/cart/add-cart",
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
