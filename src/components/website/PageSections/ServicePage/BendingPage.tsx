@@ -1,6 +1,12 @@
+// src/components/website/PageSections/ServicePage/BendingPage.tsx
 "use client";
 import React, { useState } from "react";
 import { ChevronDown, Sparkles, ShoppingCart, Zap } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useService } from "@/lib/hooks/useService";
+import { useAddToCart } from "@/lib/hooks/useAddToCart";
+import { toast } from "sonner";
+import { ServicePayload, ServiceSizes } from "@/lib/services/createservice";
 
 interface Dimensions {
   L?: number;
@@ -20,6 +26,14 @@ const ProductConfigurator = () => {
   const [thickness, setThickness] = useState("");
   const [dimensions, setDimensions] = useState<Dimensions>({});
   const [units, setUnits] = useState(1);
+  const { data: session } = useSession();
+  const token = session?.accessToken || "";
+
+  const { mutate: addToCart } = useAddToCart({ token });
+
+  const { mutate: createService } = useService({
+    token,
+  });
 
   const PRICE_PER_UNIT = 117.66;
 
@@ -83,20 +97,19 @@ const ProductConfigurator = () => {
 
   const handleAddToCart = () => {
     if (!selectedShape || !material || !thickness) {
-      alert("Please complete all required fields");
+      toast.error("Please complete all required fields");
       return;
     }
 
-    const sizes: Record<string, number> = {};
+    const sizes: ServiceSizes = {};
     const degrees: Record<string, number> = {};
-    let length: number | null = null;
 
     // Extract dimensions
     Object.entries(dimensions).forEach(([key, value]) => {
       if (["L", "Z", "U", "O"].includes(key)) {
-        length = value;
+        // length = value;
       } else if (["A", "B", "C"].includes(key)) {
-        sizes[key] = value;
+        sizes[key as keyof ServiceSizes] = value;
       } else if (key === "degres1") {
         degrees.degree1 = value;
       } else if (key === "degres2") {
@@ -104,20 +117,33 @@ const ProductConfigurator = () => {
       }
     });
 
-    const cartData = {
+    const cartData: ServicePayload = {
       serviceType: "bending",
       templateName: selectedShape,
-      material: material.toLowerCase(),
-      thickness: parseFloat(thickness),
       units: units,
       price: Number(calculateTotal()),
+      diameter: parseFloat(thickness),
       sizes: sizes,
-      degrees: degrees,
-      length: length,
     };
 
-    console.log(cartData);
-    alert("Item added to cart! Check console for details.");
+    // Add extra properties if needed by backend (coerced)
+    Object.assign(cartData, {
+      material: material.toLowerCase(),
+      degrees: degrees,
+    });
+
+    createService(cartData, {
+      onSuccess: (data: { data: { _id: string } }) => {
+        addToCart({
+          serviceId: data?.data?._id,
+          type: "service",
+        });
+        toast.success("Added to cart successfully");
+      },
+      onError: () => {
+        toast.error("Failed to create service");
+      },
+    });
   };
 
   const calculateTotal = () => {
@@ -142,13 +168,13 @@ const ProductConfigurator = () => {
               opacity="0.9"
             />
             <text x="160" y="85" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE A
+              {dimensions.A ? `SIZE A ${dimensions.A}` : "SIZE A"}
             </text>
             <text x="60" y="200" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE L
+              {dimensions.L ? `SIZE L ${dimensions.L}` : "SIZE L"}
             </text>
             <text x="140" y="160" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE B
+              {dimensions.B ? `SIZE B ${dimensions.B}` : "SIZE B"}
             </text>
             <path
               d="M 115,110 Q 125,120 135,110"
@@ -157,7 +183,7 @@ const ProductConfigurator = () => {
               fill="none"
             />
             <text x="110" y="105" fontSize="12" fill="#e53e3e" fontWeight="600">
-              α
+              {dimensions.degres1 ? `α ${dimensions.degres1}°` : "α"}
             </text>
           </g>
         </svg>
@@ -179,16 +205,16 @@ const ProductConfigurator = () => {
               opacity="0.9"
             />
             <text x="160" y="85" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE A
+              {dimensions.A ? `SIZE A ${dimensions.A}` : "SIZE A"}
             </text>
             <text x="50" y="200" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE Z
+              {dimensions.Z ? `SIZE Z ${dimensions.Z}` : "SIZE Z"}
             </text>
             <text x="190" y="195" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE B
+              {dimensions.B ? `SIZE B ${dimensions.B}` : "SIZE B"}
             </text>
             <text x="160" y="310" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE C
+              {dimensions.C ? `SIZE C ${dimensions.C}` : "SIZE C"}
             </text>
           </g>
         </svg>
@@ -210,16 +236,16 @@ const ProductConfigurator = () => {
               opacity="0.9"
             />
             <text x="60" y="200" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE U
+              {dimensions.U ? `SIZE U ${dimensions.U}` : "SIZE U"}
             </text>
             <text x="105" y="125" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE A
+              {dimensions.A ? `SIZE A ${dimensions.A}` : "SIZE A"}
             </text>
             <text x="170" y="240" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE B
+              {dimensions.B ? `SIZE B ${dimensions.B}` : "SIZE B"}
             </text>
             <text x="255" y="125" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE C
+              {dimensions.C ? `SIZE C ${dimensions.C}` : "SIZE C"}
             </text>
           </g>
         </svg>
@@ -241,16 +267,16 @@ const ProductConfigurator = () => {
               opacity="0.9"
             />
             <text x="160" y="85" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE A
+              {dimensions.A ? `SIZE A ${dimensions.A}` : "SIZE A"}
             </text>
             <text x="50" y="200" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE O
+              {dimensions.O ? `SIZE O ${dimensions.O}` : "SIZE O"}
             </text>
             <text x="190" y="195" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE B
+              {dimensions.B ? `SIZE B ${dimensions.B}` : "SIZE B"}
             </text>
             <text x="160" y="310" fontSize="14" fill="#2d3748" fontWeight="600">
-              SIZE C
+              {dimensions.C ? `SIZE C ${dimensions.C}` : "SIZE C"}
             </text>
           </g>
         </svg>
@@ -298,7 +324,7 @@ const ProductConfigurator = () => {
                     </div>
                   </div>
                 )}
-                <div className="relative w-full h-[520px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                <div className="relative w-full h-[600px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
                   <svg className="absolute inset-0 w-full h-full">
                     <defs>
                       <pattern
@@ -317,7 +343,7 @@ const ProductConfigurator = () => {
                     </defs>
                     <rect width="100%" height="100%" fill="url(#grid)" />
                   </svg>
-                  <div className="relative z-10 transition-all duration-500">
+                  <div className="relative z-10 transition-all duration-500 w-250">
                     {renderShapeSVG()}
                   </div>
                 </div>
@@ -851,18 +877,18 @@ const ProductConfigurator = () => {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
                         <button
                           onClick={handleAddToCart}
-                          className="group relative py-4 px-6 border-2 border-rose-600 text-rose-600 rounded-xl hover:bg-rose-50 active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2"
+                          className="group relative py-4 px-6 border-2 border-rose-600 text-rose-600 rounded-xl hover:bg-rose-50 active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <ShoppingCart className="w-5 h-5" />
                           Add to Cart
                         </button>
-                        <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2">
+                        {/* <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2">
                           <Zap className="w-5 h-5" />
                           Order Now
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   </>

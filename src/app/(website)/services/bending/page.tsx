@@ -1,4 +1,4 @@
-import BendingPage from "@/components/website/PageSections/BendingPage/BendingPage";
+import BendingPage from "@/components/website/PageSections/ServicePage/BendingPage";
 import React from "react";
 
 const page = () => {
