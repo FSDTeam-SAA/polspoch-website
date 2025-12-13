@@ -21,44 +21,37 @@ const Rebar = () => {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [quantity, setQuantity] = useState(1);
-const { data: session } = useSession();
-const token = session?.accessToken || "";
+  const { data: session } = useSession();
+  const token = session?.accessToken || "";
 
-const orderMutation = useMutation({
-  mutationFn: ({
-    data,
-    token,
-  }: {
-    data: { serviceId: string; type: string };
-    token: string;
-  }) => addToCart(data, token),
-  onSuccess:(data)=>{
-    toast.success(`${data?.message}`|| 'Succssesfuly Added')
-  }
-});
-
-const serviceMutation = useMutation({
-  mutationFn: ({
-    data,
-    token,
-  }: {
-    data: ServicePayload;
-    token: string;
-  }) => createService(data, token),
-
-  onSuccess: (res) => {
-    console.log('respons data for ',res)
-    orderMutation.mutate({
-      data: {
-        serviceId: res?.data?._id,
-        type: "service",
-      },
+  const orderMutation = useMutation({
+    mutationFn: ({
+      data,
       token,
-    });
-  },
-});
+    }: {
+      data: { serviceId: string; type: string };
+      token: string;
+    }) => addToCart(data, token),
+    onSuccess: (data) => {
+      toast.success(`${data?.message}` || "Succssesfuly Added");
+    },
+  });
 
+  const serviceMutation = useMutation({
+    mutationFn: ({ data, token }: { data: ServicePayload; token: string }) =>
+      createService(data, token),
 
+    onSuccess: (res) => {
+      console.log("respons data for ", res);
+      orderMutation.mutate({
+        data: {
+          serviceId: res?.data?._id,
+          type: "service",
+        },
+        token,
+      });
+    },
+  });
 
   // Product configurations
   const productConfig = {
@@ -500,7 +493,7 @@ const serviceMutation = useMutation({
   };
 
   const currentMaterial = productConfig.materials.find(
-    (m) => m.id === material
+    (m) => m.id === material,
   );
 
   return (
@@ -740,7 +733,7 @@ const serviceMutation = useMutation({
                         value={quantity}
                         onChange={(e) =>
                           setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1)
+                            Math.max(1, parseInt(e.target.value) || 1),
                           )
                         }
                         className="w-20 text-center p-3 border-2 border-slate-200 rounded-xl font-bold text-lg text-slate-900 focus:border-rose-600 focus:ring-4 focus:ring-rose-100 transition-all"

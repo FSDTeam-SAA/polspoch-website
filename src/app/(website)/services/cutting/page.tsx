@@ -1,5 +1,5 @@
-import CuttingConnector from '@/components/website/PageSections/ServicePage/cutting/CuttingConnector'
 import React from 'react'
+import CuttingConnector from '@/components/website/PageSections/ServicePage/cutting/CuttingConnector'
 
 const page = () => {
   return (
@@ -9,4 +9,4 @@ const page = () => {
   )
 }
 
-export default page
+export default page;
