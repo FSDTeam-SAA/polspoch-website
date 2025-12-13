@@ -1,15 +1,13 @@
-import React from 'react'
+import React from "react";
 
-import Rebar from '@/components/website/PageSections/ServicePage/Rebar';
-
+import Rebar from "@/components/website/PageSections/ServicePage/Rebar";
 
 const page = () => {
   return (
     <div>
-           <Rebar />
-      
+      <Rebar />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

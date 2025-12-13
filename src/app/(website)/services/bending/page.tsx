@@ -1,11 +1,12 @@
-import React from 'react'
+import BendingPage from "@/components/website/PageSections/ServicePage/BendingPage";
+import React from "react";
 
 const page = () => {
   return (
     <div>
-        bending page
+      <BendingPage />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

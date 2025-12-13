@@ -1,8 +1,8 @@
-type ServiceSizes = {
-  A: number;
-  B: number;
-  C: number;
-  D: number;
+export type ServiceSizes = {
+  A?: number;
+  B?: number;
+  C?: number;
+  D?: number;
 };
 
 export type ServicePayload = {
