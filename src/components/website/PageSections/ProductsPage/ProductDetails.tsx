@@ -1,3 +1,4 @@
+//components/website/PageSections/ProductsPage/ProductDetails.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -13,12 +14,15 @@ import {
   Ruler,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAddToCart } from "@/lib/hooks/useAddToCart";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 // Shipping cost calculation based on weight and length
 function calculateShippingCost(
   weightKg: number,
   lengthMm: number,
-  isCourier: boolean,
+  isCourier: boolean
 ): number {
   if (isCourier) {
     // COURIER SHIPPING (Green Sizes)
@@ -112,7 +116,7 @@ export default function ProductDetailsCard() {
 
   // Progressive filtering state
   const [selectedThickness, setSelectedThickness] = useState<number | null>(
-    null,
+    null
   );
   const [selectedSize1, setSelectedSize1] = useState<number | null>(null);
   const [selectedSize2, setSelectedSize2] = useState<number | null>(null);
@@ -122,13 +126,20 @@ export default function ProductDetailsCard() {
 
   // Length and shipping
   const [selectedUnitSizeMm, setSelectedUnitSizeMm] = useState<number | null>(
-    null,
+    null
   );
   const [rangeLengthMeters, setRangeLengthMeters] = useState<number>(1);
   const [quantity, setQuantity] = useState<number>(1);
 
   const [selectedThumbnail, setSelectedThumbnail] = useState<number>(0);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
+
+  const { data: session } = useSession();
+  const token = session?.accessToken as string;
+
+  const { mutate: addToCartMutate, isPending } = useAddToCart({
+    token,
+  });
 
   // Initialize range value when product loads
   React.useEffect(() => {
@@ -220,7 +231,7 @@ export default function ProductDetailsCard() {
           f.thickness === selectedThickness &&
           f.size1 === selectedSize1 &&
           f.size2 === selectedSize2 &&
-          f.finishQuality === selectedFinishQuality,
+          f.finishQuality === selectedFinishQuality
       ) || null
     );
   }, [
@@ -374,22 +385,48 @@ export default function ProductDetailsCard() {
     (selectedUnitSizeMm !== null || rangeLengthMeters > 0) &&
     quantity > 0;
 
+  // const handleAddToCart = () => {
+  //   if (!canCheckout) return;
+  //   // Implement add-to-cart logic with your cart API
+  //   console.log("Add to cart:", {
+  //     productId: product?._id,
+  //     reference: selectedFeature?.reference,
+  //     thickness: selectedThickness,
+  //     size1: selectedSize1,
+  //     size2: selectedSize2,
+  //     finish: selectedFinishQuality,
+  //     lengthMm: selectedUnitSizeMm ?? rangeLengthMeters * 1000,
+  //     quantity,
+  //     price: totalPrice,
+  //     shippingMethod,
+  //   });
+  //   alert("Added to cart (placeholder)");
+  // };
+
   const handleAddToCart = () => {
-    if (!canCheckout) return;
-    // Implement add-to-cart logic with your cart API
-    console.log("Add to cart:", {
-      productId: product?._id,
-      reference: selectedFeature?.reference,
+    if (!canCheckout || !selectedFeature || !product) return;
+
+    if (!token) {
+      alert("Please login to add items to cart");
+      return;
+    }
+
+    const payload = {
+      productId: product._id,
+      type: "product",
+      quantity,
+      reference: selectedFeature.reference,
       thickness: selectedThickness,
       size1: selectedSize1,
       size2: selectedSize2,
       finish: selectedFinishQuality,
       lengthMm: selectedUnitSizeMm ?? rangeLengthMeters * 1000,
-      quantity,
       price: totalPrice,
       shippingMethod,
-    });
-    alert("Added to cart (placeholder)");
+    };
+    console.log("DEBUG: AddToCart Payload:", payload);
+
+    addToCartMutate(payload);
   };
 
   if (isLoading) {

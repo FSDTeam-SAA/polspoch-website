@@ -1,16 +1,11 @@
 // src/lib/hooks/useAddToCart.ts
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addToCart, deleteCart, getCart } from "../api";
+import { addToCart, deleteCart, getCart, AddToCartPayload } from "../api";
 import { toast } from "sonner";
 
 interface UseAddToCartOptions {
   token: string;
-}
-
-interface AddToCartPayload {
-  serviceId: string;
-  type: string;
 }
 
 export const useAddToCart = ({ token }: UseAddToCartOptions) => {

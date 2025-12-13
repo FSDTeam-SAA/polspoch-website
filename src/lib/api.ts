@@ -167,8 +167,25 @@ export async function createService(data: ServicePayload, token: string) {
 }
 
 // add to cart
+export interface AddToCartPayload {
+  productId?: string;
+  serviceId?: string;
+  type: string;
+  quantity: number;
+  reference?: string;
+  thickness?: number | null;
+  size1?: number | null;
+  size2?: number | null;
+  finish?: string | null;
+  lengthMm?: number;
+  price?: number;
+  shippingMethod?: string;
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; // Allow other properties if necessary
+}
+
 export async function addToCart(
-  data: { serviceId: string; type: string },
+  data: AddToCartPayload,
   token: string,
 ) {
   try {
