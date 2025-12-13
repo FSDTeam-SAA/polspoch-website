@@ -152,12 +152,33 @@ export async function getProductById(productId: string) {
   }
 }
 
-export async function createService(data: ServicePayload) {
+export async function createService(data: ServicePayload, token: string) {
   try {
-    const res = await api.post(`/service/create-service`, data);
-    return res?.data;
+    const res = await api.post("/service/create-service", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
   } catch (err) {
-    // console.error("Error fetching product by ID:", err);
+    throw err;
+  }
+}
+
+export async function addToCart(
+  data: { serviceId: string; type: string },
+  token: string,
+) {
+  try {
+    const res = await api.post("/cart/add-cart", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
     throw err;
   }
 }
