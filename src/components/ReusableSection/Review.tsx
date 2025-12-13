@@ -7,63 +7,62 @@ import Image from "next/image";
 
 export default function Review() {
   const testimonials: {
-  name: string;
-  location?: string;
-  image?: string;
-  text: string;
-  rating: number;
-}[] = [
-  {
-    image: "/images/review1.jpg",
-    name: "Michael R.",
-    location: "Phoenix, AZ",
-    text: `“We’ve been sourcing steel beams from HierroMarket for over a year now, and the consistency has been outstanding. The team is quick to respond, transparent about pricing, and always delivers on time. It’s rare to find a supplier this reliable.”`,
-    rating: 5,
-  },
-  {
-    image: "/images/review1.jpg",
-    name: "Sarah Thompson",
-    location: "Los Angeles, CA",
-    text: `“I reached out with a last-minute order and was honestly expecting delays, but HierroMarket exceeded our expectations. Not only did they fulfill the request, they helped us pick the right grade of steel for our project. Amazing customer service!”`,
-    rating: 5,
-  },
-  {
-    image: "/images/review1.jpg",
-    name: "James P.",
-    location: "San Diego, CA",
-    text: `“What really stands out is their level of professionalism. The products are always high-quality, and the team is extremely knowledgeable. They explain everything clearly—even for someone like me who isn’t a metal expert.”`,
-    rating: 5,
-  },
-  {
-    image: "/images/review1.jpg",
-    name: "Vanessa G.",
-    location: "San Francisco, CA",
-    text: `“We switched suppliers after ongoing issues elsewhere, and I’m so glad we did. HierroMarket made the transition easy, sent updates throughout delivery, and ensured every detail matched our order. Truly a company that cares about its customers.”`,
-    rating: 5,
-  },
-  {
-    image: "/images/review1.jpg",
-    name: "Luis Martinez",
-    location: "Austin, TX",
-    text: `“I run a small fabrication shop, and finding trustworthy suppliers is tough. HierroMarket has been a game-changer for us—fair prices, excellent quality steel, and no hidden surprises. Highly recommended.”`,
-    rating: 5,
-  },
-  {
-    image: "/images/review1.jpg",
-    name: "Rebecca L.",
-    location: "Seattle, WA",
-    text: `“From inquiry to delivery, everything was smooth and efficient. The support team answered all my questions and helped ensure the materials matched our engineering requirements. I’ll definitely be ordering again.”`,
-    rating: 5,
-  },
-  {
-    image: "/images/review1.jpg",
-    name: "Daniel Kim",
-    location: "Denver, CO",
-    text: `“Top-notch service. The order arrived faster than expected, packaging was secure, and the steel quality was excellent. It’s refreshing to work with a company that consistently goes above and beyond.”`,
-    rating: 5,
-  },
-];
-
+    name: string;
+    location?: string;
+    image?: string;
+    text: string;
+    rating: number;
+  }[] = [
+    {
+      image: "/images/review1.jpg",
+      name: "Michael R.",
+      location: "Phoenix, AZ",
+      text: `“We’ve been sourcing steel beams from HierroMarket for over a year now, and the consistency has been outstanding. The team is quick to respond, transparent about pricing, and always delivers on time. It’s rare to find a supplier this reliable.”`,
+      rating: 5,
+    },
+    {
+      image: "/images/review1.jpg",
+      name: "Sarah Thompson",
+      location: "Los Angeles, CA",
+      text: `“I reached out with a last-minute order and was honestly expecting delays, but HierroMarket exceeded our expectations. Not only did they fulfill the request, they helped us pick the right grade of steel for our project. Amazing customer service!”`,
+      rating: 5,
+    },
+    {
+      image: "/images/review1.jpg",
+      name: "James P.",
+      location: "San Diego, CA",
+      text: `“What really stands out is their level of professionalism. The products are always high-quality, and the team is extremely knowledgeable. They explain everything clearly—even for someone like me who isn’t a metal expert.”`,
+      rating: 5,
+    },
+    {
+      image: "/images/review1.jpg",
+      name: "Vanessa G.",
+      location: "San Francisco, CA",
+      text: `“We switched suppliers after ongoing issues elsewhere, and I’m so glad we did. HierroMarket made the transition easy, sent updates throughout delivery, and ensured every detail matched our order. Truly a company that cares about its customers.”`,
+      rating: 5,
+    },
+    {
+      image: "/images/review1.jpg",
+      name: "Luis Martinez",
+      location: "Austin, TX",
+      text: `“I run a small fabrication shop, and finding trustworthy suppliers is tough. HierroMarket has been a game-changer for us—fair prices, excellent quality steel, and no hidden surprises. Highly recommended.”`,
+      rating: 5,
+    },
+    {
+      image: "/images/review1.jpg",
+      name: "Rebecca L.",
+      location: "Seattle, WA",
+      text: `“From inquiry to delivery, everything was smooth and efficient. The support team answered all my questions and helped ensure the materials matched our engineering requirements. I’ll definitely be ordering again.”`,
+      rating: 5,
+    },
+    {
+      image: "/images/review1.jpg",
+      name: "Daniel Kim",
+      location: "Denver, CO",
+      text: `“Top-notch service. The order arrived faster than expected, packaging was secure, and the steel quality was excellent. It’s refreshing to work with a company that consistently goes above and beyond.”`,
+      rating: 5,
+    },
+  ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(3);
@@ -95,7 +94,6 @@ export default function Review() {
   return (
     // <section className="relative w-full py-16 px-4 text-center">
     <section className="relative w-full py-16 px-4 md:px-8 text-center">
-
       {/* Background image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -136,7 +134,7 @@ export default function Review() {
                   width: `calc((100% - ${(itemsPerView - 1) * 24}px) / ${itemsPerView})`,
                 }}
               >
-                <CardContent className="p-6 text-left flex flex-col h-full justify-start">
+                <CardContent className="text-left flex flex-col h-full justify-start">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center rounded-full gap-3">
                       {t.image ? (
