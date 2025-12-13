@@ -166,12 +166,43 @@ export async function createService(data: ServicePayload, token: string) {
   }
 }
 
+// add to cart
 export async function addToCart(
   data: { serviceId: string; type: string },
   token: string,
 ) {
   try {
     const res = await api.post("/cart/add-cart", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// get cart
+export async function getCart(token: string) {
+  try {
+    const res = await api.get("/cart/my-cart", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// delete cart
+export async function deleteCart(token: string, id: string) {
+  try {
+    const res = await api.delete(`/cart/delete-cart/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
