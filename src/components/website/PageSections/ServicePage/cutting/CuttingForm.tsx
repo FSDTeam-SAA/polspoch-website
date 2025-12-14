@@ -1,5 +1,4 @@
 import { ShoppingCart, Zap } from "lucide-react";
-import React from "react";
 
 interface CuttingFormProps {
   productConfig: {
@@ -9,7 +8,7 @@ interface CuttingFormProps {
   thickness: string;
   setThickness: (value: string) => void;
   setMaterial: (value: string) => void;
-  material?: string; // Should be passed from parent if we want to highlight selected
+  material?: string;
   visibleDimensions?: string[];
   dimensionRanges?: number[][];
   dimensions?: { [key: string]: number };
@@ -26,7 +25,7 @@ const CuttingForm = ({
   productConfig,
   setThickness,
   setMaterial,
-  material, // Need this prop to highlight selected material
+  material,
   visibleDimensions = [],
   dimensionRanges = [],
   dimensions = {},
@@ -56,9 +55,6 @@ const CuttingForm = ({
                   key={t.id}
                   onClick={() => setMaterial(t.id)}
                   className={`py-3 px-2 rounded-lg border-2 font-semibold transition-all duration-300 ${
-                    // Use passed material prop or check if parent passes it, for now assuming it's available or using some internal state if strictly needed but parent holds it
-                    // Note: Connector has state 'material', define it in interface and pass it
-                    // If prop not passed, logic fails. Assuming proper prop passed now.
                     material === t.id
                       ? "border-rose-600 bg-gradient-to-br from-rose-600 to-orange-600 text-white shadow-lg scale-105"
                       : "border-slate-200 bg-white text-slate-700 hover:border-rose-300 hover:shadow-md"

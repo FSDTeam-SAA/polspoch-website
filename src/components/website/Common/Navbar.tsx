@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useUserProfile } from "@/lib/hooks/useSserProfile";
 import {
   AlertDialog,
@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { usePathname } from "next/navigation";
 import SearchModal from "./SearchModal";
+import { useGetCart } from "@/lib/hooks/useAddToCart";
+import { CartItem } from "@/lib/types/cart";
 
 // 🟢 Get Initials helper
 function getInitials(firstName?: string, lastName?: string) {
@@ -40,11 +42,21 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // 🟢 Get session
+  const { data: session } = useSession();
+  const token = session?.accessToken || "";
+
   const { data: user, isLoading: userLoading } = useUserProfile();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileUserOpen, setMobileUserOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+
+  const { data: cart } = useGetCart({ token }) as {
+    data: { data: CartItem[] } | undefined;
+  };
+
+  console.log(cart?.data?.length);
 
   const servicesRef = useRef<HTMLDivElement>(null);
 
@@ -198,8 +210,14 @@ export default function Navbar() {
               onClose={() => setSearchOpen(false)}
             />
 
-            <Link href="/cart">
-              <ShoppingCart />
+            <Link href="/cart" className="relative flex items-center">
+              <ShoppingCart className="w-6 h-6" />
+
+              {(cart?.data?.length ?? 0) > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {cart?.data?.length}
+                </span>
+              )}
             </Link>
 
             {/* ================================
