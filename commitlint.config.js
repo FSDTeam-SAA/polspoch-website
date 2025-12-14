@@ -2,6 +2,6 @@
 module.exports = {
   extends: ["@commitlint/config-conventional"],
   rules: {
-    "header-max-length": [2, "always", 600], // 100 → 500
+    "header-max-length": [2, "always", 600],
   },
 };

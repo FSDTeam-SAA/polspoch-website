@@ -2,26 +2,37 @@
 import { Trash2 } from "lucide-react";
 import { useDeleteCart, useGetCart } from "@/lib/hooks/useAddToCart";
 import { useSession } from "next-auth/react";
+import {
+  useCheckoutCart,
+  useCheckoutCartInModal,
+} from "@/lib/hooks/checkoutCart";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-interface CartItem {
-  _id: string;
-  serviceId: {
-    _id: string;
-    serviceType: string;
-    templateName: string;
-    units: number;
-    price: number;
-    diameter: number;
-    sizes: Record<string, number>;
-    material?: string;
-    degrees?: Record<string, number>;
-  };
-  quantity: number;
-}
+import { CartItem } from "@/lib/types/cart";
 
 const CartProducts = () => {
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const router = useRouter();
   const { data: session } = useSession();
   const token = session?.accessToken || "";
+
+  // 1. Create Order Mutation
+  const { mutate: checkoutCart } = useCheckoutCart({ token });
+
+  // 2. Payment Modal Mutation
+  const { mutate: checkoutInModal } = useCheckoutCartInModal({ token });
 
   const { data: cart } = useGetCart({ token }) as {
     data: { data: CartItem[] } | undefined;
@@ -41,6 +52,66 @@ const CartProducts = () => {
   );
   const shippingFee = 0; // Fixed for now or 0
   const total = subtotal + shippingFee;
+
+  // Handle Checkout (Create Order)
+  const handleCheckout = () => {
+    const payload = {
+      type: "cart",
+      cartItems: cartItems.map((item) => ({
+        cartId: item._id,
+      })),
+      totalAmount: total,
+    };
+
+    checkoutCart(payload, {
+      onSuccess: (data: { data?: { _id: string }; _id?: string }) => {
+        // Assuming the response data contains the order ID in `data.data._id` or similar
+        // Adjust this based on actual API response structure
+        // If data itself is the order object:
+        const createdOrderId = data?.data?._id || data?._id;
+
+        if (createdOrderId) {
+          setOrderId(createdOrderId);
+          console.log("Order created, ID:", createdOrderId);
+        } else {
+          console.error("Order ID not found in response:", data);
+        }
+      },
+      onError: (error: Error) => {
+        console.error("Failed to create order:", error);
+      },
+    });
+  };
+
+  // Handle Proceed to Checkout (Payment)
+  const handleProceedToCheckout = () => {
+    if (!orderId) {
+      console.error("No Order ID found. Cannot proceed to payment.");
+      return;
+    }
+
+    console.log("Proceeding to payment with Order ID:", orderId);
+
+    checkoutInModal(
+      {
+        orderId: orderId,
+        totalAmount: total,
+      },
+      {
+        onSuccess: (data: { data?: { url?: string } }) => {
+          console.log("Payment initiated successfully", data);
+          if (data?.data?.url) {
+            window.location.href = data.data.url;
+          } else {
+            console.error("No payment URL found");
+          }
+        },
+        onError: (error: Error) => {
+          console.error("Payment initiation failed", error);
+        },
+      },
+    );
+  };
 
   return (
     <div className="container mx-auto py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -178,10 +249,59 @@ const CartProducts = () => {
           <span className="text-red-600">€ {total.toFixed(2)}</span>
         </div>
 
-        {/* Button */}
-        <button className="w-full bg-red-700 text-white py-3 rounded-lg font-semibold hover:bg-red-800 transition cursor-pointer">
-          Proceed to Checkout
-        </button>
+        {/* Button with AlertDialog */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button
+              onClick={handleCheckout}
+              className="w-full rounded-xl bg-gradient-to-r from-red-600 to-red-700 
+                 py-3.5 text-base font-semibold text-white 
+                 shadow-lg transition-all duration-200
+                 hover:from-red-700 hover:to-red-800 hover:shadow-xl
+                 active:scale-[0.98] cursor-pointer"
+            >
+              Order Now
+            </button>
+          </AlertDialogTrigger>
+
+          <AlertDialogContent className="max-w-md rounded-2xl p-6">
+            <AlertDialogHeader className="space-y-3 text-center">
+              {/* Optional icon */}
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <span className="text-xl">🛒</span>
+              </div>
+
+              <AlertDialogTitle className="text-xl font-bold text-center">
+                Confirm Your Order
+              </AlertDialogTitle>
+
+              <AlertDialogDescription className="text-sm text-muted-foreground text-center w-3/4 mx-auto">
+                Please confirm that you want to place this order. Once
+                confirmed, you’ll be redirected to the payment page.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+
+            <AlertDialogFooter className="mt-4 flex gap-3">
+              <AlertDialogCancel
+                className="flex-1 rounded-xl border border-gray-300 
+                   text-gray-700 transition
+                   hover:bg-gray-100 cursor-pointer"
+              >
+                Cancel
+              </AlertDialogCancel>
+
+              <AlertDialogAction
+                onClick={handleProceedToCheckout}
+                className="flex-1 rounded-xl bg-red-700 
+                   text-white font-semibold transition
+                   hover:bg-red-800 active:scale-[0.98]
+                   cursor-pointer"
+              >
+                Proceed to Payment
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

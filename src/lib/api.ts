@@ -213,3 +213,50 @@ export async function deleteCart(token: string, id: string) {
     throw err;
   }
 }
+
+// order create
+export async function checkoutCart(
+  payload: {
+    type: string;
+    cartItems: { cartId: string }[];
+    totalAmount: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+  },
+  token: string,
+) {
+  try {
+    const res = await api.post("/order/create-order", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// checkout cart in modal
+export async function checkoutCartInModal(
+  payload: {
+    orderId: string;
+    totalAmount: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+  },
+  token: string,
+) {
+  try {
+    const res = await api.post("/payment/pay", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}

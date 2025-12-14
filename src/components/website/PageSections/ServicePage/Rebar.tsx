@@ -130,19 +130,51 @@ const Rebar = () => {
   const getVisibleDimensions = (): [string[], number[][]] => {
     switch (selectedShape) {
       case "CUT-TO-SIZE-REBAR":
-        return [["sizeA"],[[30,2490]]];
+        return [["sizeA"], [[30, 2490]]];
       case "L-SHAPE":
-        return [["sizeA", "sizeB"],[[50,2240],[50,250]]];
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [50, 2240],
+            [50, 250],
+          ],
+        ];
       case "U-SHAPE":
-        return [["sizeA", "sizeB", "sizeC"],[[50,1190],[80,250],[50,1190]]];
+        return [
+          ["sizeA", "sizeB", "sizeC"],
+          [
+            [50, 1190],
+            [80, 250],
+            [50, 1190],
+          ],
+        ];
       case "L-ROUND-SHAPE":
-        return [["sizeA"],[[30,250]]];
+        return [["sizeA"], [[30, 250]]];
       case "OMEGA-SHAPE":
-        return [["sizeA", "sizeB", "sizeC"],[[30,250],[80,160],[50,250]]];
+        return [
+          ["sizeA", "sizeB", "sizeC"],
+          [
+            [30, 250],
+            [80, 160],
+            [50, 250],
+          ],
+        ];
       case "STIRUPS":
-        return [["sizeA", "sizeB"],[[30,250],[80,160]]];
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [30, 250],
+            [80, 160],
+          ],
+        ];
       default:
-        return [["sizeA", "sizeB", "sizeC", "sizeD"],[[50,2240],[50,250]]];
+        return [
+          ["sizeA", "sizeB", "sizeC", "sizeD"],
+          [
+            [50, 2240],
+            [50, 250],
+          ],
+        ];
     }
   };
 
@@ -154,7 +186,7 @@ const Rebar = () => {
 
     const sizesum = visibleKeys.reduce(
       (sum, key) => sum + (dimensions[key] || 0),
-      0
+      0,
     );
 
     const unitPrice = basePrice / quantity + ((sizesum - 30) / 10) * 0.01;
@@ -167,10 +199,10 @@ const Rebar = () => {
 
     // Get current shape configuration
     const [dimensionKeys, dimensionRanges] = getVisibleDimensions();
-    
+
     // Find the index of the current key to get its specific range
     const rangeIndex = dimensionKeys.indexOf(key);
-    
+
     // Default min/max if not found (fallback)
     let min = 10;
     let max = 3000;
@@ -213,7 +245,7 @@ const Rebar = () => {
     };
     serviceMutation.mutate({ data, token });
   };
-    
+
   // SVG Shape Renderer with enhanced styling
   const renderShape = () => {
     const color = getMaterialColor();
@@ -225,7 +257,7 @@ const Rebar = () => {
     const refB = 150;
     const refC = 100;
     const refD = 100;
-    
+
     // Use targetMaxPixels to keep scale consistent if we were using dynamic
     const scale = 1; // 1:1 for the reference values
 
@@ -233,8 +265,8 @@ const Rebar = () => {
     const b = refB;
     const c = refC;
     const d = refD;
-    const t = parseFloat(thickness) * 2; // Thickness still scales visually to show relative sturdiness? Or keep fixed too? 
-    // Keeping thickness dynamic might be nice, or valid to keep fixed. 
+    const t = parseFloat(thickness) * 2; // Thickness still scales visually to show relative sturdiness? Or keep fixed too?
+    // Keeping thickness dynamic might be nice, or valid to keep fixed.
     // User asked "max or shap create fixed size".
     // I will use the calculated 't' but maybe clamp it so it doesn't look weird compared to fixed dimensions.
 
@@ -258,7 +290,14 @@ const Rebar = () => {
             strokeWidth="3"
             className="overflow-hidden"
           />
-          <text x="200" y="100" fontSize="14" fill="#2d3748" fontWeight="600" textAnchor="middle">
+          <text
+            x="200"
+            y="100"
+            fontSize="14"
+            fill="#2d3748"
+            fontWeight="600"
+            textAnchor="middle"
+          >
             A: {dimensions.sizeA}mm
           </text>
         </g>
@@ -372,12 +411,18 @@ const Rebar = () => {
             strokeLinejoin="round"
           />
 
-          <text x={100 + a / 2} y="85" fontSize="14" fill="#2d3748" textAnchor="middle">
+          <text
+            x={100 + a / 2}
+            y="85"
+            fontSize="14"
+            fill="#2d3748"
+            textAnchor="middle"
+          >
             A: {dimensions.sizeA}mm
           </text>
           <text x="50" y={100 + b / 2} fontSize="14" fill="#2d3748">
             B: {dimensions.sizeB}mm // Assuming B is the vertical
-          </text> 
+          </text>
           {/* Note: In original code L-ROUND-SHAPE had only sizeA in return [["sizeA"],...] but render expected B. 
               The new config has only sizeA? 
               Wait, getVisibleDimensions for L-ROUND-SHAPE returns [["sizeA"], ...]. 
@@ -399,9 +444,9 @@ const Rebar = () => {
     // 5️⃣ OMEGA SHAPE (Ω)
     // ------------------------------------------------------------
     if (selectedShape === "OMEGA-SHAPE") {
-      const foot = 20; 
+      const foot = 20;
       // Using fixed dimensions refA, refB, refC
-      // But OMEGA usually has A=top, B=height, C=feet? 
+      // But OMEGA usually has A=top, B=height, C=feet?
       // Current inputs: A, B, C.
       return (
         <g>
@@ -427,10 +472,22 @@ const Rebar = () => {
             strokeLinejoin="round"
           />
 
-          <text x={100 + a / 2} y="85" fontSize="14" fill="#2d3748" textAnchor="middle">
+          <text
+            x={100 + a / 2}
+            y="85"
+            fontSize="14"
+            fill="#2d3748"
+            textAnchor="middle"
+          >
             A: {dimensions.sizeA}mm
           </text>
-          <text x="65" y={100 + b / 2} fontSize="14" fill="#2d3748" textAnchor="end">
+          <text
+            x="65"
+            y={100 + b / 2}
+            fontSize="14"
+            fill="#2d3748"
+            textAnchor="end"
+          >
             B: {dimensions.sizeB}mm
           </text>
           <text
@@ -450,7 +507,7 @@ const Rebar = () => {
     // 6️⃣ QUADRILATERAL 3D (Rectangle box)
     // ------------------------------------------------------------
     if (selectedShape === "STIRUPS") {
-        // STIRUPS usually rect.
+      // STIRUPS usually rect.
       return (
         <g>
           <rect
@@ -463,8 +520,13 @@ const Rebar = () => {
             strokeWidth="3"
           />
 
-          <text x={100 + a / 2} y={100 + b / 2} fontSize="16" textAnchor="middle">
-             {dimensions.sizeA} x {dimensions.sizeB}
+          <text
+            x={100 + a / 2}
+            y={100 + b / 2}
+            fontSize="16"
+            textAnchor="middle"
+          >
+            {dimensions.sizeA} x {dimensions.sizeB}
           </text>
         </g>
       );
