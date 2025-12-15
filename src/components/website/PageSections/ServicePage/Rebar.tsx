@@ -187,7 +187,7 @@ const Rebar = () => {
 
     const sizesum = visibleKeys.reduce(
       (sum, key) => sum + (dimensions[key] || 0),
-      0
+      0,
     );
 
     const unitPrice = basePrice / quantity + ((sizesum - 30) / 10) * 0.01;
@@ -812,7 +812,7 @@ const Rebar = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <button
                       onClick={servicehandel}
                       className="group relative py-4 px-6 border-2 border-rose-600 text-rose-600 rounded-xl hover:bg-rose-50 active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden"
@@ -821,11 +821,11 @@ const Rebar = () => {
                       <ShoppingCart className="w-5 h-5" />
                       Add to Cart
                     </button>
-                    <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden">
+                    {/* <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden">
                       <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
                       <Zap className="w-5 h-5" />
                       Order Now
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>

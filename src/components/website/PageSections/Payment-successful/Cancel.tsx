@@ -28,16 +28,16 @@ export default function Cancel() {
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Link
-              href="/cart"
-              className="inline-block px-6 py-3 text-white font-medium rounded-lg bg-[#8B1E12] hover:bg-[#6e170e] transition"
-            >
-              Return to Cart
-            </Link>
-            <Link
               href="/"
               className="inline-block px-6 py-3 text-foreground font-medium rounded-lg border border-border hover:bg-muted transition"
             >
               Go to Home
+            </Link>
+            <Link
+              href="/cart"
+              className="inline-block px-6 py-3 text-white font-medium rounded-lg bg-[#8B1E12] hover:bg-[#6e170e] transition"
+            >
+              Return to Cart
             </Link>
           </div>
         </CardContent>

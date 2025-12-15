@@ -285,7 +285,7 @@ const CuttingConnector = () => {
   };
 
   const currentMaterial = productConfig.materials.find(
-    (m) => m.id === material
+    (m) => m.id === material,
   );
 
   return (

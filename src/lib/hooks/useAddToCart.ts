@@ -8,6 +8,8 @@ interface UseAddToCartOptions {
   token: string;
 }
 
+
+// add to cart
 export const useAddToCart = ({ token }: UseAddToCartOptions) => {
   return useMutation({
     mutationFn: (data: AddToCartPayload) => addToCart(data, token),
@@ -30,7 +32,6 @@ export const useGetCart = ({ token }: UseAddToCartOptions) => {
   });
 };
 
-// delete cart
 // delete cart
 export const useDeleteCart = ({ token }: UseAddToCartOptions) => {
   const queryClient = useQueryClient();

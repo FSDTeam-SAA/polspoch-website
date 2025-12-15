@@ -170,7 +170,7 @@ const ProductConfigurator = () => {
         area *
         thicknessFactor *
         (baseMaterial?.priceMultiplier || 1) *
-        quantity
+        quantity,
     );
   };
 
@@ -365,7 +365,7 @@ const ProductConfigurator = () => {
   };
 
   const currentMaterial = productConfig.materials.find(
-    (m) => m.id === material
+    (m) => m.id === material,
   );
 
   return (
@@ -624,7 +624,7 @@ const ProductConfigurator = () => {
                         value={quantity}
                         onChange={(e) =>
                           setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1)
+                            Math.max(1, parseInt(e.target.value) || 1),
                           )
                         }
                         className="w-20 text-center p-3 border-2 border-slate-200 rounded-xl font-bold text-lg text-slate-900 focus:border-rose-600 focus:ring-4 focus:ring-rose-100 transition-all"
@@ -640,17 +640,17 @@ const ProductConfigurator = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <button className="group relative py-4 px-6 border-2 border-rose-600 text-rose-600 rounded-xl hover:bg-rose-50 active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity"></div>
                       <ShoppingCart className="w-5 h-5" />
                       Add to Cart
                     </button>
-                    <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden">
+                    {/* <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden">
                       <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
                       <Zap className="w-5 h-5" />
                       Order Now
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
