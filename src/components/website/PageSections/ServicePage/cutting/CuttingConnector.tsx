@@ -31,29 +31,25 @@ const CuttingConnector = () => {
       data,
       token,
     }: {
-      data: { serviceId: string; type: string };
+      data: { serviceId: string; type: string; quantity: number };
       token: string;
     }) => addToCart(data, token),
-    onSuccess:(data)=>{
-      toast.success(`${data?.message}`|| 'Succssesfuly Added')
-    }
+    onSuccess: (data) => {
+      toast.success(`${data?.message}` || "Succssesfuly Added");
+    },
   });
 
   const serviceMutation = useMutation({
-    mutationFn: ({
-      data,
-      token,
-    }: {
-      data: ServicePayload;
-      token: string;
-    }) => createService(data, token),
+    mutationFn: ({ data, token }: { data: ServicePayload; token: string }) =>
+      createService(data, token),
 
     onSuccess: (res) => {
-      console.log('respons data for ',res)
+      console.log("respons data for ", res);
       orderMutation.mutate({
         data: {
           serviceId: res?.data?._id,
           type: "service",
+          quantity: quantity,
         },
         token,
       });
@@ -61,7 +57,6 @@ const CuttingConnector = () => {
   });
 
   const productConfig = {
-
     materials: [
       {
         id: "RAWSEEL",
@@ -130,25 +125,25 @@ const CuttingConnector = () => {
         icon: "/images/cutting/HALFDISCWITHEXTENSION.jpg",
         description: "Custom design",
       },
-         {
+      {
         id: "TRAPEZE",
         name: "TRAPEZE",
         icon: "/images/cutting/TRAPEZE.jpg",
         description: "Custom design",
       },
-         {
+      {
         id: "RECTANGULAR WITH CIRCULAR CUT",
         name: "RECTANGULAR WITH CIRCULAR CUT",
         icon: "/images/cutting/RECTANGULARWITHCIRCULARCUT.jpg",
         description: "Custom design",
       },
-         {
+      {
         id: "RECTANGULAR WITH SQUARE CUT",
         name: "RECTANGULAR WITH SQUARE CUT",
         icon: "/images/cutting/RECTANGULARWITHSQUARECUT.jpg",
         description: "Custom design",
       },
-         {
+      {
         id: "RECTANGLE AND CORNER CUT",
         name: "RECTANGLE AND CORNER CUT",
         icon: "/images/cutting/RECTANGLEANDCORNERCUT.jpg",
@@ -156,28 +151,71 @@ const CuttingConnector = () => {
       },
     ],
   };
-    const getVisibleDimensions = (): [string[], number[][]] => {
+  const getVisibleDimensions = (): [string[], number[][]] => {
     const tVal = parseFloat(thickness) || 0;
     switch (selectedShape) {
       case "DISC":
-        return [["sizeA"],[[30,1980]]];
+        return [["sizeA"], [[30, 1980]]];
       case "TRIANGLE":
-        return [["sizeA", "sizeB"],[[30,2980],[30,1980]]];
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [30, 2980],
+            [30, 1980],
+          ],
+        ];
       case "SQUARE/RECTANGLE":
-        return [["sizeA", "sizeB",],[[30,2980],[30,1980]]];
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [30, 2980],
+            [30, 1980],
+          ],
+        ];
       case "RING":
-        return [["sizeA", "sizeB",],[[(tVal*2),2980],[(tVal*1.5),1980]]];
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [tVal * 2, 2980],
+            [tVal * 1.5, 1980],
+          ],
+        ];
       case "SQUARE/RECTANGLE WITH HOLES":
-        return [["sizeA", "sizeB", "sizeC",'sizeD'],[[30,2980],[30,1980],[12,60],[12,2900]]];
+        return [
+          ["sizeA", "sizeB", "sizeC", "sizeD"],
+          [
+            [30, 2980],
+            [30, 1980],
+            [12, 60],
+            [12, 2900],
+          ],
+        ];
       case "HALF DISC WITH EXTENSION":
-        return [["sizeA", "sizeB"],[[30,1290],[30,2980]]];
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [30, 1290],
+            [30, 2980],
+          ],
+        ];
       case "TRAPEZE":
-        return [["sizeA", "sizeB"],[[30,1290],[30,2980]]];
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [30, 1290],
+            [30, 2980],
+          ],
+        ];
       default:
-        return [["sizeA", "sizeB", "sizeC", "sizeD"],[[50,2240],[50,250]]];
+        return [
+          ["sizeA", "sizeB", "sizeC", "sizeD"],
+          [
+            [50, 2240],
+            [50, 250],
+          ],
+        ];
     }
   };
-
 
   // Get material color
   const getMaterialColor = () => {
@@ -196,7 +234,7 @@ const CuttingConnector = () => {
     const value = parseInt(valueStr) || 0;
     const [dimensionKeys, dimensionRanges] = getVisibleDimensions();
     const rangeIndex = dimensionKeys.indexOf(key);
-    
+
     let min = 10;
     let max = 3000;
 
@@ -242,8 +280,8 @@ const CuttingConnector = () => {
 
   // Return the icon path for the selected shape
   const renderShape = () => {
-    const shape = productConfig.shapes.find(s => s.id === selectedShape);
-    return shape ? shape.icon : '/images/cutting/disc.jpg';
+    const shape = productConfig.shapes.find((s) => s.id === selectedShape);
+    return shape ? shape.icon : "/images/cutting/disc.jpg";
   };
 
   const currentMaterial = productConfig.materials.find(
@@ -254,8 +292,8 @@ const CuttingConnector = () => {
     <section>
       <div className="container mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <CuttingLeftSide 
-            renderShape={renderShape} 
+          <CuttingLeftSide
+            renderShape={renderShape}
             currentMaterial={currentMaterial}
             productConfig={productConfig}
             selectedShape={selectedShape}

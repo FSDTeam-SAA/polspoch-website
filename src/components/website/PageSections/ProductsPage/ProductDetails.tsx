@@ -414,19 +414,19 @@ export default function ProductDetailsCard() {
     const payload = {
       productId: product._id,
       type: "product",
-      quantity,
-      reference: selectedFeature.reference,
-      thickness: selectedThickness,
-      size1: selectedSize1,
-      size2: selectedSize2,
-      finish: selectedFinishQuality,
-      lengthMm: selectedUnitSizeMm ?? rangeLengthMeters * 1000,
-      price: totalPrice,
-      shippingMethod,
+      // quantity,
+      // reference: selectedFeature.reference,
+      // thickness: selectedThickness,
+      // size1: selectedSize1,
+      // size2: selectedSize2,
+      // finish: selectedFinishQuality,
+      // lengthMm: selectedUnitSizeMm ?? rangeLengthMeters * 1000,
+      // price: totalPrice,
+      // shippingMethod,
     };
     console.log("DEBUG: AddToCart Payload:", payload);
 
-    addToCartMutate(payload);
+    // addToCartMutate(payload);
   };
 
   if (isLoading) {
