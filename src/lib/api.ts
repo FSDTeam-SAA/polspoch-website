@@ -1,6 +1,5 @@
 // src/lib/api.ts
 
-
 import axios from "axios";
 import { UserProfilePayload } from "./types/profile";
 import { ServicePayload } from "./services/createservice";
@@ -22,7 +21,6 @@ export async function getAllReview(page = 1, limit = 10) {
     throw new Error("Failed to fetch all reviews with pagination");
   }
 }
-
 
 // POST: Send Contact Message
 export async function sendContactMessage(payload: {
@@ -46,7 +44,7 @@ export async function sendContactMessage(payload: {
 // ===========================
 export async function updateUserProfileAPI(
   payload: UserProfilePayload,
-  accessToken: string
+  accessToken: string,
 ) {
   if (!accessToken) throw new Error("Session expired. Please login again.");
 
@@ -75,8 +73,6 @@ export async function updateUserProfileAPI(
   }
 }
 
-
-
 export async function uploadProfileImage(file: File, token: string) {
   const formData = new FormData();
   formData.append("image", file);
@@ -91,12 +87,10 @@ export async function uploadProfileImage(file: File, token: string) {
   return response.data;
 }
 
-
-
 export const changePassword = async (
   currentPassword: string,
   newPassword: string,
-  token: string
+  token: string,
 ) => {
   try {
     const response = await api.post(
@@ -106,7 +100,7 @@ export const changePassword = async (
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     return response.data;
@@ -118,8 +112,6 @@ export const changePassword = async (
     };
   }
 };
-
-
 
 // Add to src/lib/api.ts (near other exported functions)
 
@@ -141,7 +133,7 @@ export async function getProducts(params: GetProductsParams = {}) {
   try {
     // const res = await api.get(`/product?${query.toString()}`);
     const res = await api.get(`/product`);
-    console.log("response",res);
+    console.log("response", res);
     // API returns { success: true, data: [...], total, page, limit }
     return res?.data;
   } catch (err) {
@@ -149,7 +141,6 @@ export async function getProducts(params: GetProductsParams = {}) {
     throw err;
   }
 }
-
 
 export async function getProductById(productId: string) {
   try {
@@ -161,18 +152,13 @@ export async function getProductById(productId: string) {
   }
 }
 
-
 export async function createService(data: ServicePayload, token: string) {
   try {
-    const res = await api.post(
-      "/service/create-service",
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await api.post("/service/create-service", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     return res.data;
   } catch (err) {
@@ -180,17 +166,94 @@ export async function createService(data: ServicePayload, token: string) {
   }
 }
 
-export async function addToCart(data: {serviceId:string;type:string}, token: string) {
+// add to cart
+export async function addToCart(
+  data: { serviceId: string; type: string },
+  token: string,
+) {
   try {
-    const res = await api.post(
-      "/cart/add-cart",
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await api.post("/cart/add-cart", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// get cart
+export async function getCart(token: string) {
+  try {
+    const res = await api.get("/cart/my-cart", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// delete cart
+export async function deleteCart(token: string, id: string) {
+  try {
+    const res = await api.delete(`/cart/delete-cart/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// order create
+export async function checkoutCart(
+  payload: {
+    type: string;
+    cartItems: { cartId: string }[];
+    totalAmount: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+  },
+  token: string,
+) {
+  try {
+    const res = await api.post("/order/create-order", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// checkout cart in modal
+export async function checkoutCartInModal(
+  payload: {
+    orderId: string;
+    totalAmount: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
+  },
+  token: string,
+) {
+  try {
+    const res = await api.post("/payment/pay", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     return res.data;
   } catch (err) {

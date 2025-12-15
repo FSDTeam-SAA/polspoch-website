@@ -1,12 +1,18 @@
-
 "use client";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, Search, ShoppingCart, UserCircle2, X, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  Search,
+  ShoppingCart,
+  UserCircle2,
+  X,
+  ChevronDown,
+} from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useUserProfile } from "@/lib/hooks/useSserProfile";
 import {
   AlertDialog,
@@ -20,6 +26,9 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { usePathname } from "next/navigation";
+import SearchModal from "./SearchModal";
+import { useGetCart } from "@/lib/hooks/useAddToCart";
+import { CartItem } from "@/lib/types/cart";
 
 // 🟢 Get Initials helper
 function getInitials(firstName?: string, lastName?: string) {
@@ -31,13 +40,24 @@ export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // 🟢 Get session
+  const { data: session } = useSession();
+  const token = session?.accessToken || "";
 
   const { data: user, isLoading: userLoading } = useUserProfile();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileUserOpen, setMobileUserOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
-  
+
+  const { data: cart } = useGetCart({ token }) as {
+    data: { data: CartItem[] } | undefined;
+  };
+
+  console.log(cart?.data?.length);
+
   const servicesRef = useRef<HTMLDivElement>(null);
 
   // Detect scroll position
@@ -52,7 +72,10 @@ export default function Navbar() {
   // Close services dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (servicesRef.current && !servicesRef.current.contains(event.target as Node)) {
+      if (
+        servicesRef.current &&
+        !servicesRef.current.contains(event.target as Node)
+      ) {
         setServicesOpen(false);
       }
     };
@@ -114,15 +137,18 @@ export default function Navbar() {
                     <button
                       onClick={() => setServicesOpen(!servicesOpen)}
                       className={`flex items-center gap-1 hover:underline hover:font-semibold transition-all duration-200 ${
-                        scrolled ? "hover:text-gray-200" : "hover:text-primary/70"
+                        scrolled
+                          ? "hover:text-gray-200"
+                          : "hover:text-primary/70"
                       } ${
-                        isServicesActive
-                          ? "text-[#7E1800] font-semibold"
-                          : ""
+                        isServicesActive ? "text-[#7E1800] font-semibold" : ""
                       }`}
                     >
                       {item.label}
-                      <ChevronDown size={16} className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`} />
+                      <ChevronDown
+                        size={16}
+                        className={`transition-transform duration-200 ${servicesOpen ? "rotate-180" : ""}`}
+                      />
                     </button>
 
                     {/* Services Dropdown */}
@@ -134,7 +160,9 @@ export default function Navbar() {
                             href={subItem.href}
                             onClick={() => setServicesOpen(false)}
                             className={`block px-4 py-2 text-sm hover:bg-gray-100 transition-colors ${
-                              pathname === subItem.href ? "bg-gray-100 font-semibold text-[#7E1800]" : ""
+                              pathname === subItem.href
+                                ? "bg-gray-100 font-semibold text-[#7E1800]"
+                                : ""
                             }`}
                           >
                             {subItem.label}
@@ -166,14 +194,30 @@ export default function Navbar() {
 
           {/* Right Side Icons (Desktop) */}
           <div
-            className={`hidden md:flex items-center gap-6 cursor-pointer transition-colors duration-300 ${
+            className={`hidden md:flex items-center gap-6 cursor-pointer transition-colors duration-300  ${
               scrolled ? "text-white" : "text-primary"
             }`}
           >
-            <Search />
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="cursor-pointer"
+            >
+              <Search />
+            </button>
 
-            <Link href="/cart">
-              <ShoppingCart />
+            <SearchModal
+              isOpen={searchOpen}
+              onClose={() => setSearchOpen(false)}
+            />
+
+            <Link href="/cart" className="relative flex items-center">
+              <ShoppingCart className="w-6 h-6" />
+
+              {(cart?.data?.length ?? 0) > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {cart?.data?.length}
+                </span>
+              )}
             </Link>
 
             {/* ================================
@@ -351,13 +395,20 @@ export default function Navbar() {
                       return (
                         <div key={item.href}>
                           <button
-                            onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
+                            onClick={() =>
+                              setMobileServicesOpen(!mobileServicesOpen)
+                            }
                             className={`text-gray-700 px-5 hover:underline font-medium text-lg hover:text-primary hover:font-semibold transition-all duration-200 py-2 w-full text-left flex items-center justify-between ${
-                              isServicesActive ? "text-[#7E1800] font-semibold" : ""
+                              isServicesActive
+                                ? "text-[#7E1800] font-semibold"
+                                : ""
                             }`}
                           >
                             {item.label}
-                            <ChevronDown size={18} className={`transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`} />
+                            <ChevronDown
+                              size={18}
+                              className={`transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`}
+                            />
                           </button>
 
                           {/* Mobile Services Dropdown */}
@@ -369,7 +420,9 @@ export default function Navbar() {
                                   href={subItem.href}
                                   onClick={() => setOpen(false)}
                                   className={`text-gray-600 px-5 py-2 hover:text-primary hover:font-semibold transition-all duration-200 ${
-                                    pathname === subItem.href ? "text-[#7E1800] font-semibold" : ""
+                                    pathname === subItem.href
+                                      ? "text-[#7E1800] font-semibold"
+                                      : ""
                                   }`}
                                 >
                                   {subItem.label}

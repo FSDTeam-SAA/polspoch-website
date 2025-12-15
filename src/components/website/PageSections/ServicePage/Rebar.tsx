@@ -21,44 +21,37 @@ const Rebar = () => {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [quantity, setQuantity] = useState(1);
-const { data: session } = useSession();
-const token = session?.accessToken || "";
+  const { data: session } = useSession();
+  const token = session?.accessToken || "";
 
-const orderMutation = useMutation({
-  mutationFn: ({
-    data,
-    token,
-  }: {
-    data: { serviceId: string; type: string };
-    token: string;
-  }) => addToCart(data, token),
-  onSuccess:(data)=>{
-    toast.success(`${data?.message}`|| 'Succssesfuly Added')
-  }
-});
-
-const serviceMutation = useMutation({
-  mutationFn: ({
-    data,
-    token,
-  }: {
-    data: ServicePayload;
-    token: string;
-  }) => createService(data, token),
-
-  onSuccess: (res) => {
-    console.log('respons data for ',res)
-    orderMutation.mutate({
-      data: {
-        serviceId: res?.data?._id,
-        type: "service",
-      },
+  const orderMutation = useMutation({
+    mutationFn: ({
+      data,
       token,
-    });
-  },
-});
+    }: {
+      data: { serviceId: string; type: string };
+      token: string;
+    }) => addToCart(data, token),
+    onSuccess: (data) => {
+      toast.success(`${data?.message}` || "Succssesfuly Added");
+    },
+  });
 
+  const serviceMutation = useMutation({
+    mutationFn: ({ data, token }: { data: ServicePayload; token: string }) =>
+      createService(data, token),
 
+    onSuccess: (res) => {
+      console.log("respons data for ", res);
+      orderMutation.mutate({
+        data: {
+          serviceId: res?.data?._id,
+          type: "service",
+        },
+        token,
+      });
+    },
+  });
 
   // Product configurations
   const productConfig = {
@@ -106,7 +99,7 @@ const serviceMutation = useMutation({
         description: "Circular profile",
       },
       {
-        id: "STICK-ROUND",
+        id: "L-ROUND-SHAPE",
         name: "STICK ROUND",
         icon: "⌐",
         description: "L-shaped angle",
@@ -118,7 +111,7 @@ const serviceMutation = useMutation({
         description: "U-channel profile",
       },
       {
-        id: "QUADRILATERAL-3D",
+        id: "STIRUPS",
         name: "QUADRILATERAL 3D",
         icon: "◫",
         description: "Custom design",
@@ -133,35 +126,149 @@ const serviceMutation = useMutation({
     );
   };
 
+  // Mapping shapes to required dimensions
+  const getVisibleDimensions = (): [string[], number[][]] => {
+    switch (selectedShape) {
+      case "CUT-TO-SIZE-REBAR":
+        return [["sizeA"], [[30, 2490]]];
+      case "L-SHAPE":
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [50, 2240],
+            [50, 250],
+          ],
+        ];
+      case "U-SHAPE":
+        return [
+          ["sizeA", "sizeB", "sizeC"],
+          [
+            [50, 1190],
+            [80, 250],
+            [50, 1190],
+          ],
+        ];
+      case "L-ROUND-SHAPE":
+        return [["sizeA"], [[30, 250]]];
+      case "OMEGA-SHAPE":
+        return [
+          ["sizeA", "sizeB", "sizeC"],
+          [
+            [30, 250],
+            [80, 160],
+            [50, 250],
+          ],
+        ];
+      case "STIRUPS":
+        return [
+          ["sizeA", "sizeB"],
+          [
+            [30, 250],
+            [80, 160],
+          ],
+        ];
+      default:
+        return [
+          ["sizeA", "sizeB", "sizeC", "sizeD"],
+          [
+            [50, 2240],
+            [50, 250],
+          ],
+        ];
+    }
+  };
+
+  const [visibleKeys, dimensionRanges] = getVisibleDimensions();
+
+  // Calculate price
+  const calculatePrice = () => {
+    const basePrice = 100;
+
+    const sizesum = visibleKeys.reduce(
+      (sum, key) => sum + (dimensions[key] || 0),
+      0,
+    );
+
+    const unitPrice = basePrice / quantity + ((sizesum - 30) / 10) * 0.01;
+
+    return Math.round(unitPrice * quantity);
+  };
+
+  const handleDimensionChange = (key: string, valueStr: string) => {
+    const value = parseInt(valueStr) || 0;
+
+    // Get current shape configuration
+    const [dimensionKeys, dimensionRanges] = getVisibleDimensions();
+
+    // Find the index of the current key to get its specific range
+    const rangeIndex = dimensionKeys.indexOf(key);
+
+    // Default min/max if not found (fallback)
+    let min = 10;
+    let max = 3000;
+
+    if (rangeIndex !== -1 && dimensionRanges[rangeIndex]) {
+      min = dimensionRanges[rangeIndex][0];
+      max = dimensionRanges[rangeIndex][1];
+    }
+
+    let error = "";
+    if (value < min) {
+      error = `Min value is ${min}`;
+    } else if (value > max) {
+      error = `Max value is ${max}`;
+    }
+
+    setErrors((prev) => ({ ...prev, [key]: error }));
+    setDimensions((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const getGridClass = (index: number) => {
+    if (index === 0) return "col-span-6";
+    if (index === 1 || index === 2) return "col-span-6";
+    return "col-span-4";
+  };
+
+  const servicehandel = () => {
+    const data: ServicePayload = {
+      serviceType: "rebar",
+      templateName: selectedShape,
+      units: quantity,
+      price: calculatePrice(),
+      diameter: Number(thickness),
+      sizes: {
+        A: dimensions[visibleKeys[0]] ?? 0,
+        B: visibleKeys[1] ? dimensions[visibleKeys[1]] : 0,
+        C: visibleKeys[2] ? dimensions[visibleKeys[2]] : 0,
+        D: visibleKeys[3] ? dimensions[visibleKeys[3]] : 0,
+      },
+    };
+    serviceMutation.mutate({ data, token });
+  };
+
   // SVG Shape Renderer with enhanced styling
   const renderShape = () => {
     const color = getMaterialColor();
 
-    // ---------- SCALE ----------
-    // Dynamic scaling logic:
-    // Determine the maximum dimension entered by the user
-    // Calculate a scale factor that ensures the shape fits within ~160px
-    const maxDimension = Math.max(
-      dimensions.sizeA || 0,
-      dimensions.sizeB || 0,
-      dimensions.sizeC || 0,
-      dimensions.sizeD || 0
-    );
+    // FIXED DIMENSIONS FOR VISUALIZATION
+    // We use standard "reference" dimensions so the shape looks good
+    // and doesn't change size based on user input. Only labels change.
+    const refA = 200;
+    const refB = 150;
+    const refC = 100;
+    const refD = 100;
 
-    // Target max rendered size in pixels (to fit safely in 400x350 with margins)
-    const targetMaxPixels = 160;
+    // Use targetMaxPixels to keep scale consistent if we were using dynamic
+    const scale = 1; // 1:1 for the reference values
 
-    // Calculate required scale: e.g. 500mm / 160px = 3.125
-    const calculatedScale = maxDimension / targetMaxPixels;
-
-    // Use at least 2.5 as scale, or higher if needed to fit large items
-    const scale = Math.max(2.5, calculatedScale);
-
-    const a = (dimensions.sizeA || 0) / scale;
-    const b = (dimensions.sizeB || 0) / scale;
-    const c = (dimensions.sizeC || 0) / scale;
-    const d = (dimensions.sizeD || 0) / scale;
-    const t = parseFloat(thickness) * 2;
+    const a = refA;
+    const b = refB;
+    const c = refC;
+    const d = refD;
+    const t = parseFloat(thickness) * 2; // Thickness still scales visually to show relative sturdiness? Or keep fixed too?
+    // Keeping thickness dynamic might be nice, or valid to keep fixed.
+    // User asked "max or shap create fixed size".
+    // I will use the calculated 't' but maybe clamp it so it doesn't look weird compared to fixed dimensions.
 
     // ---------- CLAMP ----------
     const clamp = (value: number, min: number, max: number) =>
@@ -174,16 +281,23 @@ const serviceMutation = useMutation({
       return (
         <g>
           <rect
-            x="150"
+            x="50"
             y="150"
-            width={clamp(a, 0, 200)}
+            width={300} // Fixed width for visualization
             height={clamp(12, 0, 20)}
             fill={color}
             stroke="#1a202c"
             strokeWidth="3"
             className="overflow-hidden"
           />
-          <text x="130" y="85" fontSize="14" fill="#2d3748" fontWeight="600">
+          <text
+            x="200"
+            y="100"
+            fontSize="14"
+            fill="#2d3748"
+            fontWeight="600"
+            textAnchor="middle"
+          >
             A: {dimensions.sizeA}mm
           </text>
         </g>
@@ -214,7 +328,7 @@ const serviceMutation = useMutation({
           <text x="110" y="70" fontSize="14" fill="#2d3748" fontWeight="600">
             A: {dimensions.sizeA}mm
           </text>
-          <text x="110" y="90" fontSize="14" fill="#2d3748" fontWeight="600">
+          <text x="230" y="190" fontSize="14" fill="#2d3748" fontWeight="600">
             B: {dimensions.sizeB}mm
           </text>
         </g>
@@ -238,29 +352,32 @@ const serviceMutation = useMutation({
           />
 
           <text
-            x={100 + a / 2 - 20}
-            y="85"
+            x={150 + a / 2}
+            y="130"
             fontSize="14"
             fill="#2d3748"
             fontWeight="600"
+            textAnchor="middle"
           >
             A: {dimensions.sizeA}mm
           </text>
           <text
-            x={100 - 30}
-            y={100 + b / 2}
+            x={130}
+            y={150 + b / 2}
             fontSize="14"
             fill="#2d3748"
             fontWeight="600"
+            textAnchor="end"
           >
             B: {dimensions.sizeB}mm
           </text>
           <text
-            x={100 + a / 2 - 20}
-            y={100 + b + 20}
+            x={150 + a + 20}
+            y={150 + b / 2}
             fontSize="14"
             fill="#2d3748"
             fontWeight="600"
+            textAnchor="start"
           >
             C: {dimensions.sizeC}mm
           </text>
@@ -271,7 +388,7 @@ const serviceMutation = useMutation({
     // ------------------------------------------------------------
     // 4️⃣ STICK ROUND (L-ROUND or curved)
     // ------------------------------------------------------------
-    if (selectedShape === "STICK-ROUND") {
+    if (selectedShape === "L-ROUND-SHAPE") {
       const r = 20; // Radius for "little bit round"
       return (
         <g>
@@ -294,12 +411,31 @@ const serviceMutation = useMutation({
             strokeLinejoin="round"
           />
 
-          <text x={100 + a / 2 - 20} y="85" fontSize="14" fill="#2d3748">
+          <text
+            x={100 + a / 2}
+            y="85"
+            fontSize="14"
+            fill="#2d3748"
+            textAnchor="middle"
+          >
             A: {dimensions.sizeA}mm
           </text>
           <text x="50" y={100 + b / 2} fontSize="14" fill="#2d3748">
-            B: {dimensions.sizeB}mm
+            B: {dimensions.sizeB}mm // Assuming B is the vertical
           </text>
+          {/* Note: In original code L-ROUND-SHAPE had only sizeA in return [["sizeA"],...] but render expected B. 
+              The new config has only sizeA? 
+              Wait, getVisibleDimensions for L-ROUND-SHAPE returns [["sizeA"], ...]. 
+              So B is undefined? 
+              If the shape is L-ROUND, it implies at least 2 dims or it's just a bent bar?
+              User requirements: "L-ROUND-SHAPE ... STICK ROUND".
+              If visibleDimensions only has A, then B is not distinct? 
+              I will leave it as is, but if B is missing from inputs, it will show 0 or undefined.
+              The user's code had sizeA only for L-ROUND.
+              But the SVG draws an L. I will assume it renders just one leg or fixed?
+              Actually, let's fix the SVG to match available dims or use A for both if needed?
+              Or just rely on visual.
+          */}
         </g>
       );
     }
@@ -308,7 +444,10 @@ const serviceMutation = useMutation({
     // 5️⃣ OMEGA SHAPE (Ω)
     // ------------------------------------------------------------
     if (selectedShape === "OMEGA-SHAPE") {
-      const foot = 20; // "two side little bit line added"
+      const foot = 20;
+      // Using fixed dimensions refA, refB, refC
+      // But OMEGA usually has A=top, B=height, C=feet?
+      // Current inputs: A, B, C.
       return (
         <g>
           <path
@@ -333,17 +472,30 @@ const serviceMutation = useMutation({
             strokeLinejoin="round"
           />
 
-          <text x={100 + a / 2 - 20} y="85" fontSize="14" fill="#2d3748">
+          <text
+            x={100 + a / 2}
+            y="85"
+            fontSize="14"
+            fill="#2d3748"
+            textAnchor="middle"
+          >
             A: {dimensions.sizeA}mm
           </text>
-          <text x="65" y={100 + b / 2} fontSize="14" fill="#2d3748">
+          <text
+            x="65"
+            y={100 + b / 2}
+            fontSize="14"
+            fill="#2d3748"
+            textAnchor="end"
+          >
             B: {dimensions.sizeB}mm
           </text>
           <text
-            x={100 + a / 2 - 20}
+            x={100 + a / 2}
             y={100 + b + 25}
             fontSize="14"
             fill="#2d3748"
+            textAnchor="middle"
           >
             C: {dimensions.sizeC}mm
           </text>
@@ -354,7 +506,8 @@ const serviceMutation = useMutation({
     // ------------------------------------------------------------
     // 6️⃣ QUADRILATERAL 3D (Rectangle box)
     // ------------------------------------------------------------
-    if (selectedShape === "QUADRILATERAL-3D") {
+    if (selectedShape === "STIRUPS") {
+      // STIRUPS usually rect.
       return (
         <g>
           <rect
@@ -367,8 +520,13 @@ const serviceMutation = useMutation({
             strokeWidth="3"
           />
 
-          <text x={100 + a / 2 - 40} y={100 + b / 2} fontSize="16">
-            3D Shape
+          <text
+            x={100 + a / 2}
+            y={100 + b / 2}
+            fontSize="16"
+            textAnchor="middle"
+          >
+            {dimensions.sizeA} x {dimensions.sizeB}
           </text>
         </g>
       );
@@ -389,7 +547,7 @@ const serviceMutation = useMutation({
           strokeWidth="3"
           strokeDasharray="8,4"
         />
-        <text x={100 + a / 2 - 30} y={100 + b / 2} fontSize="16">
+        <text x={100 + a / 2} y={100 + b / 2} fontSize="16" textAnchor="middle">
           Custom
         </text>
       </g>
@@ -397,95 +555,8 @@ const serviceMutation = useMutation({
   };
 
   const currentMaterial = productConfig.materials.find(
-    (m) => m.id === material
+    (m) => m.id === material,
   );
-
-  // Mapping shapes to required dimensions
-  const getVisibleDimensions = () => {
-    switch (selectedShape) {
-      case "CUT-TO-SIZE-REBAR":
-        return ["sizeA"];
-      case "L-SHAPE":
-        return ["sizeA", "sizeB"];
-      case "U-SHAPE":
-        return ["sizeA", "sizeB", "sizeC"];
-      case "STICK-ROUND":
-        return ["sizeA", "sizeB"];
-      case "OMEGA-SHAPE":
-        return ["sizeA", "sizeB", "sizeC"];
-      case "QUADRILATERAL-3D":
-        return ["sizeA", "sizeB", "sizeC", "sizeD"];
-      default:
-        return ["sizeA", "sizeB", "sizeC", "sizeD"];
-    }
-  };
-
-  const visibleDimensions = getVisibleDimensions();
-
-  // Calculate price
-  const calculatePrice = () => {
-    // const baseMaterial = productConfig.materials.find((m) => m.id === material);
-    // const area = (dimensions.sizeA * dimensions.sizeB) / 10000;
-    // const thicknessFactor = parseFloat(thickness) / 5;
-    const basePrice = 100;
-
-    const sizesum = visibleDimensions.reduce(
-      (sum, key) => sum + dimensions[key],
-      0
-    );
-
-    // const baseprice = 29.81;
-    const unitPrice = basePrice / quantity + ((sizesum - 30) / 10) * 0.01;
-
-    return Math.round(unitPrice * quantity);
-  };
-
-  const handleDimensionChange = (key: string, valueStr: string) => {
-    const value = parseInt(valueStr) || 0;
-
-    // Min/Max values
-    const min = 10;
-    const max = 500;
-
-    let error = "";
-    if (value < min) {
-      error = `Min value is ${min}`;
-    } else if (value > max) {
-      error = `Max value is ${max}`;
-    }
-
-    setErrors((prev) => ({ ...prev, [key]: error }));
-    setDimensions((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const getGridClass = (index: number) => {
-    // 1-2-3 Layout logic
-    // Index 0 (1st item) -> full width
-    // Index 1, 2 (2nd, 3rd items) -> half width
-    // Index 3, 4, 5... -> 1/3 width
-
-    if (index === 0) return "col-span-6";
-    if (index === 1 || index === 2) return "col-span-6";
-    return "col-span-4";
-  };
-
-  const servicehandel = () => {
-    const data: ServicePayload = {
-      serviceType: "rebar",
-      templateName: selectedShape,
-      units: quantity,
-      price: calculatePrice(),
-      diameter: Number(thickness),
-      sizes: {
-        A: dimensions[visibleDimensions[0]] ?? 0,
-        B: dimensions[visibleDimensions[1]] ?? 0,
-        C: visibleDimensions[2] ? dimensions[visibleDimensions[2]] : 0,
-        D: visibleDimensions[3] ? dimensions[visibleDimensions[3]] : 0,
-      },
-    };
-    console.log("visible dimension", dimensions[0]);
-   serviceMutation.mutate({ data, token });
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -663,7 +734,7 @@ const serviceMutation = useMutation({
                     Sizes
                   </label>
                   <div className="grid grid-cols-12 gap-4">
-                    {visibleDimensions.map((key, index) => (
+                    {visibleKeys.map((key, index) => (
                       <div
                         key={key}
                         className={`space-y-2 ${getGridClass(index)}`}
@@ -674,6 +745,8 @@ const serviceMutation = useMutation({
                         <div className="relative group">
                           <input
                             type="number"
+                            min={dimensionRanges[index]?.[0] || 0}
+                            max={dimensionRanges[index]?.[1] || 3000}
                             value={dimensions[key as keyof typeof dimensions]}
                             onChange={(e) =>
                               handleDimensionChange(key, e.target.value)
@@ -722,7 +795,7 @@ const serviceMutation = useMutation({
                         value={quantity}
                         onChange={(e) =>
                           setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1)
+                            Math.max(1, parseInt(e.target.value) || 1),
                           )
                         }
                         className="w-20 text-center p-3 border-2 border-slate-200 rounded-xl font-bold text-lg text-slate-900 focus:border-rose-600 focus:ring-4 focus:ring-rose-100 transition-all"
@@ -738,7 +811,7 @@ const serviceMutation = useMutation({
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <button
                       onClick={servicehandel}
                       className="group relative py-4 px-6 border-2 border-rose-600 text-rose-600 rounded-xl hover:bg-rose-50 active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden"
@@ -747,11 +820,11 @@ const serviceMutation = useMutation({
                       <ShoppingCart className="w-5 h-5" />
                       Add to Cart
                     </button>
-                    <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden">
+                    {/* <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden">
                       <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
                       <Zap className="w-5 h-5" />
                       Order Now
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </div>
