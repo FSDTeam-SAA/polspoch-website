@@ -137,6 +137,7 @@ const ProductConfigurator = () => {
         addToCart({
           serviceId: data?.data?._id,
           type: "service",
+          quantity: units,
         });
         toast.success("Added to cart successfully");
       },
@@ -842,7 +843,7 @@ const ProductConfigurator = () => {
                               value={units}
                               onChange={(e) =>
                                 setUnits(
-                                  Math.max(1, parseInt(e.target.value) || 1),
+                                  Math.max(1, parseInt(e.target.value) || 1)
                                 )
                               }
                               min="1"

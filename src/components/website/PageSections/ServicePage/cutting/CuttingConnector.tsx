@@ -31,7 +31,7 @@ const CuttingConnector = () => {
       data,
       token,
     }: {
-      data: { serviceId: string; type: string };
+      data: { serviceId: string; type: string; quantity: number };
       token: string;
     }) => addToCart(data, token),
     onSuccess: (data) => {
@@ -49,6 +49,7 @@ const CuttingConnector = () => {
         data: {
           serviceId: res?.data?._id,
           type: "service",
+          quantity: quantity,
         },
         token,
       });
