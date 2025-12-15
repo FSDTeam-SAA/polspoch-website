@@ -29,7 +29,7 @@ const Rebar = () => {
       data,
       token,
     }: {
-      data: { serviceId: string; type: string };
+      data: { serviceId: string; type: string; quantity: number };
       token: string;
     }) => addToCart(data, token),
     onSuccess: (data) => {
@@ -47,6 +47,7 @@ const Rebar = () => {
         data: {
           serviceId: res?.data?._id,
           type: "service",
+          quantity: quantity,
         },
         token,
       });
@@ -555,7 +556,7 @@ const Rebar = () => {
   };
 
   const currentMaterial = productConfig.materials.find(
-    (m) => m.id === material,
+    (m) => m.id === material
   );
 
   return (
@@ -795,7 +796,7 @@ const Rebar = () => {
                         value={quantity}
                         onChange={(e) =>
                           setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1),
+                            Math.max(1, parseInt(e.target.value) || 1)
                           )
                         }
                         className="w-20 text-center p-3 border-2 border-slate-200 rounded-xl font-bold text-lg text-slate-900 focus:border-rose-600 focus:ring-4 focus:ring-rose-100 transition-all"
