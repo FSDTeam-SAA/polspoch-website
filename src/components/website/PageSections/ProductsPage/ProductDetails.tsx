@@ -385,48 +385,43 @@ export default function ProductDetailsCard() {
     (selectedUnitSizeMm !== null || rangeLengthMeters > 0) &&
     quantity > 0;
 
-  // const handleAddToCart = () => {
-  //   if (!canCheckout) return;
-  //   // Implement add-to-cart logic with your cart API
-  //   console.log("Add to cart:", {
-  //     productId: product?._id,
-  //     reference: selectedFeature?.reference,
-  //     thickness: selectedThickness,
-  //     size1: selectedSize1,
-  //     size2: selectedSize2,
-  //     finish: selectedFinishQuality,
-  //     lengthMm: selectedUnitSizeMm ?? rangeLengthMeters * 1000,
-  //     quantity,
-  //     price: totalPrice,
-  //     shippingMethod,
-  //   });
-  //   alert("Added to cart (placeholder)");
-  // };
-
   const handleAddToCart = () => {
-    if (!canCheckout || !selectedFeature || !product) return;
+    if (!canCheckout || !product) return;
 
     if (!token) {
-      alert("Please login to add items to cart");
+      toast.error("Please login to add items to cart");
       return;
     }
 
-    const payload = {
-      productId: product._id,
-      type: "product",
-      // quantity,
-      // reference: selectedFeature.reference,
-      // thickness: selectedThickness,
-      // size1: selectedSize1,
-      // size2: selectedSize2,
-      // finish: selectedFinishQuality,
-      // lengthMm: selectedUnitSizeMm ?? rangeLengthMeters * 1000,
-      // price: totalPrice,
-      // shippingMethod,
-    };
-    console.log("DEBUG: AddToCart Payload:", payload);
+    // Calculate unit price (price for 1 item)
+    const pricePerMeter = selectedFeature?.miterPerUnitPrice ?? 0;
+    const lengthMeters = selectedUnitSizeMm
+      ? selectedUnitSizeMm / 1000
+      : rangeLengthMeters;
+    const unitPrice = pricePerMeter * lengthMeters;
 
-    // addToCartMutate(payload);
+    addToCartMutate(
+      {
+        type: "product",
+        quantity,
+        price: Number(unitPrice.toFixed(2)),
+        product: {
+          productId: product._id,
+          featuredId: selectedFeature?._id,
+          size: selectedFeature?.size1,
+          unitSize: selectedUnitSizeMm ? selectedUnitSizeMm / 1000 : undefined, // sending as meter
+          range: rangeLengthMeters,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Added to cart successfully");
+        },
+        onError: () => {
+          toast.error("Failed to add to cart");
+        },
+      }
+    );
   };
 
   if (isLoading) {

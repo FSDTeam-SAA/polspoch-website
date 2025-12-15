@@ -171,7 +171,14 @@ export interface AddToCartPayload {
   productId?: string;
   serviceId?: string;
   type: string;
-  quantity: number;
+  product?: {
+    productId: string;
+    featuredId?: string;
+    size?: number;
+    unitSize?: number;
+    range?: number;
+  };
+  quantity?: number;
   reference?: string;
   thickness?: number | null;
   size1?: number | null;
