@@ -62,7 +62,7 @@ export default function OurServices() {
             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 duration-300"></div>
 
             {/* Content */}
-            <div className="relative z-10 p-6 text-white flex flex-col h-full text-center justify-end gap-3">
+            <div className="relative z-10 px-6 py-10 text-white flex flex-col h-full text-center justify-end gap-3">
               {/* <div className="text-4xl"></div> */}
               <p className="flex justify-center">
                 <service.icon size={40} strokeWidth={1.5} />

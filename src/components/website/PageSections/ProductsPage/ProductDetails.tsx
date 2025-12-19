@@ -1,4 +1,3 @@
-//components/website/PageSections/ProductsPage/ProductDetails.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -10,13 +9,16 @@ import {
   Plus,
   Minus,
   HelpCircle,
+  Trash2,
   ListChecks,
   Ruler,
+  Loader2,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAddToCart } from "@/lib/hooks/useAddToCart";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Shipping cost calculation based on weight and length
 function calculateShippingCost(
@@ -69,8 +71,9 @@ const TOOLTIPS = {
 • Polished: Glossy (medium price)
 • Galvanized: Rust-resistant (outdoor use)
 • Powder Coated: Colored + Durable (premium)`,
-  length: "Length - how long you want the product",
-  shipping: "Shipping cost calculated based on weight and length",
+  length: "Choose a standard length or customize using the slider",
+  shipping:
+    "Shipping cost calculated based on weight and length. Courier for packages under 2.5m, Truck delivery for larger items.",
 };
 
 // Tooltip component
@@ -91,13 +94,13 @@ const Tooltip = ({
       onMouseEnter={() => setShowTooltip(step)}
       onMouseLeave={() => setShowTooltip(null)}
       onClick={() => setShowTooltip(showTooltip === step ? null : step)}
-      className="ml-2 text-gray-400 hover:text-rose-800 transition-colors"
+      className="ml-2 text-gray-400 hover:text-orange-300 transition-colors"
       aria-label="Help"
     >
       <HelpCircle size={16} />
     </button>
     {showTooltip === step && (
-      <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50 whitespace-pre-line">
+      <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-50 whitespace-pre-line">
         {text}
         <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-900 transform rotate-45"></div>
       </div>
@@ -105,16 +108,61 @@ const Tooltip = ({
   </div>
 );
 
-export default function ProductDetailsCard() {
-  const { id } = useParams() as { id?: string };
-  const {
-    data: product,
-    isLoading,
-    isError,
-    error,
-  } = useProduct(id ?? "", !!id);
+// Helper: Get updated 'available' options
+const getAvailableOptions = (
+  //eslint-disable-next-line
+  featureList: any[],
+  field: string,
+  selections: {
+    thickness: number | null;
+    size1: number | null;
+    size2: number | null;
+    finishQuality: string | null;
+  }
+) => {
+  const { thickness, size1, size2, finishQuality } = selections;
+  //eslint-disable-next-line
+  const options = new Set<any>();
 
-  // Progressive filtering state
+  featureList.forEach((f) => {
+    const matchThickness = thickness === null || f.thickness === thickness;
+    const matchSize1 = size1 === null || f.size1 === size1;
+    const matchSize2 = size2 === null || f.size2 === size2;
+    const matchFinish =
+      finishQuality === null || f.finishQuality === finishQuality;
+
+    let works = true;
+    if (field !== "thickness" && !matchThickness) works = false;
+    if (field !== "size1" && !matchSize1) works = false;
+    if (field !== "size2" && !matchSize2) works = false;
+    if (field !== "finishQuality" && !matchFinish) works = false;
+
+    if (works && f[field] !== undefined && f[field] !== null) {
+      options.add(f[field]);
+    }
+  });
+
+  const arr = Array.from(options);
+  if (typeof arr[0] === "number") {
+    return arr.sort((a, b) => Number(a) - Number(b));
+  }
+  return arr.sort();
+};
+
+export default function ProductDetails() {
+  const params = useParams();
+  const productId = params.id as string;
+
+  // Use real data hook
+  const { data: product, isLoading, isError, error } = useProduct(productId);
+
+  // Auth and Cart
+  const { data: session } = useSession();
+  const token = session?.accessToken; // Accessing the custom accessToken property
+  const { mutate: addToCartMutate, isPending } = useAddToCart({
+    token: token || "",
+  });
+
   const [selectedThickness, setSelectedThickness] = useState<number | null>(
     null
   );
@@ -124,97 +172,155 @@ export default function ProductDetailsCard() {
     string | null
   >(null);
 
-  // Length and shipping
   const [selectedUnitSizeMm, setSelectedUnitSizeMm] = useState<number | null>(
     null
   );
-  const [rangeLengthMeters, setRangeLengthMeters] = useState<number>(1);
+  const [rangeLengthMm, setRangeLengthMm] = useState<number>(1000);
   const [quantity, setQuantity] = useState<number>(1);
-
   const [selectedThumbnail, setSelectedThumbnail] = useState<number>(0);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
 
-  const { data: session } = useSession();
-  const token = session?.accessToken as string;
+  const [prevProductId, setPrevProductId] = useState<string | null>(null);
 
-  const { mutate: addToCartMutate, isPending } = useAddToCart({
-    token,
-  });
+  // Adjust state during render to avoid cascading renders in useEffect
+  if (product && product._id !== prevProductId) {
+    setPrevProductId(product._id);
+    setRangeLengthMm(product.minRange ? product.minRange * 1000 : 1000);
+    setSelectedThumbnail(0);
+    setSelectedThickness(null);
+    setSelectedSize1(null);
+    setSelectedSize2(null);
+    setSelectedFinishQuality(null);
+    setSelectedUnitSizeMm(null);
+  }
 
-  // Initialize range value when product loads
-  React.useEffect(() => {
-    if (!product) return;
-    const minv = product.minRange ?? 1;
-    setRangeLengthMeters(minv);
-  }, [product]);
+  const featureList = useMemo(() => product?.features || [], [product]);
 
-  // STEP 1: Get unique thickness values
-  const thicknessOptions = useMemo(() => {
-    if (!product?.features) return [];
-    const set = new Set<number>();
-    product.features.forEach((f) => {
-      if (typeof f.thickness === "number") set.add(f.thickness);
-    });
-    return Array.from(set).sort((a, b) => a - b);
-  }, [product]);
+  const allSize1s = useMemo(() => {
+    const all = new Set<number>();
+    featureList.forEach((f) => f.size1 && all.add(f.size1));
+    return Array.from(all).sort((a, b) => a - b);
+  }, [featureList]);
 
-  // STEP 2: Get Size1 options based on selected thickness
-  const size1Options = useMemo(() => {
-    if (!product?.features || selectedThickness === null) return [];
-    const set = new Set<number>();
-    product.features.forEach((f) => {
-      if (f.thickness === selectedThickness && typeof f.size1 === "number") {
-        set.add(f.size1);
+  const allThicknesses = useMemo(() => {
+    const all = new Set<number>();
+    featureList.forEach((f) => f.thickness && all.add(f.thickness));
+    return Array.from(all).sort((a, b) => a - b);
+  }, [featureList]);
+
+  const allFinishQualities = useMemo(() => {
+    const all = new Set<string>();
+    featureList.forEach((f) => f.finishQuality && all.add(f.finishQuality));
+    return Array.from(all).sort();
+  }, [featureList]);
+
+  const hasSize2 = useMemo(
+    () => featureList.some((f) => !!f.size2),
+    [featureList]
+  );
+
+  const allSize2s = useMemo(() => {
+    const all = new Set<number>();
+    featureList.forEach((f) => f.size2 && all.add(f.size2));
+    return Array.from(all).sort((a, b) => a - b);
+  }, [featureList]);
+
+  const availableThicknesses = useMemo(
+    () =>
+      getAvailableOptions(featureList, "thickness", {
+        thickness: null,
+        size1: selectedSize1,
+        size2: selectedSize2,
+        finishQuality: selectedFinishQuality,
+      }),
+    [featureList, selectedSize1, selectedSize2, selectedFinishQuality]
+  );
+
+  const availableSize1s = useMemo(
+    () =>
+      getAvailableOptions(featureList, "size1", {
+        thickness: selectedThickness,
+        size1: null,
+        size2: selectedSize2,
+        finishQuality: selectedFinishQuality,
+      }),
+    [featureList, selectedThickness, selectedSize2, selectedFinishQuality]
+  );
+
+  const availableSize2s = useMemo(
+    () =>
+      getAvailableOptions(featureList, "size2", {
+        thickness: selectedThickness,
+        size1: selectedSize1,
+        size2: null,
+        finishQuality: selectedFinishQuality,
+      }),
+    [featureList, selectedThickness, selectedSize1, selectedFinishQuality]
+  );
+
+  const availableFinishQualities = useMemo(
+    () =>
+      getAvailableOptions(featureList, "finishQuality", {
+        thickness: selectedThickness,
+        size1: selectedSize1,
+        size2: selectedSize2,
+        finishQuality: null,
+      }),
+    [featureList, selectedThickness, selectedSize1, selectedSize2]
+  );
+
+  const handleSelectionChange = (
+    field: "thickness" | "size1" | "size2" | "finishQuality",
+    value: number | string | null
+  ) => {
+    let newThickness =
+      field === "thickness" ? (value as number | null) : selectedThickness;
+    let newSize1 = field === "size1" ? (value as number | null) : selectedSize1;
+    let newSize2 = field === "size2" ? (value as number | null) : selectedSize2;
+    let newFinish =
+      field === "finishQuality"
+        ? (value as string | null)
+        : selectedFinishQuality;
+
+    const validate = (f: "thickness" | "size1" | "size2" | "finishQuality") => {
+      if (f === field) return;
+
+      const currentVal =
+        f === "thickness"
+          ? newThickness
+          : f === "size1"
+            ? newSize1
+            : f === "size2"
+              ? newSize2
+              : newFinish;
+      if (currentVal === null) return;
+
+      const available = getAvailableOptions(featureList, f, {
+        thickness: newThickness,
+        size1: newSize1,
+        size2: newSize2,
+        finishQuality: newFinish,
+      });
+
+      if (!available.includes(currentVal)) {
+        if (f === "thickness") newThickness = null;
+        if (f === "size1") newSize1 = null;
+        if (f === "size2") newSize2 = null;
+        if (f === "finishQuality") newFinish = null;
       }
-    });
-    return Array.from(set).sort((a, b) => a - b);
-  }, [product, selectedThickness]);
+    };
 
-  // STEP 3: Get Size2 options based on thickness and size1 (size2 is required)
-  const size2Options = useMemo(() => {
-    if (
-      !product?.features ||
-      selectedThickness === null ||
-      selectedSize1 === null
-    )
-      return [];
-    const set = new Set<number>();
-    product.features.forEach((f) => {
-      if (
-        f.thickness === selectedThickness &&
-        f.size1 === selectedSize1 &&
-        typeof f.size2 === "number"
-      ) {
-        set.add(f.size2);
-      }
-    });
-    return Array.from(set).sort((a, b) => a - b);
-  }, [product, selectedThickness, selectedSize1]);
+    (["thickness", "size1", "size2", "finishQuality"] as const).forEach(
+      validate
+    );
 
-  // STEP 4: Get Finish Quality options
-  const finishQualityOptions = useMemo(() => {
-    if (
-      !product?.features ||
-      selectedThickness === null ||
-      selectedSize1 === null ||
-      selectedSize2 === null
-    )
-      return [];
-    const set = new Set<string>();
-    product.features.forEach((f) => {
-      if (
-        f.thickness === selectedThickness &&
-        f.size1 === selectedSize1 &&
-        f.size2 === selectedSize2 &&
-        f.finishQuality
-      ) {
-        set.add(f.finishQuality);
-      }
-    });
-    return Array.from(set).sort();
-  }, [product, selectedThickness, selectedSize1, selectedSize2]);
+    if (newThickness !== selectedThickness) setSelectedThickness(newThickness);
+    if (newSize1 !== selectedSize1) setSelectedSize1(newSize1);
+    if (newSize2 !== selectedSize2) setSelectedSize2(newSize2);
+    if (newFinish !== selectedFinishQuality)
+      setSelectedFinishQuality(newFinish);
+  };
 
-  // Get the final selected feature (requires size2)
   const selectedFeature = useMemo(() => {
     if (
       !product?.features ||
@@ -224,7 +330,6 @@ export default function ProductDetailsCard() {
       selectedFinishQuality === null
     )
       return null;
-
     return (
       product.features.find(
         (f) =>
@@ -242,91 +347,56 @@ export default function ProductDetailsCard() {
     selectedFinishQuality,
   ]);
 
-  // Get available unit sizes for the selected feature
-  const availableUnitSizes = useMemo(() => {
-    return selectedFeature?.unitSizes || [];
-  }, [selectedFeature]);
+  const availableUnitSizes = useMemo(
+    () => selectedFeature?.unitSizes || [],
+    [selectedFeature]
+  );
 
-  // Calculate total weight (kg)
   const totalWeight = useMemo(() => {
     if (!selectedFeature) return 0;
     const kgsPerUnit = selectedFeature.kgsPerUnit ?? 0;
-
     if (selectedUnitSizeMm !== null) {
       const meters = selectedUnitSizeMm / 1000;
       return kgsPerUnit * meters * quantity;
     }
+    const meters = rangeLengthMm / 1000;
+    return kgsPerUnit * meters * quantity;
+  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity]);
 
-    // rangeLengthMeters is in meters
-    return kgsPerUnit * rangeLengthMeters * quantity;
-  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMeters, quantity]);
-
-  // Calculate shipping cost and method automatically
   const { shippingCost, shippingMethod } = useMemo(() => {
     if (!selectedFeature) return { shippingCost: 0, shippingMethod: "courier" };
-
-    const lengthMm = selectedUnitSizeMm ?? rangeLengthMeters * 1000;
-
-    // Auto-determine method: > 2500mm requires Truck
-    // Also logic: if weight > 150kg, usually Truck is better/required?
-    // For now, adhering to the length rule found in comments.
+    const lengthMm = selectedUnitSizeMm ?? rangeLengthMm;
     const isCourier = lengthMm <= 2500;
-
     const cost = calculateShippingCost(totalWeight, lengthMm, isCourier);
-
     return {
       shippingCost: cost,
       shippingMethod: isCourier ? "courier" : "truck",
     };
-  }, [selectedFeature, totalWeight, selectedUnitSizeMm, rangeLengthMeters]);
+  }, [selectedFeature, totalWeight, selectedUnitSizeMm, rangeLengthMm]);
 
-  // Calculate product price
   const productPrice = useMemo(() => {
     if (!selectedFeature) return 0;
     const pricePerMeter = selectedFeature.miterPerUnitPrice ?? 0;
-
     if (selectedUnitSizeMm !== null) {
       const meters = selectedUnitSizeMm / 1000;
       return pricePerMeter * meters * quantity;
     }
+    const meters = rangeLengthMm / 1000;
+    return pricePerMeter * meters * quantity;
+  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity]);
 
-    return pricePerMeter * rangeLengthMeters * quantity;
-  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMeters, quantity]);
+  const totalPrice = useMemo(
+    () => productPrice + shippingCost,
+    [productPrice, shippingCost]
+  );
 
-  // Total price including shipping
-  const totalPrice = useMemo(() => {
-    return productPrice + shippingCost;
-  }, [productPrice, shippingCost]);
-
-  // Selection handlers with progressive reset
-  const handleThicknessSelect = (thickness: number) => {
-    setSelectedThickness(thickness);
-    setSelectedSize1(null);
-    setSelectedSize2(null);
-    setSelectedFinishQuality(null);
-    setSelectedUnitSizeMm(null);
-  };
-
-  const handleSize1Select = (size: number) => {
-    setSelectedSize1(size);
-    setSelectedSize2(null);
-    setSelectedFinishQuality(null);
-    setSelectedUnitSizeMm(null);
-  };
-
-  const handleSize2Select = (size: number) => {
-    setSelectedSize2(size);
-    setSelectedFinishQuality(null);
-    setSelectedUnitSizeMm(null);
-  };
-
-  const handleFinishQualitySelect = (quality: string) => {
-    setSelectedFinishQuality(quality);
+  const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value);
+    setRangeLengthMm(val);
     setSelectedUnitSizeMm(null);
   };
 
   const handleUnitSizeSelect = (size: number) => {
-    // Toggle: if clicking the currently selected size, unselect it (reverting to custom length mode)
     if (selectedUnitSizeMm === size) {
       setSelectedUnitSizeMm(null);
     } else {
@@ -334,115 +404,128 @@ export default function ProductDetailsCard() {
     }
   };
 
-  const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value);
-    setRangeLengthMeters(val);
-    setSelectedUnitSizeMm(null); // Switch to custom mode automatically
+  const handleClearFilters = () => {
+    setSelectedThickness(null);
+    setSelectedSize1(null);
+    setSelectedSize2(null);
+    setSelectedFinishQuality(null);
+    setSelectedUnitSizeMm(null);
+    setRangeLengthMm(product?.minRange ? product.minRange * 1000 : 1000);
   };
 
-  // Calculate current step number and status message
-  const stepStatus = useMemo(() => {
-    if (selectedThickness === null) {
-      return {
-        emoji: "👆",
-        title: "Begin Customization",
-        description:
-          "Select a thickness above to view available sizes, pricing, and shipping costs.",
-      };
-    }
-    if (selectedSize1 === null) {
-      return {
-        emoji: "👆",
-        title: "Select Size 1",
-        description: "Select Size 1 (Width/Diameter) to proceed.",
-      };
-    }
-    if (selectedSize2 === null) {
-      return {
-        emoji: "👆",
-        title: "Select Size 2",
-        description: "Select Size 2 (Height / Second Dimension) to continue.",
-      };
-    }
-    if (selectedFinishQuality === null) {
-      return {
-        emoji: "👆",
-        title: "Select Finish",
-        description:
-          "Select a Finish Quality to view final pricing and shipping options.",
-      };
-    }
-    return {
-      emoji: "🎉",
-      title: "Configuration Complete",
-      description: "Review your selection below.",
-    };
-  }, [selectedThickness, selectedSize1, selectedSize2, selectedFinishQuality]);
-
-  // Checkout / Add to cart handlers (placeholder)
   const canCheckout =
     !!selectedFeature &&
-    (selectedUnitSizeMm !== null || rangeLengthMeters > 0) &&
+    (selectedUnitSizeMm !== null || rangeLengthMm > 0) &&
     quantity > 0;
 
-  const handleAddToCart = () => {
-    if (!canCheckout || !product) return;
+  const hasAnySelection =
+    selectedThickness ||
+    selectedSize1 ||
+    selectedSize2 ||
+    selectedFinishQuality;
 
+  const handleAddToCart = () => {
     if (!token) {
       toast.error("Please login to add items to cart");
       return;
     }
 
-    // Calculate unit price (price for 1 item)
-    const pricePerMeter = selectedFeature?.miterPerUnitPrice ?? 0;
-    const lengthMeters = selectedUnitSizeMm
-      ? selectedUnitSizeMm / 1000
-      : rangeLengthMeters;
-    const unitPrice = pricePerMeter * lengthMeters;
+    if (!product || !selectedFeature) {
+      toast.error("Please select a valid configuration");
+      return;
+    }
 
-    addToCartMutate(
-      {
-        type: "product",
-        quantity,
-        price: Number(unitPrice.toFixed(2)),
-        product: {
-          productId: product._id,
-          featuredId: selectedFeature?._id,
-          size: selectedFeature?.size1,
-          unitSize: selectedUnitSizeMm ? selectedUnitSizeMm / 1000 : undefined, // sending as meter
-          range: rangeLengthMeters,
-        },
+    const payload = {
+      productId: product._id,
+      type: "product",
+      quantity,
+      price: totalPrice,
+      attributes: {
+        thickness: selectedFeature.thickness,
+        size1: selectedFeature.size1,
+        size2: selectedFeature.size2,
+        finishQuality: selectedFeature.finishQuality,
+        unitSize: selectedUnitSizeMm
+          ? `${selectedUnitSizeMm / 1000}m`
+          : `${rangeLengthMm / 1000}m`,
+        reference: selectedFeature.reference,
       },
-      {
-        onSuccess: () => {
-          toast.success("Added to cart successfully");
-        },
-        onError: () => {
-          toast.error("Failed to add to cart");
-        },
-      }
-    );
+    };
+
+    addToCartMutate(payload, {
+      onSuccess: () => {
+        toast.success("Added to cart successfully!");
+        handleClearFilters();
+        setQuantity(1);
+      },
+      //eslint-disable-next-line
+      onError: (err: any) => {
+        toast.error(err.message || "Failed to add to cart");
+      },
+    });
   };
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-10">
-        <Skeleton className="h-8 w-1/3 mb-4" />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-6">
-            <Skeleton className="w-full h-[520px] mb-4" />
-            <div className="flex gap-3">
-              <Skeleton className="w-20 h-20" />
-              <Skeleton className="w-20 h-20" />
-              <Skeleton className="w-20 h-20" />
+      <div className="min-h-screen bg-transparent py-8">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* LEFT: Image Skeleton */}
+            <div className="lg:col-span-5">
+              <div className="sticky top-8">
+                <Skeleton className="w-full h-[500px] rounded-2xl" />
+
+                <div className="mt-4 flex gap-3">
+                  {[...Array(4)].map((_, i) => (
+                    <Skeleton key={i} className="w-24 h-24 rounded-xl" />
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="lg:col-span-6">
-            <Skeleton className="h-6 w-2/3 mb-2" />
-            <Skeleton className="h-4 w-full mb-6" />
-            <Skeleton className="h-10 w-full mb-4" />
-            <Skeleton className="h-10 w-full mb-4" />
-            <Skeleton className="h-10 w-full mb-4" />
+
+            {/* RIGHT: Details Skeleton */}
+            <div className="lg:col-span-7">
+              <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-orange-100 space-y-6">
+                {/* Title */}
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+
+                {/* Option Blocks */}
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="p-5 rounded-xl border-2 border-orange-200 space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-5 w-40" />
+                      <Skeleton className="h-4 w-12" />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {[...Array(6)].map((_, j) => (
+                        <Skeleton
+                          key={j}
+                          className="h-10 w-[70px] rounded-lg"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Price Summary */}
+                <div className="p-5 rounded-xl border-2 border-orange-200 space-y-3">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-8 w-1/3" />
+                </div>
+
+                {/* Add to Cart Button */}
+                <Skeleton className="h-14 w-full rounded-xl" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -451,554 +534,626 @@ export default function ProductDetailsCard() {
 
   if (isError || !product) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-red-600">
-          Failed to load product. {error?.message ?? ""}
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
+        <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md mx-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            Product Not Found
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error?.message ||
+              "We couldn't find the product you're looking for."}
+          </p>
+          <Link
+            href="/products"
+            className="inline-block px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors"
+          >
+            Browse All Products
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* LEFT: Image Section */}
-        <div className="lg:col-span-6">
-          <div className="rounded-lg overflow-hidden border bg-gray-50">
-            <div className="relative w-full h-[520px]">
-              {product.productImage?.[selectedThumbnail]?.url ? (
-                <Image
-                  src={product.productImage[selectedThumbnail].url}
-                  alt={product.productName}
-                  fill
-                  style={{ objectFit: "cover" }}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  No image
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Thumbnails */}
-          <div className="mt-4 flex gap-3 items-center overflow-x-auto pb-2">
-            {product.productImage && product.productImage.length > 0 ? (
-              product.productImage.map((img, idx) => (
-                <button
-                  key={img._id ?? idx}
-                  onClick={() => setSelectedThumbnail(idx)}
-                  className={`w-20 h-20 rounded-md overflow-hidden border-2 flex-shrink-0 ${
-                    selectedThumbnail === idx
-                      ? "border-rose-800"
-                      : "border-gray-300"
-                  } p-0`}
-                >
-                  <div className="relative w-full h-full">
+    <div className="min-h-screen bg-transparent py-8">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* LEFT: Image Section */}
+          <div className="lg:col-span-5">
+            <div className="sticky top-8">
+              <div className="rounded-2xl overflow-hidden border-2 border-orange-200 bg-white shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                <div className="relative w-full h-[500px] bg-transparent">
+                  {product.productImage?.[selectedThumbnail]?.url ? (
                     <Image
-                      src={img?.url}
-                      alt={`${product.productName}-${idx}`}
+                      src={product.productImage[selectedThumbnail].url}
+                      alt={product.productName}
                       fill
-                      style={{ objectFit: "cover" }}
+                      className="object-cover"
                     />
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="text-sm text-gray-500">No thumbnails</div>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT: Progressive Selection */}
-        <div className="lg:col-span-6 flex flex-col">
-          <h1 className="text-2xl lg:text-3xl font-semibold mb-3">
-            {product.productName}
-          </h1>
-          <p className="text-sm text-gray-500 mb-6">
-            {product.productDescription ||
-              "Crafted for strength and durability. Available in multiple sizes and finishes."}
-          </p>
-
-          {/* STEP 1: Select Thickness */}
-          <div className="mb-6">
-            <div className="text-sm font-medium text-rose-800 mb-2 flex items-center gap-2">
-              <span className="bg-rose-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                1
-              </span>
-              Select Thickness
-              <Tooltip
-                text={TOOLTIPS.thickness}
-                step="thickness"
-                showTooltip={showTooltip}
-                setShowTooltip={setShowTooltip}
-              />
-              {selectedThickness === null && (
-                <span className="ml-auto text-xs text-rose-600 font-medium animate-pulse">
-                  👉 Choose to continue
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {thicknessOptions.length === 0 ? (
-                <div className="text-sm text-gray-400">
-                  No thickness options available
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      No image
+                    </div>
+                  )}
                 </div>
-              ) : (
-                thicknessOptions.map((thickness) => (
+              </div>
+
+              <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+                {product.productImage?.map((img, idx) => (
                   <button
-                    key={thickness}
-                    onClick={() => handleThicknessSelect(thickness)}
-                    className={`px-4 py-2 rounded border transition-all ${
-                      selectedThickness === thickness
-                        ? "bg-rose-800 border-rose-800 text-white shadow-md"
-                        : "bg-white border-gray-300 text-gray-700 hover:border-rose-400"
+                    key={idx}
+                    onClick={() => setSelectedThumbnail(idx)}
+                    className={`w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${
+                      selectedThumbnail === idx
+                        ? "border-orange-600 shadow-lg scale-105 ring-2 ring-orange-300"
+                        : "border-orange-200 hover:border-orange-300 hover:scale-102"
                     }`}
                   >
-                    {thickness}mm
+                    <Image
+                      src={img.url}
+                      alt={`${product.productName}-${idx}`}
+                      fill
+                      className="object-cover"
+                    />
                   </button>
-                ))
-              )}
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* STEP 2: Select Size 1 */}
-          {selectedThickness !== null && (
-            <div className="mb-6">
-              <div className="text-sm font-medium text-rose-800 mb-2 flex items-center gap-2">
-                <span className="bg-rose-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                  2
-                </span>
-                Select Size 1 (Width/Diameter)
-                <Tooltip
-                  text={TOOLTIPS.size1}
-                  step="size1"
-                  showTooltip={showTooltip}
-                  setShowTooltip={setShowTooltip}
-                />
-                {selectedSize1 === null && (
-                  <span className="ml-auto text-xs text-rose-600 font-medium animate-pulse">
-                    👉 Choose to continue
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {size1Options.length === 0 ? (
-                  <div className="text-sm text-gray-400">
-                    No size options available
-                  </div>
-                ) : (
-                  size1Options.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => handleSize1Select(size)}
-                      className={`px-4 py-2 rounded border transition-all ${
-                        selectedSize1 === size
-                          ? "bg-rose-800 border-rose-800 text-white shadow-md"
-                          : "bg-white border-gray-300 text-gray-700 hover:border-rose-400"
-                      }`}
-                    >
-                      {size}mm
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: Select Size 2 (required) */}
-          {selectedSize1 !== null && (
-            <div className="mb-6">
-              <div className="text-sm font-medium text-rose-800 mb-2 flex items-center gap-2">
-                <span className="bg-rose-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                  3
-                </span>
-                Select Size 2 (Height / Second Dimension) —{" "}
-                <span className="font-medium">required</span>
-                <Tooltip
-                  text={TOOLTIPS.size2}
-                  step="size2"
-                  showTooltip={showTooltip}
-                  setShowTooltip={setShowTooltip}
-                />
-                {selectedSize2 === null && (
-                  <span className="ml-auto text-xs text-rose-600 font-medium animate-pulse">
-                    👉 Choose to continue
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {size2Options.length === 0 ? (
-                  <div className="text-sm text-gray-400">
-                    No size2 options available for this Thickness & Size 1
-                  </div>
-                ) : (
-                  size2Options.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => handleSize2Select(size)}
-                      className={`px-4 py-2 rounded border transition-all ${
-                        selectedSize2 === size
-                          ? "bg-rose-800 border-rose-800 text-white shadow-md"
-                          : "bg-white border-gray-300 text-gray-700 hover:border-rose-400"
-                      }`}
-                    >
-                      {size}mm
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: Select Finish Quality */}
-          {selectedSize2 !== null && (
-            <div className="mb-6">
-              <div className="text-sm font-medium text-rose-800 mb-2 flex items-center gap-2">
-                <span className="bg-rose-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                  4
-                </span>
-                Select Finish Quality
-                <Tooltip
-                  text={TOOLTIPS.finishQuality}
-                  step="finishQuality"
-                  showTooltip={showTooltip}
-                  setShowTooltip={setShowTooltip}
-                />
-                {selectedFinishQuality === null && (
-                  <span className="ml-auto text-xs text-rose-600 font-medium animate-pulse">
-                    👉 Choose to continue
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {finishQualityOptions.length === 0 ? (
-                  <div className="text-sm text-gray-400">
-                    No finish options available
-                  </div>
-                ) : (
-                  finishQualityOptions.map((quality) => (
-                    <button
-                      key={quality}
-                      onClick={() => handleFinishQualitySelect(quality)}
-                      className={`px-4 py-2 rounded border transition-all ${
-                        selectedFinishQuality === quality
-                          ? "bg-rose-800 border-rose-800 text-white shadow-md"
-                          : "bg-white border-gray-300 text-gray-700 hover:border-rose-400"
-                      }`}
-                    >
-                      {quality}
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Show feature details when selected */}
-          {selectedFeature ? (
-            <>
-              {/* Feature Info Card */}
-              <div className="mb-6 p-4 border rounded-lg bg-rose-50">
-                <div className="text-sm font-medium text-gray-700 mb-2">
-                  Selected Configuration
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="text-gray-600">
-                    Reference:{" "}
-                    <span className="font-medium text-gray-900">
-                      {selectedFeature.reference}
-                    </span>
-                  </div>
-                  <div className="text-gray-600">
-                    Thickness:{" "}
-                    <span className="font-medium text-gray-900">
-                      {selectedFeature.thickness}mm
-                    </span>
-                  </div>
-                  <div className="text-gray-600">
-                    Size 1:{" "}
-                    <span className="font-medium text-gray-900">
-                      {selectedFeature.size1}mm
-                    </span>
-                  </div>
-                  <div className="text-gray-600">
-                    Size 2:{" "}
-                    <span className="font-medium text-gray-900">
-                      {selectedFeature.size2}mm
-                    </span>
-                  </div>
-                  <div className="text-gray-600">
-                    Finish:{" "}
-                    <span className="font-medium text-gray-900">
-                      {selectedFeature.finishQuality}
-                    </span>
-                  </div>
-                  <div className="text-gray-600">
-                    Weight:{" "}
-                    <span className="font-medium text-gray-900">
-                      {selectedFeature.kgsPerUnit} kg/m
-                    </span>
-                  </div>
-                  <div className="col-span-2 text-gray-600">
-                    Price per meter:{" "}
-                    <span className="font-medium text-rose-800">
-                      €{selectedFeature.miterPerUnitPrice}
-                    </span>
-                  </div>
+          {/* RIGHT: Configuration */}
+          <div className="lg:col-span-7">
+            <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-orange-100">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {product.productName}
+                  </h1>
+                  <p className="text-gray-600 leading-relaxed">
+                    {product.productDescription}
+                  </p>
                 </div>
               </div>
 
-              {/* STEP 5: Length Selection */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm font-medium text-rose-800 flex items-center gap-2">
-                    <span className="bg-rose-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                      5
+              {/* Clear Filters Button */}
+              {hasAnySelection && (
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={handleClearFilters}
+                    className="flex items-center gap-2 text-sm text-orange-700 hover:text-orange-800 font-medium px-4 py-2 rounded-lg hover:bg-orange-50 transition-all border border-orange-200"
+                  >
+                    <Trash2 size={16} />
+                    Clear All Filters
+                  </button>
+                </div>
+              )}
+
+              {/* Selection Grid */}
+              <div className="space-y-6 mb-8">
+                {/* Size 1 (Width) */}
+                <div className="p-5 bg-gradient-to-br from-orange-50 via-amber-50 to-white rounded-xl border-2 border-orange-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-[#2C0800] text-orange-100 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                        1
+                      </div>
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Width / Diameter
+                      </h3>
+                      <Tooltip
+                        text={TOOLTIPS.size1}
+                        step="size1"
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-500 font-medium">
+                      in mm
                     </span>
-                    Select Length
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {allSize1s.map((size) => {
+                      const isAvailable = availableSize1s.includes(size);
+                      const isSelected = selectedSize1 === size;
+                      return (
+                        <button
+                          key={size}
+                          onClick={() =>
+                            handleSelectionChange(
+                              "size1",
+                              isSelected ? null : size
+                            )
+                          }
+                          disabled={!isAvailable && !isSelected}
+                          className={`min-w-[70px] px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                            isSelected
+                              ? "bg-[#2C0800] text-orange-100 shadow-lg scale-105 ring-2 ring-orange-300"
+                              : isAvailable
+                                ? "bg-white border-2 border-orange-200 text-gray-700 hover:border-orange-400 hover:shadow-sm"
+                                : "bg-gray-50 border-2 border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Size 2 (Height) - if applicable */}
+                {hasSize2 && (
+                  <div className="p-5 bg-gradient-to-br from-amber-50 via-orange-50 to-white rounded-xl border-2 border-amber-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-amber-700 text-amber-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                          2
+                        </div>
+                        <h3 className="text-base font-semibold text-gray-900">
+                          Height / Second Dimension
+                        </h3>
+                        <Tooltip
+                          text={TOOLTIPS.size2}
+                          step="size2"
+                          showTooltip={showTooltip}
+                          setShowTooltip={setShowTooltip}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500 font-medium">
+                        in mm
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {allSize2s.map((size) => {
+                        const isAvailable = availableSize2s.includes(size);
+                        const isSelected = selectedSize2 === size;
+                        return (
+                          <button
+                            key={size}
+                            onClick={() =>
+                              handleSelectionChange(
+                                "size2",
+                                isSelected ? null : size
+                              )
+                            }
+                            disabled={!isAvailable && !isSelected}
+                            className={`min-w-[70px] px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                              isSelected
+                                ? "bg-amber-700 text-amber-50 shadow-lg scale-105 ring-2 ring-amber-300"
+                                : isAvailable
+                                  ? "bg-white border-2 border-amber-200 text-gray-700 hover:border-amber-400 hover:shadow-sm"
+                                  : "bg-gray-50 border-2 border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Thickness */}
+                <div className="p-5 bg-gradient-to-br from-red-50 via-orange-50 to-white rounded-xl border-2 border-red-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-red-700 text-red-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                        3
+                      </div>
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Thickness
+                      </h3>
+                      <Tooltip
+                        text={TOOLTIPS.thickness}
+                        step="thickness"
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-500 font-medium">
+                      in mm
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {allThicknesses.map((thickness) => {
+                      const isAvailable =
+                        availableThicknesses.includes(thickness);
+                      const isSelected = selectedThickness === thickness;
+                      return (
+                        <button
+                          key={thickness}
+                          onClick={() =>
+                            handleSelectionChange(
+                              "thickness",
+                              isSelected ? null : thickness
+                            )
+                          }
+                          disabled={!isAvailable && !isSelected}
+                          className={`min-w-[70px] px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                            isSelected
+                              ? "bg-red-700 text-red-50 shadow-lg scale-105 ring-2 ring-red-300"
+                              : isAvailable
+                                ? "bg-white border-2 border-red-200 text-gray-700 hover:border-red-400 hover:shadow-sm"
+                                : "bg-gray-50 border-2 border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {thickness}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Finish Quality */}
+                <div className="p-5 bg-gradient-to-br from-yellow-50 via-amber-50 to-white rounded-xl border-2 border-yellow-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-yellow-700 text-yellow-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                        4
+                      </div>
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Finish Quality
+                      </h3>
+                      <Tooltip
+                        text={TOOLTIPS.finishQuality}
+                        step="finishQuality"
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {allFinishQualities.map((quality) => {
+                      const isAvailable =
+                        availableFinishQualities.includes(quality);
+                      const isSelected = selectedFinishQuality === quality;
+                      return (
+                        <button
+                          key={quality}
+                          onClick={() =>
+                            handleSelectionChange(
+                              "finishQuality",
+                              isSelected ? null : quality
+                            )
+                          }
+                          disabled={!isAvailable && !isSelected}
+                          className={`px-5 py-3 rounded-lg font-medium text-sm transition-all ${
+                            isSelected
+                              ? "bg-yellow-700 text-yellow-50 shadow-lg scale-105 ring-2 ring-yellow-300"
+                              : isAvailable
+                                ? "bg-white border-2 border-yellow-200 text-gray-700 hover:border-yellow-400 hover:shadow-sm"
+                                : "bg-gray-50 border-2 border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                          }`}
+                        >
+                          {quality}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Length Selection - Always Visible */}
+                <div className="p-5 bg-gradient-to-br from-green-50 via-emerald-50 to-white rounded-xl border-2 border-green-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-green-700 text-green-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                        5
+                      </div>
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Length Selection
+                      </h3>
+                      <Tooltip
+                        text={TOOLTIPS.length}
+                        step="length"
+                        showTooltip={showTooltip}
+                        setShowTooltip={setShowTooltip}
+                      />
+                    </div>
+                    {selectedUnitSizeMm === null ? (
+                      <span className="text-xs font-semibold text-green-800 bg-green-100 px-3 py-1 rounded-full border border-green-300">
+                        Custom Length
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold text-blue-800 bg-blue-100 px-3 py-1 rounded-full border border-blue-300">
+                        Standard Size
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Standard Lengths */}
+                    {availableUnitSizes.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <ListChecks size={18} className="text-green-700" />
+                          <span className="text-sm font-semibold text-gray-700">
+                            Standard Lengths
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {availableUnitSizes.map((size) => (
+                            <button
+                              key={size}
+                              onClick={() => handleUnitSizeSelect(size)}
+                              className={`px-5 py-3 rounded-lg font-medium text-sm transition-all ${
+                                selectedUnitSizeMm === size
+                                  ? "bg-green-700 text-green-50 shadow-lg scale-105 ring-2 ring-green-300"
+                                  : "bg-white border-2 border-green-200 text-gray-700 hover:border-green-400 hover:shadow-sm"
+                              }`}
+                            >
+                              {size}mm
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Custom Length in millimeters */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Ruler size={18} className="text-green-700" />
+                        <span className="text-sm font-semibold text-gray-700">
+                          Custom Length (mm)
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {/* Slider */}
+                        <input
+                          type="range"
+                          min={
+                            product.minRange ? product.minRange * 1000 : 1000
+                          }
+                          max={
+                            product.maxRange ? product.maxRange * 1000 : 12000
+                          }
+                          step={100}
+                          value={rangeLengthMm}
+                          onChange={handleRangeChange}
+                          className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer accent-[#2C0800]"
+                        />
+
+                        {/* Number Input */}
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 flex items-center border-2 border-orange-200 rounded-lg bg-white overflow-hidden focus-within:border-orange-500 transition-colors">
+                            <input
+                              type="number"
+                              min={
+                                product.minRange
+                                  ? product.minRange * 1000
+                                  : 1000
+                              }
+                              max={
+                                product.maxRange
+                                  ? product.maxRange * 1000
+                                  : 12000
+                              }
+                              step={100}
+                              value={rangeLengthMm}
+                              onChange={handleRangeChange}
+                              className="flex-1 px-4 py-3 text-center text-base font-medium focus:outline-none"
+                            />
+                            <span className="px-4 text-sm text-gray-600 font-medium bg-orange-50 h-full flex items-center border-l-2 border-orange-200">
+                              mm
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Range:{" "}
+                            {product.minRange ? product.minRange * 1000 : 1000}
+                            mm -{" "}
+                            {product.maxRange ? product.maxRange * 1000 : 12000}
+                            mm
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Configuration Summary */}
+              {selectedFeature && (
+                <div className="mb-6 p-5 border-2 border-orange-200 rounded-xl bg-gradient-to-br from-orange-50 via-amber-50 to-white">
+                  <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <span className="w-6 h-6 bg-[#2C0800] text-orange-100 rounded-full flex items-center justify-center text-xs">
+                      ✓
+                    </span>
+                    Selected Configuration
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                      <div className="text-gray-500 text-xs mb-1">
+                        Reference
+                      </div>
+                      <div className="font-semibold text-gray-900">
+                        {selectedFeature.reference}
+                      </div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                      <div className="text-gray-500 text-xs mb-1">
+                        Thickness
+                      </div>
+                      <div className="font-semibold text-gray-900">
+                        {selectedFeature.thickness}mm
+                      </div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                      <div className="text-gray-500 text-xs mb-1">
+                        Dimensions
+                      </div>
+                      <div className="font-semibold text-gray-900">
+                        {selectedFeature.size1} × {selectedFeature.size2}mm
+                      </div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                      <div className="text-gray-500 text-xs mb-1">Finish</div>
+                      <div className="font-semibold text-gray-900">
+                        {selectedFeature.finishQuality}
+                      </div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                      <div className="text-gray-500 text-xs mb-1">
+                        Weight/meter
+                      </div>
+                      <div className="font-semibold text-gray-900">
+                        {selectedFeature.kgsPerUnit} kg/m
+                      </div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                      <div className="text-gray-500 text-xs mb-1">
+                        Price/meter
+                      </div>
+                      <div className="font-semibold text-orange-700">
+                        €{selectedFeature.miterPerUnitPrice}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Shipping Method */}
+              {selectedFeature && (
+                <div className="mb-6 p-5 rounded-xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-8 h-8 bg-[#2C0800] text-orange-100 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      6
+                    </span>
+                    <h3 className="text-base font-semibold text-gray-900">
+                      Shipping Method
+                    </h3>
+                    <span className="text-xs text-gray-500">
+                      (Auto-Calculated)
+                    </span>
                     <Tooltip
-                      text={TOOLTIPS.length}
-                      step="length"
+                      text={TOOLTIPS.shipping}
+                      step="shipping"
                       showTooltip={showTooltip}
                       setShowTooltip={setShowTooltip}
                     />
                   </div>
-                  {/* Status Indicator */}
-                  {selectedUnitSizeMm === null ? (
-                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
-                      Mod: Custom Length
-                    </span>
-                  ) : (
-                    <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">
-                      Mod: Standard Size
-                    </span>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Option A: Standard Sizes */}
-                  {availableUnitSizes.length > 0 && (
-                    <div
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                        selectedUnitSizeMm !== null
-                          ? "border-rose-600 bg-rose-50/30"
-                          : "border-gray-100 bg-white hover:border-gray-200"
-                      }`}
-                    >
-                      <div className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <ListChecks size={16} className="text-rose-600" />
-                        Standard Lengths
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {availableUnitSizes.map((size) => (
-                          <button
-                            key={size}
-                            onClick={() => handleUnitSizeSelect(size)}
-                            className={`px-3 py-2 text-sm rounded-lg border font-medium transition-all w-full sm:w-auto ${
-                              selectedUnitSizeMm === size
-                                ? "bg-rose-600 text-white border-rose-600 shadow-sm transform scale-105"
-                                : "bg-white text-gray-600 border-gray-200 hover:border-rose-300 hover:text-rose-600"
-                            }`}
-                          >
-                            {size}mm
-                          </button>
-                        ))}
-                      </div>
-                      <p className="text-xs text-gray-400 mt-3 leading-relaxed">
-                        Select a standard size for quicker delivery. Click again
-                        to deselect.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Option B: Custom Length */}
                   <div
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                      selectedUnitSizeMm === null
-                        ? "border-rose-600 bg-rose-50/30"
-                        : "border-gray-100 bg-white hover:border-gray-200 opacity-90"
+                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${
+                      shippingMethod === "courier"
+                        ? "bg-green-50 border-green-300"
+                        : "bg-blue-50 border-blue-300"
                     }`}
-                    onClick={() => {
-                      if (selectedUnitSizeMm !== null)
-                        setSelectedUnitSizeMm(null);
-                    }}
                   >
-                    <div className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Ruler size={16} className="text-rose-600" />
-                      Custom Length
-                    </div>
-
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="relative flex-1">
-                        <input
-                          type="range"
-                          min={product.minRange ?? 1}
-                          max={product.maxRange ?? 12}
-                          step={0.1}
-                          value={rangeLengthMeters}
-                          onChange={handleRangeChange}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-rose-600"
-                        />
+                    <div>
+                      <div
+                        className={`font-bold text-base ${shippingMethod === "courier" ? "text-green-800" : "text-blue-800"}`}
+                      >
+                        {shippingMethod === "courier"
+                          ? "🚚 Courier Service"
+                          : "🚛 Truck Delivery"}
                       </div>
-                      <div className="flex items-center border-2 border-gray-200 rounded-lg bg-white overflow-hidden w-24 focus-within:border-rose-500 transition-colors">
-                        <input
-                          type="number"
-                          min={product.minRange ?? 1}
-                          max={product.maxRange ?? 12}
-                          step={0.1}
-                          value={rangeLengthMeters}
-                          onChange={handleRangeChange}
-                          className="w-full px-2 py-1.5 text-center text-sm font-medium focus:outline-none"
-                        />
-                        <span className="pr-2 text-xs text-gray-500 font-medium bg-gray-50 h-full flex items-center border-l">
-                          m
+                      <div className="text-xs text-gray-600 mt-1">
+                        {shippingMethod === "courier"
+                          ? "Standard Package (≤ 2.5m)"
+                          : "Large Freight (> 2.5m)"}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div
+                        className={`text-2xl font-bold ${shippingMethod === "courier" ? "text-green-700" : "text-blue-700"}`}
+                      >
+                        €{shippingCost.toFixed(2)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Total Weight: {totalWeight.toFixed(1)} kg
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Quantity and Pricing */}
+              <div className="border-t-2 border-orange-200 pt-6">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+                  {/* Quantity */}
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-gray-700 mb-2">
+                      Quantity
+                    </span>
+                    <div className="flex items-center border-2 border-orange-200 rounded-lg overflow-hidden bg-white">
+                      <button
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        className="px-4 py-3 hover:bg-orange-50 transition-colors border-r-2 border-orange-200"
+                      >
+                        <Minus size={18} />
+                      </button>
+                      <span className="px-6 py-3 text-lg font-bold min-w-[4rem] text-center">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => setQuantity((q) => q + 1)}
+                        className="px-4 py-3 hover:bg-orange-50 transition-colors border-l-2 border-orange-200"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Price Breakdown */}
+                  {selectedFeature && (
+                    <div className="flex-1 bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-xl border-2 border-orange-200">
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-gray-600">Product Price:</span>
+                        <span className="font-semibold text-gray-900">
+                          €{productPrice.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm mb-3 pb-3 border-b border-orange-200">
+                        <span className="text-gray-600">Shipping Cost:</span>
+                        <span className="font-semibold text-gray-900">
+                          €{shippingCost.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-gray-900">
+                          Total:
+                        </span>
+                        <span className="text-2xl font-bold text-orange-700">
+                          €{totalPrice.toFixed(2)}
                         </span>
                       </div>
                     </div>
-
-                    <p className="text-xs text-gray-500">
-                      Range:{" "}
-                      <span className="font-medium text-gray-900">
-                        {product.minRange ?? 1}m
-                      </span>{" "}
-                      —{" "}
-                      <span className="font-medium text-gray-900">
-                        {product.maxRange ?? 12}m
-                      </span>
-                    </p>
-                    {selectedUnitSizeMm !== null && (
-                      <div className="mt-2 text-xs text-rose-600 font-medium">
-                        Click here or drag slider to switch to Custom
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Quantity Selector */}
-              <div className="mb-6">
-                <div className="text-sm font-medium text-gray-700 mb-2">
-                  Quantity
-                </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="p-2 rounded border bg-gray-100 hover:bg-gray-200"
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <span className="font-medium">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="p-2 rounded border bg-gray-100 hover:bg-gray-200"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Auto Calculated Shipping Method */}
-              <div className="mb-6">
-                <div className="text-sm font-medium text-rose-800 mb-2 flex items-center gap-2">
-                  <span className="bg-rose-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
-                    6
-                  </span>
-                  Shipping Method (Auto-Calculated)
-                  <Tooltip
-                    text={TOOLTIPS.shipping}
-                    step="shipping"
-                    showTooltip={showTooltip}
-                    setShowTooltip={setShowTooltip}
-                  />
-                </div>
-                <div
-                  className={`p-3 rounded border flex items-center justify-between ${
-                    shippingMethod === "courier"
-                      ? "bg-green-50 border-green-200 text-green-800"
-                      : "bg-blue-50 border-blue-200 text-blue-800"
-                  }`}
-                >
-                  <span className="font-medium capitalize flex items-center gap-2">
-                    {shippingMethod === "courier"
-                      ? "Courier Service"
-                      : "Truck Delivery"}
-                  </span>
-                  <span className="text-sm opacity-80">
-                    {shippingMethod === "courier"
-                      ? "Standard Package (< 2.5m)"
-                      : "Large Freight (> 2.5m)"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Price Summary */}
-              <div className="mb-6 p-4 border rounded-lg bg-gray-50">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-700">Product Price:</span>
-                  <span className="font-medium">
-                    €{productPrice.toFixed(2)}
-                  </span>
+                  )}
                 </div>
 
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-700">Shipping:</span>
-                  <span className="font-medium">
-                    €{shippingCost.toFixed(2)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-lg font-semibold text-rose-800 border-t pt-3">
-                  <span>Total:</span>
-                  <span>€{totalPrice.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
+                {/* Add to Cart Button */}
                 <button
                   onClick={handleAddToCart}
-                  disabled={!canCheckout}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-all ${
-                    canCheckout
-                      ? "bg-white border-rose-800 text-rose-800 hover:bg-rose-50"
-                      : "bg-gray-200 border-gray-300 text-gray-500 cursor-not-allowed"
+                  disabled={!canCheckout || isPending}
+                  className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
+                    canCheckout && !isPending
+                      ? "bg-gradient-to-r from-[#2C0800] to-orange-900 text-orange-50 hover:from-orange-900 hover:to-[#2C0800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <ShoppingCart size={18} /> Add to Cart
+                  {isPending ? (
+                    <Loader2 className="animate-spin" size={22} />
+                  ) : (
+                    <ShoppingCart size={22} />
+                  )}
+                  {isPending
+                    ? "Adding to Cart..."
+                    : canCheckout
+                      ? "Add to Cart"
+                      : "Select Configuration to Continue"}
                 </button>
-              </div>
 
-              {/* <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!canCheckout}
-                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-all ${
-                    canCheckout
-                      ? "bg-white border-rose-800 text-rose-800 hover:bg-rose-50"
-                      : "bg-gray-200 border-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  <ShoppingCart size={18} /> Add to Cart
-                </button>
-              </div> */}
-            </>
-          ) : (
-            <div className="mt-8 p-8 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center text-center bg-gray-50/50">
-              <div className="w-12 h-12 bg-rose-100/50 rounded-full flex items-center justify-center mb-3">
-                <span className="text-xl animate-bounce">
-                  {stepStatus.emoji}
-                </span>
+                {!selectedFeature && (
+                  <p className="text-center text-sm text-gray-500 mt-3">
+                    Please select options from each category above to view
+                    pricing and add to cart
+                  </p>
+                )}
               </div>
-              <h3 className="text-gray-900 font-medium mb-1">
-                {stepStatus.title}
-              </h3>
-              <p className="text-gray-500 text-sm max-w-sm">
-                {stepStatus.description}
-              </p>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
