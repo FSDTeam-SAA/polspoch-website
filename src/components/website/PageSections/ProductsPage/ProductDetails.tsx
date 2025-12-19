@@ -18,6 +18,7 @@ import { useAddToCart } from "@/lib/hooks/useAddToCart";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Shipping cost calculation based on weight and length
 function calculateShippingCost(
@@ -466,12 +467,66 @@ export default function ProductDetails() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-transparent">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-12 h-12 text-orange-600 animate-spin" />
-          <p className="text-orange-800 font-medium">
-            Loading product details...
-          </p>
+      <div className="min-h-screen bg-transparent py-8">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* LEFT: Image Skeleton */}
+            <div className="lg:col-span-5">
+              <div className="sticky top-8">
+                <Skeleton className="w-full h-[500px] rounded-2xl" />
+
+                <div className="mt-4 flex gap-3">
+                  {[...Array(4)].map((_, i) => (
+                    <Skeleton key={i} className="w-24 h-24 rounded-xl" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: Details Skeleton */}
+            <div className="lg:col-span-7">
+              <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-orange-100 space-y-6">
+                {/* Title */}
+                <div className="space-y-3">
+                  <Skeleton className="h-8 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+
+                {/* Option Blocks */}
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="p-5 rounded-xl border-2 border-orange-200 space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-5 w-40" />
+                      <Skeleton className="h-4 w-12" />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {[...Array(6)].map((_, j) => (
+                        <Skeleton
+                          key={j}
+                          className="h-10 w-[70px] rounded-lg"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Price Summary */}
+                <div className="p-5 rounded-xl border-2 border-orange-200 space-y-3">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-8 w-1/3" />
+                </div>
+
+                {/* Add to Cart Button */}
+                <Skeleton className="h-14 w-full rounded-xl" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
