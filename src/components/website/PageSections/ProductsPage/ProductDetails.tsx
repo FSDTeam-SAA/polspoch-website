@@ -94,7 +94,7 @@ const Tooltip = ({
       onMouseEnter={() => setShowTooltip(step)}
       onMouseLeave={() => setShowTooltip(null)}
       onClick={() => setShowTooltip(showTooltip === step ? null : step)}
-      className="ml-2 text-gray-400 hover:text-orange-300 transition-colors"
+      className="ml-2 text-gray-400 hover:text-[#7E1800]/60 transition-colors"
       aria-label="Help"
     >
       <HelpCircle size={16} />
@@ -425,30 +425,30 @@ export default function ProductDetails() {
     selectedFinishQuality;
 
   const handleAddToCart = () => {
+    if (!canCheckout || !product) return;
+
     if (!token) {
       toast.error("Please login to add items to cart");
       return;
     }
 
-    if (!product || !selectedFeature) {
-      toast.error("Please select a valid configuration");
-      return;
-    }
+    // Calculate unit price (price for 1 item)
+    const pricePerMeter = selectedFeature?.miterPerUnitPrice ?? 0;
+    const lengthMeters = selectedUnitSizeMm
+      ? selectedUnitSizeMm / 1000
+      : rangeLengthMm / 1000;
+    const unitPrice = pricePerMeter * lengthMeters;
 
     const payload = {
-      productId: product._id,
       type: "product",
       quantity,
-      price: totalPrice,
-      attributes: {
-        thickness: selectedFeature.thickness,
-        size1: selectedFeature.size1,
-        size2: selectedFeature.size2,
-        finishQuality: selectedFeature.finishQuality,
-        unitSize: selectedUnitSizeMm
-          ? `${selectedUnitSizeMm / 1000}m`
-          : `${rangeLengthMm / 1000}m`,
-        reference: selectedFeature.reference,
+      price: Number(unitPrice.toFixed(2)),
+      product: {
+        productId: product._id,
+        featuredId: selectedFeature?._id,
+        size: selectedFeature?.size1,
+        unitSize: selectedUnitSizeMm ? selectedUnitSizeMm / 1000 : undefined,
+        range: selectedUnitSizeMm ? undefined : rangeLengthMm / 1000,
       },
     };
 
@@ -485,7 +485,7 @@ export default function ProductDetails() {
 
             {/* RIGHT: Details Skeleton */}
             <div className="lg:col-span-7">
-              <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-orange-100 space-y-6">
+              <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-[#7E1800]/10 space-y-6">
                 {/* Title */}
                 <div className="space-y-3">
                   <Skeleton className="h-8 w-3/4" />
@@ -497,7 +497,7 @@ export default function ProductDetails() {
                 {[...Array(4)].map((_, i) => (
                   <div
                     key={i}
-                    className="p-5 rounded-xl border-2 border-orange-200 space-y-4"
+                    className="p-5 rounded-xl border-2 border-[#7E1800]/20 space-y-4"
                   >
                     <div className="flex items-center justify-between">
                       <Skeleton className="h-5 w-40" />
@@ -516,7 +516,7 @@ export default function ProductDetails() {
                 ))}
 
                 {/* Price Summary */}
-                <div className="p-5 rounded-xl border-2 border-orange-200 space-y-3">
+                <div className="p-5 rounded-xl border-2 border-[#7E1800]/20 space-y-3">
                   <Skeleton className="h-4 w-1/2" />
                   <Skeleton className="h-4 w-2/3" />
                   <Skeleton className="h-8 w-1/3" />
@@ -548,7 +548,7 @@ export default function ProductDetails() {
           </p>
           <Link
             href="/products"
-            className="inline-block px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors"
+            className="inline-block px-6 py-3 bg-[#7E1800] text-white rounded-lg font-medium hover:bg-[#7E1800]/90 transition-colors"
           >
             Browse All Products
           </Link>
@@ -564,7 +564,7 @@ export default function ProductDetails() {
           {/* LEFT: Image Section */}
           <div className="lg:col-span-5">
             <div className="sticky top-8">
-              <div className="rounded-2xl overflow-hidden border-2 border-orange-200 bg-white shadow-xl hover:shadow-2xl transition-shadow duration-300">
+              <div className="rounded-2xl overflow-hidden border-2 border-[#7E1800]/20 bg-white shadow-xl hover:shadow-2xl transition-shadow duration-300">
                 <div className="relative w-full h-[500px] bg-transparent">
                   {product.productImage?.[selectedThumbnail]?.url ? (
                     <Image
@@ -586,10 +586,10 @@ export default function ProductDetails() {
                   <button
                     key={idx}
                     onClick={() => setSelectedThumbnail(idx)}
-                    className={`w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${
+                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${
                       selectedThumbnail === idx
-                        ? "border-orange-600 shadow-lg scale-105 ring-2 ring-orange-300"
-                        : "border-orange-200 hover:border-orange-300 hover:scale-102"
+                        ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                        : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
                     }`}
                   >
                     <Image
@@ -606,7 +606,7 @@ export default function ProductDetails() {
 
           {/* RIGHT: Configuration */}
           <div className="lg:col-span-7">
-            <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-orange-100">
+            <div className="bg-white rounded-2xl shadow-xl p-8 border-2 border-[#7E1800]/10">
               {/* Header */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex-1">
@@ -624,7 +624,7 @@ export default function ProductDetails() {
                 <div className="flex justify-end mb-4">
                   <button
                     onClick={handleClearFilters}
-                    className="flex items-center gap-2 text-sm text-orange-700 hover:text-orange-800 font-medium px-4 py-2 rounded-lg hover:bg-orange-50 transition-all border border-orange-200"
+                    className="flex items-center gap-2 text-sm text-[#7E1800] hover:text-[#7E1800]/80 font-medium px-4 py-2 rounded-lg hover:bg-[#7E1800]/5 transition-all border border-[#7E1800]/20"
                   >
                     <Trash2 size={16} />
                     Clear All Filters
@@ -633,15 +633,15 @@ export default function ProductDetails() {
               )}
 
               {/* Selection Grid */}
-              <div className="space-y-6 mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
                 {/* Size 1 (Width) */}
-                <div className="p-5 bg-gradient-to-br from-orange-50 via-amber-50 to-white rounded-xl border-2 border-orange-200">
+                <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-amber-50 to-white rounded-xl border-2 border-[#7E1800]/10">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-[#2C0800] text-orange-100 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      <div className="w-8 h-8 bg-[#7E1800] text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                         1
                       </div>
-                      <h3 className="text-base font-semibold text-gray-900">
+                      <h3 className="text-sm font-semibold text-gray-900">
                         Width / Diameter
                       </h3>
                       <Tooltip
@@ -651,7 +651,7 @@ export default function ProductDetails() {
                         setShowTooltip={setShowTooltip}
                       />
                     </div>
-                    <span className="text-xs text-gray-500 font-medium">
+                    <span className="text-[10px] text-gray-500 font-medium">
                       in mm
                     </span>
                   </div>
@@ -669,12 +669,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`min-w-[70px] px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
                             isSelected
-                              ? "bg-[#2C0800] text-orange-100 shadow-lg scale-105 ring-2 ring-orange-300"
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
                               : isAvailable
-                                ? "bg-white border-2 border-orange-200 text-gray-700 hover:border-orange-400 hover:shadow-sm"
-                                : "bg-gray-50 border-2 border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
                           }`}
                         >
                           {size}
@@ -686,13 +686,13 @@ export default function ProductDetails() {
 
                 {/* Size 2 (Height) - if applicable */}
                 {hasSize2 && (
-                  <div className="p-5 bg-gradient-to-br from-amber-50 via-orange-50 to-white rounded-xl border-2 border-amber-200">
+                  <div className="p-4 bg-gradient-to-br from-amber-50 via-[#7E1800]/5 to-white rounded-xl border-2 border-[#7E1800]/10">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-amber-700 text-amber-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                           2
                         </div>
-                        <h3 className="text-base font-semibold text-gray-900">
+                        <h3 className="text-sm font-semibold text-gray-900">
                           Height / Second Dimension
                         </h3>
                         <Tooltip
@@ -702,7 +702,7 @@ export default function ProductDetails() {
                           setShowTooltip={setShowTooltip}
                         />
                       </div>
-                      <span className="text-xs text-gray-500 font-medium">
+                      <span className="text-[10px] text-gray-500 font-medium">
                         in mm
                       </span>
                     </div>
@@ -720,12 +720,12 @@ export default function ProductDetails() {
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[70px] px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
                               isSelected
                                 ? "bg-amber-700 text-amber-50 shadow-lg scale-105 ring-2 ring-amber-300"
                                 : isAvailable
-                                  ? "bg-white border-2 border-amber-200 text-gray-700 hover:border-amber-400 hover:shadow-sm"
-                                  : "bg-gray-50 border-2 border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                                  ? "bg-white border border-amber-200 text-gray-700 hover:border-amber-400 hover:shadow-sm"
+                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
                             }`}
                           >
                             {size}
@@ -737,13 +737,13 @@ export default function ProductDetails() {
                 )}
 
                 {/* Thickness */}
-                <div className="p-5 bg-gradient-to-br from-red-50 via-orange-50 to-white rounded-xl border-2 border-red-200">
+                <div className="p-4 bg-gradient-to-br from-red-50 via-[#7E1800]/5 to-white rounded-xl border-2 border-red-200">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-red-700 text-red-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                         3
                       </div>
-                      <h3 className="text-base font-semibold text-gray-900">
+                      <h3 className="text-sm font-semibold text-gray-900">
                         Thickness
                       </h3>
                       <Tooltip
@@ -753,7 +753,7 @@ export default function ProductDetails() {
                         setShowTooltip={setShowTooltip}
                       />
                     </div>
-                    <span className="text-xs text-gray-500 font-medium">
+                    <span className="text-[10px] text-gray-500 font-medium">
                       in mm
                     </span>
                   </div>
@@ -772,12 +772,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`min-w-[70px] px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
                             isSelected
                               ? "bg-red-700 text-red-50 shadow-lg scale-105 ring-2 ring-red-300"
                               : isAvailable
-                                ? "bg-white border-2 border-red-200 text-gray-700 hover:border-red-400 hover:shadow-sm"
-                                : "bg-gray-50 border-2 border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                                ? "bg-white border border-red-200 text-gray-700 hover:border-red-400 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
                           }`}
                         >
                           {thickness}
@@ -788,13 +788,13 @@ export default function ProductDetails() {
                 </div>
 
                 {/* Finish Quality */}
-                <div className="p-5 bg-gradient-to-br from-yellow-50 via-amber-50 to-white rounded-xl border-2 border-yellow-200">
+                <div className="p-4 bg-gradient-to-br from-yellow-50 via-amber-50 to-white rounded-xl border-2 border-yellow-200">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-yellow-700 text-yellow-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                         4
                       </div>
-                      <h3 className="text-base font-semibold text-gray-900">
+                      <h3 className="text-sm font-semibold text-gray-900">
                         Finish Quality
                       </h3>
                       <Tooltip
@@ -820,12 +820,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`px-5 py-3 rounded-lg font-medium text-sm transition-all ${
+                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${
                             isSelected
                               ? "bg-yellow-700 text-yellow-50 shadow-lg scale-105 ring-2 ring-yellow-300"
                               : isAvailable
-                                ? "bg-white border-2 border-yellow-200 text-gray-700 hover:border-yellow-400 hover:shadow-sm"
-                                : "bg-gray-50 border-2 border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                                ? "bg-white border border-yellow-200 text-gray-700 hover:border-yellow-400 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
                           }`}
                         >
                           {quality}
@@ -836,13 +836,13 @@ export default function ProductDetails() {
                 </div>
 
                 {/* Length Selection - Always Visible */}
-                <div className="p-5 bg-gradient-to-br from-green-50 via-emerald-50 to-white rounded-xl border-2 border-green-200">
+                <div className="p-4 bg-gradient-to-br from-green-50 via-emerald-50 to-white rounded-xl border-2 border-green-200 lg:col-span-2">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-green-700 text-green-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                         5
                       </div>
-                      <h3 className="text-base font-semibold text-gray-900">
+                      <h3 className="text-sm font-semibold text-gray-900">
                         Length Selection
                       </h3>
                       <Tooltip
@@ -853,23 +853,23 @@ export default function ProductDetails() {
                       />
                     </div>
                     {selectedUnitSizeMm === null ? (
-                      <span className="text-xs font-semibold text-green-800 bg-green-100 px-3 py-1 rounded-full border border-green-300">
+                      <span className="text-[10px] font-semibold text-green-800 bg-green-100 px-3 py-1 rounded-full border border-green-300">
                         Custom Length
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold text-blue-800 bg-blue-100 px-3 py-1 rounded-full border border-blue-300">
+                      <span className="text-[10px] font-semibold text-blue-800 bg-blue-100 px-3 py-1 rounded-full border border-blue-300">
                         Standard Size
                       </span>
                     )}
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Standard Lengths */}
                     {availableUnitSizes.length > 0 && (
                       <div>
                         <div className="flex items-center gap-2 mb-3">
-                          <ListChecks size={18} className="text-green-700" />
-                          <span className="text-sm font-semibold text-gray-700">
+                          <ListChecks size={16} className="text-green-700" />
+                          <span className="text-xs font-semibold text-gray-700">
                             Standard Lengths
                           </span>
                         </div>
@@ -878,10 +878,10 @@ export default function ProductDetails() {
                             <button
                               key={size}
                               onClick={() => handleUnitSizeSelect(size)}
-                              className={`px-5 py-3 rounded-lg font-medium text-sm transition-all ${
+                              className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${
                                 selectedUnitSizeMm === size
                                   ? "bg-green-700 text-green-50 shadow-lg scale-105 ring-2 ring-green-300"
-                                  : "bg-white border-2 border-green-200 text-gray-700 hover:border-green-400 hover:shadow-sm"
+                                  : "bg-white border border-green-200 text-gray-700 hover:border-green-400 hover:shadow-sm"
                               }`}
                             >
                               {size}mm
@@ -892,10 +892,14 @@ export default function ProductDetails() {
                     )}
 
                     {/* Custom Length in millimeters */}
-                    <div>
+                    <div
+                      className={
+                        availableUnitSizes.length === 0 ? "col-span-2" : ""
+                      }
+                    >
                       <div className="flex items-center gap-2 mb-3">
-                        <Ruler size={18} className="text-green-700" />
-                        <span className="text-sm font-semibold text-gray-700">
+                        <Ruler size={16} className="text-green-700" />
+                        <span className="text-xs font-semibold text-gray-700">
                           Custom Length (mm)
                         </span>
                       </div>
@@ -913,12 +917,12 @@ export default function ProductDetails() {
                           step={100}
                           value={rangeLengthMm}
                           onChange={handleRangeChange}
-                          className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer accent-[#2C0800]"
+                          className="w-full h-1.5 bg-[#7E1800]/10 rounded-lg appearance-none cursor-pointer accent-[#7E1800]"
                         />
 
                         {/* Number Input */}
                         <div className="flex items-center gap-3">
-                          <div className="flex-1 flex items-center border-2 border-orange-200 rounded-lg bg-white overflow-hidden focus-within:border-orange-500 transition-colors">
+                          <div className="flex-1 flex items-center border border-[#7E1800]/20 rounded-lg bg-white overflow-hidden focus-within:border-[#7E1800] transition-colors">
                             <input
                               type="number"
                               min={
@@ -934,13 +938,13 @@ export default function ProductDetails() {
                               step={100}
                               value={rangeLengthMm}
                               onChange={handleRangeChange}
-                              className="flex-1 px-4 py-3 text-center text-base font-medium focus:outline-none"
+                              className="flex-1 px-3 py-2 text-center text-sm font-medium focus:outline-none"
                             />
-                            <span className="px-4 text-sm text-gray-600 font-medium bg-orange-50 h-full flex items-center border-l-2 border-orange-200">
+                            <span className="px-3 text-xs text-gray-600 font-medium bg-[#7E1800]/5 h-full flex items-center border-l border-[#7E1800]/20">
                               mm
                             </span>
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-[10px] text-gray-500 whitespace-nowrap">
                             Range:{" "}
                             {product.minRange ? product.minRange * 1000 : 1000}
                             mm -{" "}
@@ -956,15 +960,15 @@ export default function ProductDetails() {
 
               {/* Configuration Summary */}
               {selectedFeature && (
-                <div className="mb-6 p-5 border-2 border-orange-200 rounded-xl bg-gradient-to-br from-orange-50 via-amber-50 to-white">
+                <div className="mb-6 p-5 border-2 border-[#7E1800]/20 rounded-xl bg-gradient-to-br from-[#7E1800]/5 via-amber-50 to-white">
                   <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 bg-[#2C0800] text-orange-100 rounded-full flex items-center justify-center text-xs">
+                    <span className="w-6 h-6 bg-[#7E1800] text-white rounded-full flex items-center justify-center text-xs">
                       ✓
                     </span>
                     Selected Configuration
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                       <div className="text-gray-500 text-xs mb-1">
                         Reference
                       </div>
@@ -972,7 +976,7 @@ export default function ProductDetails() {
                         {selectedFeature.reference}
                       </div>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                       <div className="text-gray-500 text-xs mb-1">
                         Thickness
                       </div>
@@ -980,7 +984,7 @@ export default function ProductDetails() {
                         {selectedFeature.thickness}mm
                       </div>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                       <div className="text-gray-500 text-xs mb-1">
                         Dimensions
                       </div>
@@ -988,13 +992,13 @@ export default function ProductDetails() {
                         {selectedFeature.size1} × {selectedFeature.size2}mm
                       </div>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                       <div className="text-gray-500 text-xs mb-1">Finish</div>
                       <div className="font-semibold text-gray-900">
                         {selectedFeature.finishQuality}
                       </div>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                       <div className="text-gray-500 text-xs mb-1">
                         Weight/meter
                       </div>
@@ -1002,11 +1006,11 @@ export default function ProductDetails() {
                         {selectedFeature.kgsPerUnit} kg/m
                       </div>
                     </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-orange-100">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                       <div className="text-gray-500 text-xs mb-1">
                         Price/meter
                       </div>
-                      <div className="font-semibold text-orange-700">
+                      <div className="font-semibold text-[#7E1800]">
                         €{selectedFeature.miterPerUnitPrice}
                       </div>
                     </div>
@@ -1016,9 +1020,9 @@ export default function ProductDetails() {
 
               {/* Shipping Method */}
               {selectedFeature && (
-                <div className="mb-6 p-5 rounded-xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+                <div className="mb-6 p-5 rounded-xl border-2 border-[#7E1800]/20 bg-gradient-to-br from-[#7E1800]/5 to-white">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="w-8 h-8 bg-[#2C0800] text-orange-100 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                    <span className="w-8 h-8 bg-[#7E1800] text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                       6
                     </span>
                     <h3 className="text-base font-semibold text-gray-900">
@@ -1070,17 +1074,17 @@ export default function ProductDetails() {
               )}
 
               {/* Quantity and Pricing */}
-              <div className="border-t-2 border-orange-200 pt-6">
+              <div className="border-t-2 border-[#7E1800]/20 pt-6">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
                   {/* Quantity */}
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-gray-700 mb-2">
                       Quantity
                     </span>
-                    <div className="flex items-center border-2 border-orange-200 rounded-lg overflow-hidden bg-white">
+                    <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
                       <button
                         onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        className="px-4 py-3 hover:bg-orange-50 transition-colors border-r-2 border-orange-200"
+                        className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
                       >
                         <Minus size={18} />
                       </button>
@@ -1089,7 +1093,7 @@ export default function ProductDetails() {
                       </span>
                       <button
                         onClick={() => setQuantity((q) => q + 1)}
-                        className="px-4 py-3 hover:bg-orange-50 transition-colors border-l-2 border-orange-200"
+                        className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
                       >
                         <Plus size={18} />
                       </button>
@@ -1098,14 +1102,14 @@ export default function ProductDetails() {
 
                   {/* Price Breakdown */}
                   {selectedFeature && (
-                    <div className="flex-1 bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-xl border-2 border-orange-200">
+                    <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-gray-600">Product Price:</span>
                         <span className="font-semibold text-gray-900">
                           €{productPrice.toFixed(2)}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm mb-3 pb-3 border-b border-orange-200">
+                      <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
                         <span className="text-gray-600">Shipping Cost:</span>
                         <span className="font-semibold text-gray-900">
                           €{shippingCost.toFixed(2)}
@@ -1115,7 +1119,7 @@ export default function ProductDetails() {
                         <span className="text-lg font-bold text-gray-900">
                           Total:
                         </span>
-                        <span className="text-2xl font-bold text-orange-700">
+                        <span className="text-2xl font-bold text-[#7E1800]">
                           €{totalPrice.toFixed(2)}
                         </span>
                       </div>
@@ -1129,7 +1133,7 @@ export default function ProductDetails() {
                   disabled={!canCheckout || isPending}
                   className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
                     canCheckout && !isPending
-                      ? "bg-gradient-to-r from-[#2C0800] to-orange-900 text-orange-50 hover:from-orange-900 hover:to-[#2C0800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                      ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 >
