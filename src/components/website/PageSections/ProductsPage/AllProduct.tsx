@@ -17,8 +17,9 @@ import clsx from "clsx";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
-const DEFAULT_LIMIT = 12;
+const DEFAULT_LIMIT = 10;
 
 const CATEGORIES = [
   { name: "Sheets", value: "Sheets", image: "/images/categories/sheets.png" },
@@ -30,10 +31,31 @@ const CATEGORIES = [
 ];
 
 const AllProduct: React.FC = () => {
-  const [family, setFamily] = useState<string | undefined>(undefined);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const family = searchParams.get("family") || undefined;
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
-  const [limit] = useState<number>(12);
+  const [limit] = useState<number>(10);
+
+  const updateQueryParams = (newFamily?: string, resetPage = true) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (newFamily) {
+      params.set("family", newFamily);
+    } else {
+      params.delete("family");
+    }
+
+    if (resetPage) {
+      params.set("page", "1");
+      setPage(1);
+    }
+
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const params = useMemo(() => {
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,11 +75,10 @@ const AllProduct: React.FC = () => {
 
   const handleCategoryClick = (value: string) => {
     if (family === value) {
-      setFamily(undefined);
+      updateQueryParams(undefined);
     } else {
-      setFamily(value);
+      updateQueryParams(value);
     }
-    setPage(1);
   };
 
   return (
@@ -70,7 +91,7 @@ const AllProduct: React.FC = () => {
               key={cat.value}
               onClick={() => handleCategoryClick(cat.value)}
               className={clsx(
-                "group relative h-28 rounded-xl overflow-hidden border-3 transition-all duration-300",
+                "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
                 family === cat.value
                   ? "border-[#7E1800] shadow-xl scale-105 z-10"
                   : "border-transparent hover:border-[#7E1800]/40"
@@ -101,8 +122,7 @@ const AllProduct: React.FC = () => {
           <div className="flex justify-center mt-6">
             <Button
               onClick={() => {
-                setFamily(undefined);
-                setPage(1);
+                updateQueryParams(undefined);
               }}
               variant="outline"
               className="text-[#7E1800] border-[#7E1800] hover:bg-[#7E1800] hover:text-white transition-all"
@@ -163,7 +183,7 @@ const AllProduct: React.FC = () => {
                   No products found in this category.
                 </p>
                 <Button
-                  onClick={() => setFamily(undefined)}
+                  onClick={() => updateQueryParams(undefined)}
                   variant="link"
                   className="mt-2 text-[#7E1800]"
                 >

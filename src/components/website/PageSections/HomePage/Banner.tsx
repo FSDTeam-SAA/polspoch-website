@@ -1,6 +1,15 @@
 "use client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Banner() {
+  const router = useRouter();
+
+  const handleserviceCard = () => {
+    const el = document.getElementById("service-card");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    else router.push("#service-card");
+  };
   return (
     <section className="relative lg:grid lg:h-[600px] lg:place-content-center overflow-hidden">
       {/* Background Video */}
@@ -31,12 +40,14 @@ export default function Banner() {
           </p>
 
           <div className="mt-6 flex justify-center gap-4">
-            <a
-              className="rounded  px-5 py-3 font-medium text-gray-200 shadow-sm bg-[#7E1800] hover:bg-[#9E2200] focus:outline-none "
-              href="#service-card"
-            >
-              Discover our services
-            </a>
+            <Link href="#service-card">
+              <button
+                className="rounded cursor-pointer px-5 py-3 font-medium text-gray-200 shadow-sm bg-[#7E1800] hover:bg-[#9E2200] focus:outline-none "
+                onClick={handleserviceCard}
+              >
+                Discover our services
+              </button>
+            </Link>
           </div>
         </div>
       </div>
