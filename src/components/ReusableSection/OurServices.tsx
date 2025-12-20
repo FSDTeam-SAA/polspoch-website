@@ -30,7 +30,7 @@ export default function OurServices() {
   ];
 
   return (
-    <div className="w-full py-20 bg-white">
+    <div id="service-card" className="w-full py-20 bg-white">
       {/* Heading */}
       <div className="text-center mb-12">
         <h2 className="text-4xl font-semibold mb-2">Our Services</h2>
@@ -72,11 +72,10 @@ export default function OurServices() {
               <p className="text-sm opacity-90">{service.subtitle}</p>
 
               {/* Button */}
-              
-                <button className="mt-4 bg-white text-[#7E1800] font-medium py-2 rounded-lg hover:bg-gray-200 duration-200 cursor-pointer">
-                  {service.btn}
-                </button>
-              
+
+              <button className="mt-4 bg-white text-[#7E1800] font-medium py-2 rounded-lg hover:bg-gray-200 duration-200 cursor-pointer">
+                {service.btn}
+              </button>
             </div>
           </div>
         ))}

@@ -9,7 +9,7 @@ export default function Banner() {
         loop
         muted
         playsInline
-        className="absolute inset-0 h-full w-full object-cover" 
+        className="absolute inset-0 h-full w-full object-cover"
       >
         <source src="/banner-video.mp4" type="video/mp4" />
       </video>
@@ -33,7 +33,7 @@ export default function Banner() {
           <div className="mt-6 flex justify-center gap-4">
             <a
               className="rounded  px-5 py-3 font-medium text-gray-200 shadow-sm bg-[#7E1800] hover:bg-[#9E2200] focus:outline-none "
-              href="/services/rebar"
+              href="#service-card"
             >
               Discover our services
             </a>
