@@ -266,7 +266,7 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      href="/account/orders"
+                      href="/account/order-history"
                       className="px-3 py-2 text-sm hover:bg-gray-100 rounded-md"
                       onClick={() => setDropdownOpen(false)}
                     >
@@ -356,7 +356,7 @@ export default function Navbar() {
                           Profile
                         </Link>
                         <Link
-                          href="/account/orders"
+                          href="/account/order-history"
                           onClick={() => setOpen(false)}
                           className="py-2 px-2 rounded hover:bg-gray-100"
                         >

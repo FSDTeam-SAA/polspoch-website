@@ -284,3 +284,21 @@ export async function checkoutCartInModal(
     throw err;
   }
 }
+// get my orders
+export async function getMyOrders(
+  token: string,
+  page = 1,
+  limit = 10,
+) {
+  try {
+    const res = await api.get(`/order/my-orders?page=${page}&limit=${limit}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+}
