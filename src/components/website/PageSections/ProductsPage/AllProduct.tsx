@@ -36,9 +36,10 @@ const AllProduct: React.FC = () => {
   const pathname = usePathname();
 
   const family = searchParams.get("family") || undefined;
-  const [search, setSearch] = useState<string>("");
-  const [page, setPage] = useState<number>(1);
-  const [limit] = useState<number>(10);
+  const search = searchParams.get("search") || undefined; // Derive search from URL
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+
+  const [limit] = useState<number>(DEFAULT_LIMIT); // Use DEFAULT_LIMIT
 
   const updateQueryParams = (newFamily?: string, resetPage = true) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -51,19 +52,18 @@ const AllProduct: React.FC = () => {
 
     if (resetPage) {
       params.set("page", "1");
-      setPage(1);
     }
 
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const params = useMemo(() => {
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const p: any = { page, limit };
+    const p: { page: number; limit: number; family?: string; search?: string } =
+      { page: currentPage, limit };
     if (family) p.family = family;
     if (search) p.search = search;
     return p;
-  }, [family, search, page, limit]);
+  }, [family, search, currentPage, limit]);
 
   const { data, isLoading, isError } = useProducts(params, true);
   const products: Product[] = data?.data || [];
@@ -256,13 +256,14 @@ const AllProduct: React.FC = () => {
           {lastPage > 1 && (
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 py-6 border-t border-gray-100">
               <div className="text-sm font-medium text-gray-500">
-                Showing page <span className="text-gray-900">{page}</span> of{" "}
+                Showing page{" "}
+                <span className="text-gray-900">{currentPage}</span> of{" "}
                 <span className="text-gray-900">{lastPage}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
+                  onClick={() => updateQueryParams(family, false)}
+                  disabled={currentPage <= 1}
                   className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
                   Previous
@@ -274,15 +275,23 @@ const AllProduct: React.FC = () => {
                     if (
                       pageNum === 1 ||
                       pageNum === lastPage ||
-                      (pageNum >= page - 1 && pageNum <= page + 1)
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
                     ) {
                       return (
                         <button
                           key={pageNum}
-                          onClick={() => setPage(pageNum)}
+                          onClick={() => {
+                            const params = new URLSearchParams(
+                              searchParams.toString()
+                            );
+                            params.set("page", String(pageNum));
+                            router.push(`${pathname}?${params.toString()}`, {
+                              scroll: false,
+                            });
+                          }}
                           className={clsx(
                             "w-10 h-10 rounded-lg text-sm font-bold transition-all",
-                            page === pageNum
+                            currentPage === pageNum
                               ? "bg-[#7E1800] text-white shadow-lg shadow-[#7E1800]/20"
                               : "text-gray-600 hover:bg-gray-100"
                           )}
@@ -291,7 +300,10 @@ const AllProduct: React.FC = () => {
                         </button>
                       );
                     }
-                    if (pageNum === page - 2 || pageNum === page + 2) {
+                    if (
+                      pageNum === currentPage - 2 ||
+                      pageNum === currentPage + 2
+                    ) {
                       return (
                         <span key={pageNum} className="px-1">
                           ...
@@ -302,8 +314,14 @@ const AllProduct: React.FC = () => {
                   })}
                 </div>
                 <button
-                  onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                  disabled={page >= lastPage}
+                  onClick={() => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set("page", String(currentPage + 1));
+                    router.push(`${pathname}?${params.toString()}`, {
+                      scroll: false,
+                    });
+                  }}
+                  disabled={currentPage >= lastPage}
                   className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
                   Next
