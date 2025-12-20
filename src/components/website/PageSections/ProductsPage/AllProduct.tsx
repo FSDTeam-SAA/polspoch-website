@@ -20,21 +20,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const DEFAULT_LIMIT = 12;
 
+const CATEGORIES = [
+  { name: "Sheets", value: "Sheets", image: "/images/categories/sheets.png" },
+  { name: "Beams", value: "BEAMS", image: "/images/categories/bars.png" },
+  { name: "Tubes", value: "Tubes", image: "/images/categories/tubes.png" },
+  { name: "Plates", value: "Plates", image: "/images/categories/plates.png" },
+  { name: "Coils", value: "Coils", image: "/images/categories/coils.png" },
+  { name: "Rebars", value: "Rebars", image: "/images/categories/rebars.png" },
+];
+
 const AllProduct: React.FC = () => {
   const [family, setFamily] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [limit] = useState<number>(12);
-  const [filterOpen, setFilterOpen] = useState(false);
-
-  const [windowWidth, setWindowWidth] = useState(1024);
-
-  React.useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   const params = useMemo(() => {
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,262 +46,251 @@ const AllProduct: React.FC = () => {
   const { data, isLoading, isError } = useProducts(params, true);
   const products: Product[] = data?.data || [];
 
-  const total = data?.total ?? products.length;
-  const ids = products?.map((item) => item._id);
-  console.log("dataaa", products);
-
   const lastPage = Math.max(
     1,
     Math.ceil((data?.total ?? products.length) / limit)
   );
 
-  const handleApplyFilter = () => {
+  const handleCategoryClick = (value: string) => {
+    if (family === value) {
+      setFamily(undefined);
+    } else {
+      setFamily(value);
+    }
     setPage(1);
-    setFilterOpen(false);
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Filter column */}
-        {/* <aside className="w-full md:w-80"> */}
-        {/* Mobile show toggle */}
-
-        {/* <div
-            className={clsx("transition-all", {
-              "hidden md:block":
-                !filterOpen &&
-                typeof window !== "undefined" &&
-                window.innerWidth < 768,
-            })}
-          >
-            <Card className="p-4 mb-6">
-              <CardTitle className="text-sm mb-2">
-                <div className="flex justify-between items-center">
-                  <p className="text-2xl font-semibold">Filter</p>
-                </div>
-              </CardTitle>
-
-              <div className="space-y-4">
-                
-                <div className="flex  justify-between items-center gap-4">
-                  <label className="text-base block mb-1">Search</label>
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Type here..."
-                    className="w-full input input-bordered border p-2 rounded border-gray-300"
-                  />
-                </div>
-                <div>
-                  <label className="text-base block mb-1">Family Product</label>
-                  <select
-                    className="w-full p-2 input input-bordered border px-2 rounded border-gray-300"
-                    value={family || ""}
-                    onChange={(e) => setFamily(e.target.value || undefined)}
-                  >
-                    <option value="">Select </option>
-                    <option value="Family 1">Family 1</option>
-                    <option value="Family 2">Family 2</option>
-                    <option value="Tiles">Tiles</option>
-                    <option value="Marble">Marble</option>
-                  </select>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      setFamily(undefined);
-                      setSearch("");
-                      setPage(1);
-                    }}
-                    className="flex-1 bg-transparent cursor-pointer hover:bg-[#7E1800] hover:text-white btn btn-ghost border border-[#7E1800] text-[#7E1800]"
-                  >
-                    Clear All Filters
-                  </Button>
-                  <Button
-                    onClick={handleApplyFilter}
-                    className="flex-1 btn bg-[#7E1800] hover:bg-red-800 cursor-pointer text-white"
-                  >
-                    Apply Filter
-                  </Button>
-                </div>
+      {/* Category Filters */}
+      <div className="mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => handleCategoryClick(cat.value)}
+              className={clsx(
+                "group relative h-28 rounded-xl overflow-hidden border-3 transition-all duration-300",
+                family === cat.value
+                  ? "border-[#7E1800] shadow-xl scale-105 z-10"
+                  : "border-transparent hover:border-[#7E1800]/40"
+              )}
+            >
+              <Image
+                src={cat.image}
+                alt={cat.name}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div
+                className={clsx(
+                  "absolute inset-0 flex items-center justify-center transition-colors duration-300",
+                  family === cat.value
+                    ? "bg-[#7E1800]/40"
+                    : "bg-black/40 group-hover:bg-black/20"
+                )}
+              >
+                <span className="text-white font-bold text-lg tracking-wide uppercase">
+                  {cat.name}
+                </span>
               </div>
-            </Card>
-          </div> */}
-        {/* </aside> */}
+            </button>
+          ))}
+        </div>
+        {family && (
+          <div className="flex justify-center mt-6">
+            <Button
+              onClick={() => {
+                setFamily(undefined);
+                setPage(1);
+              }}
+              variant="outline"
+              className="text-[#7E1800] border-[#7E1800] hover:bg-[#7E1800] hover:text-white transition-all"
+            >
+              <Filter className="mr-2" size={16} />
+              Clear Filter: {family}
+            </Button>
+          </div>
+        )}
+      </div>
 
+      <div className="flex flex-col gap-6">
         {/* Products column */}
         <main className="flex-1">
-          {/* <div className="mb-6 flex items-center justify-between gap-4">
-            <h2 className="text-xl font-semibold">All Products</h2>
-
-            <div className="flex items-center gap-2">
-              <div className="text-sm text-muted-foreground">
-                Page {page} of {lastPage}
-              </div>
-              <div className="ml-2 flex gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page <= 1}
-                  className="btn btn-outline"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                  disabled={page >= lastPage}
-                  className="btn btn-outline"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div> */}
-
           {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {/* Skeleton Loading State */}
             {isLoading &&
-              [...Array(3)].map((_, i) => (
+              [...Array(8)].map((_, i) => (
                 <Card
                   key={`skeleton-${i}`}
                   className="p-3 rounded-xl overflow-hidden"
                 >
                   <div className="flex flex-col">
-                    {/* Image Skeleton */}
                     <Skeleton className="w-full h-[220px]" />
-
-                    {/* Content */}
                     <div className="p-4 flex flex-col gap-3">
-                      {/* Name + Price Skeleton */}
                       <div className="flex items-start justify-between">
                         <Skeleton className="h-4 w-32" />
                         <Skeleton className="h-4 w-16" />
                       </div>
-
-                      {/* Description Skeleton */}
                       <div className="flex flex-col gap-2">
                         <Skeleton className="h-4 w-full" />
                         <Skeleton className="h-4 w-4/5" />
-                        <Skeleton className="h-4 w-3/4" />
                       </div>
-
-                      {/* Buttons Skeleton */}
-                      <div className="flex items-center justify-between gap-3 mt-2">
-                        <Skeleton className="w-10 h-10" />
-                        <Skeleton className="h-10 w-full" />
-                      </div>
+                      <Skeleton className="h-10 w-full mt-2" />
                     </div>
                   </div>
                 </Card>
               ))}
 
             {/* Error */}
-            {isError && <div>Error loading products.</div>}
+            {isError && (
+              <div className="col-span-full text-center py-12 bg-red-50 rounded-xl border border-red-100">
+                <p className="text-red-600 font-medium">
+                  Error loading products. Please try again.
+                </p>
+              </div>
+            )}
 
             {/* No Products Found */}
-            {!isLoading && products.length === 0 && (
-              <div className="col-span-full text-center py-8">
-                No products found.
+            {!isLoading && !isError && products.length === 0 && (
+              <div className="col-span-full text-center py-20 bg-gray-50 rounded-xl border border-gray-100">
+                <ShoppingCart
+                  size={48}
+                  className="mx-auto text-gray-300 mb-4"
+                />
+                <p className="text-gray-500 font-medium text-lg">
+                  No products found in this category.
+                </p>
+                <Button
+                  onClick={() => setFamily(undefined)}
+                  variant="link"
+                  className="mt-2 text-[#7E1800]"
+                >
+                  View all products
+                </Button>
               </div>
             )}
 
             {/* Products */}
-            {products.map((p) => (
-              <Card
-                key={p._id}
-                className="group/card p-3 hover:shadow-md rounded-xl overflow-hidden flex flex-col h-full relative"
-              >
-                <Link
-                  href={`/products/${p._id}`}
-                  className="absolute inset-0 z-10"
-                />
-                {/* Image */}
-                <div className="w-full h-[220px] relative bg-gray-100 rounded-lg overflow-hidden">
-                  {p.productImage && p.productImage[0]?.url ? (
-                    <Image
-                      src={p.productImage[0].url}
-                      alt={p.productName}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover/card:scale-105"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-sm text-gray-400">
-                      No Image
-                    </div>
-                  )}
-                </div>
-
-                <CardHeader className="p-0 mt-4 space-y-0">
-                  <CardTitle className="text-base font-semibold text-gray-800 line-clamp-1">
-                    {p.productName}
-                  </CardTitle>
-                </CardHeader>
-
-                <CardContent className="p-0 mt-2 flex-1">
-                  <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">
-                    {p.unitSizeCustomizationNote ??
-                      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum been the standard dummy text..."}
-                  </p>
-                </CardContent>
-
-                <CardFooter className="p-0 mt-4 pt-0">
+            {!isLoading &&
+              !isError &&
+              products.map((p) => (
+                <Card
+                  key={p._id}
+                  className="group/card p-3 hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden flex flex-col h-full relative border-2 border-transparent hover:border-[#7E1800]/10"
+                >
                   <Link
                     href={`/products/${p._id}`}
-                    className="w-full relative z-20"
-                  >
-                    <Button className="group w-full bg-[#7E1800] hover:bg-red-800 cursor-pointer text-white rounded-none flex items-center justify-center gap-2 py-2 transition-all">
-                      <span>Buy Now</span>
+                    className="absolute inset-0 z-10"
+                  />
+                  {/* Image */}
+                  <div className="w-full h-[220px] relative bg-gray-100 rounded-lg overflow-hidden">
+                    {p.productImage && p.productImage[0]?.url ? (
+                      <Image
+                        src={p.productImage[0].url}
+                        alt={p.productName}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover/card:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-sm text-gray-400">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+
+                  <CardHeader className="p-0 mt-4 space-y-1">
+                    <CardTitle className="text-base font-bold text-gray-900 line-clamp-1">
+                      {p.productName}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
+                        {p.family}
+                      </span>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="p-0 mt-2 flex-1">
+                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
+                      {p.unitSizeCustomizationNote ??
+                        "High-quality industrial steel product built for precision and durability."}
+                    </p>
+                  </CardContent>
+
+                  <CardFooter className="p-0 mt-4 pt-0">
+                    <Button className="group w-full bg-[#7E1800] hover:bg-[#7E1800]/90 cursor-pointer text-white rounded-lg flex items-center justify-center gap-2 py-5 transition-all relative z-20 font-bold">
+                      <span>View Details</span>
                       <ShoppingBag
-                        size={16}
-                        className="opacity-0 translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0"
+                        size={18}
+                        className="transition-transform duration-300 group-hover:translate-x-1"
                       />
                     </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            ))}
+                  </CardFooter>
+                </Card>
+              ))}
           </div>
 
           {/* Pagination (bottom) */}
-          <div className="mt-8 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Page {page} of {lastPage}
+          {lastPage > 1 && (
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 py-6 border-t border-gray-100">
+              <div className="text-sm font-medium text-gray-500">
+                Showing page <span className="text-gray-900">{page}</span> of{" "}
+                <span className="text-gray-900">{lastPage}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                >
+                  Previous
+                </button>
+                <div className="flex items-center gap-1">
+                  {[...Array(lastPage)].map((_, i) => {
+                    const pageNum = i + 1;
+                    // Only show limited pages if many
+                    if (
+                      pageNum === 1 ||
+                      pageNum === lastPage ||
+                      (pageNum >= page - 1 && pageNum <= page + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setPage(pageNum)}
+                          className={clsx(
+                            "w-10 h-10 rounded-lg text-sm font-bold transition-all",
+                            page === pageNum
+                              ? "bg-[#7E1800] text-white shadow-lg shadow-[#7E1800]/20"
+                              : "text-gray-600 hover:bg-gray-100"
+                          )}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                    if (pageNum === page - 2 || pageNum === page + 2) {
+                      return (
+                        <span key={pageNum} className="px-1">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+                <button
+                  onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                  disabled={page >= lastPage}
+                  className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage(1)}
-                disabled={page === 1}
-                className="btn btn-sm btn-outline"
-              >
-                First
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-                className="btn btn-sm btn-outline"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                disabled={page >= lastPage}
-                className="btn btn-sm btn-outline"
-              >
-                Next
-              </button>
-              <button
-                onClick={() => setPage(lastPage)}
-                disabled={page === lastPage}
-                className="btn btn-sm btn-outline"
-              >
-                Last
-              </button>
-            </div>
-          </div>
+          )}
         </main>
       </div>
     </div>
