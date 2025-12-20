@@ -123,16 +123,15 @@ export type GetProductsParams = {
 };
 
 export async function getProducts(params: GetProductsParams = {}) {
-  const { family, search, page = 1, limit = 12 } = params;
+  const { family, search, page = 1, limit = 10 } = params;
   const query = new URLSearchParams();
-  if (family) query.append("family", family);
-  if (search) query.append("search", search);
   if (page) query.append("page", String(page));
   if (limit) query.append("limit", String(limit));
+  if (family) query.append("family", family);
+  if (search) query.append("search", search);
 
   try {
-    // const res = await api.get(`/product?${query.toString()}`);
-    const res = await api.get(`/product`);
+    const res = await api.get(`/product?${query.toString()}`);
     console.log("response", res);
     // API returns { success: true, data: [...], total, page, limit }
     return res?.data;
@@ -187,6 +186,7 @@ export interface AddToCartPayload {
   lengthMm?: number;
   price?: number;
   shippingMethod?: string;
+  totalAmount?: number;
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any; // Allow other properties if necessary
 }

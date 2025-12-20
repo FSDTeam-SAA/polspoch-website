@@ -6,7 +6,6 @@ import {
   useCheckoutCart,
   useCheckoutCartInModal,
 } from "@/lib/hooks/checkoutCart";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -24,7 +23,6 @@ import { CartItem } from "@/lib/types/cart";
 
 const CartProducts = () => {
   const [orderId, setOrderId] = useState<string | null>(null);
-  const router = useRouter();
   const { data: session } = useSession();
   const token = session?.accessToken || "";
 
@@ -47,8 +45,10 @@ const CartProducts = () => {
   };
 
   const subtotal = cartItems.reduce((acc, item) => {
-    const price = item.serviceId?.price || item.price || 0;
-    return acc + price * item.quantity;
+    const itemTotal =
+      item.totalAmount ||
+      (item.serviceId?.price || item.price || 0) * item.quantity;
+    return acc + itemTotal;
   }, 0);
   const shippingFee = 0; // Fixed for now or 0
   const total = subtotal + shippingFee;
@@ -192,7 +192,11 @@ const CartProducts = () => {
             {/* Price + Qty */}
             <div className="flex items-center gap-6">
               <div className="font-semibold text-gray-900">
-                € {(item.serviceId?.price || item.price || 0).toFixed(2)}
+                €{" "}
+                {(
+                  item.totalAmount ||
+                  (item.serviceId?.price || item.price || 0) * item.quantity
+                ).toFixed(2)}
                 <span className="text-sm text-gray-500">
                   {" "}
                   x {item.serviceId?.units || item.quantity} unit(s)
@@ -264,7 +268,7 @@ const CartProducts = () => {
           <AlertDialogTrigger asChild>
             <button
               onClick={handleCheckout}
-              className="w-full rounded-xl bg-gradient-to-r from-red-600 to-red-700 
+              className="w-full rounded-xl bg-[#7E1800] 
                  py-3.5 text-base font-semibold text-white 
                  shadow-lg transition-all duration-200
                  hover:from-red-700 hover:to-red-800 hover:shadow-xl

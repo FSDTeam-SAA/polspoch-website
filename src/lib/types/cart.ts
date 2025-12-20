@@ -21,4 +21,5 @@ export interface CartItem {
     range?: number;
   };
   quantity: number;
+  totalAmount?: number;
 }
