@@ -10,27 +10,30 @@ export default function OurServices() {
       title: "Cut-to-Size",
       subtitle: "Upload DWG or choose from templates",
       btn: "Create & Calculate Price",
-      img: "/images/product.png",
-      icon: Ruler, // <-- remove <Ruler /> and store the component
+      img: "/images/cutting-image.jpg",
+      icon: Ruler,
+      href: "/services/cutting",
     },
     {
       title: "Bending",
       subtitle: "Configure bend types and dimensions",
       btn: "Create & Calculate Price",
-      img: "/images/product.png",
+      img: "/images/bending-image.jpg",
       icon: Settings,
+      href: "/services/bending",
     },
     {
       title: "Rebar Fabrication",
       subtitle: "Fast and accurate reinforcement",
       btn: "Create & Calculate Price",
-      img: "/images/product.png",
+      img: "/images/rebar-image.jpg",
       icon: Box,
+      href: "/services/rebar",
     },
   ];
 
   return (
-    <div className="w-full py-20 bg-white">
+    <div id="service-card" className="w-full py-20 bg-white">
       {/* Heading */}
       <div className="text-center mb-12">
         <h2 className="text-4xl font-semibold mb-2">Our Services</h2>
@@ -43,9 +46,10 @@ export default function OurServices() {
       {/* Cards */}
       <div className="mx-auto container grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
         {services.map((service, i) => (
-          <div
+          <Link
             key={i}
-            className="relative rounded-xl overflow-hidden shadow-md group cursor-pointer"
+            href={service.href}
+            className="relative rounded-xl overflow-hidden shadow-md group cursor-pointer block h-full"
           >
             {/* Background Image */}
             <div className="absolute inset-0">
@@ -63,7 +67,6 @@ export default function OurServices() {
 
             {/* Content */}
             <div className="relative z-10 px-6 py-10 text-white flex flex-col h-full text-center justify-end gap-3">
-              {/* <div className="text-4xl"></div> */}
               <p className="flex justify-center">
                 <service.icon size={40} strokeWidth={1.5} />
               </p>
@@ -71,14 +74,12 @@ export default function OurServices() {
               <h3 className="text-xl font-semibold">{service.title}</h3>
               <p className="text-sm opacity-90">{service.subtitle}</p>
 
-              {/* Button */}
-              
-                <button className="mt-4 bg-white text-[#7E1800] font-medium py-2 rounded-lg hover:bg-gray-200 duration-200 cursor-pointer">
-                  {service.btn}
-                </button>
-              
+              {/* Button UI (now part of the Link) */}
+              <div className="mt-4 bg-white text-[#7E1800] font-medium py-2 rounded-lg group-hover:bg-gray-200 duration-200 text-center">
+                {service.btn}
+              </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

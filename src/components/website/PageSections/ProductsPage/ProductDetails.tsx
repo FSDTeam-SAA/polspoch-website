@@ -450,6 +450,7 @@ export default function ProductDetails() {
         unitSize: selectedUnitSizeMm ? selectedUnitSizeMm / 1000 : undefined,
         range: selectedUnitSizeMm ? undefined : rangeLengthMm / 1000,
       },
+      totalAmount: Number(totalPrice.toFixed(2)),
     };
 
     addToCartMutate(payload, {
@@ -1117,7 +1118,7 @@ export default function ProductDetails() {
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-gray-900">
-                          Total:
+                          Total Amount:
                         </span>
                         <span className="text-2xl font-bold text-[#7E1800]">
                           €{totalPrice.toFixed(2)}
