@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { useOrderHistory } from "@/lib/hooks/useOrderHistory";
 import { Order, OrderCartItem } from "@/lib/types/order";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function OrderList() {
   const [page, setPage] = useState(1);
@@ -42,9 +43,15 @@ export default function OrderList() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-6">
         <Loader2 className="w-10 h-10 text-[#7E1800] animate-spin" />
         <p className="mt-4 text-gray-500 font-medium">Loading your orders...</p>
+
+        {/* ShadCN Skeleton Loader for Table */}
+        <Skeleton className="h-12 w-full max-w-[600px] mx-auto" />
+        <Skeleton className="h-12 w-full max-w-[600px] mx-auto mt-4" />
+        <Skeleton className="h-12 w-full max-w-[600px] mx-auto mt-4" />
+        <Skeleton className="h-12 w-full max-w-[600px] mx-auto mt-4" />
       </div>
     );
   }
@@ -77,9 +84,9 @@ export default function OrderList() {
       {/* Title */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-800">Order History</h1>
-        <p className="text-gray-500 mt-2">
+        {/* <p className="text-gray-500 mt-2">
           Manage your personal information and profile details.
-        </p>
+        </p> */}
       </div>
 
       {/* Table */}

@@ -2,10 +2,7 @@ import React from "react";
 import { Package, Truck, Clock, Shield } from "lucide-react";
 
 // shadcn/ui imports - adjust paths if your project keeps them elsewhere
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableHeader,
@@ -17,46 +14,37 @@ import {
 
 const SHIPPING_METHODS = [
   {
-    id: 1,
-    icon: "package",
-    label: "Courier Shipping",
-    maxSize: "Up to 50 lbs",
-    weightLimit: "< 75 lbs",
-    price: "$8.99",
-    eta: "5 - 7 Business Days",
+    id: "courier",
+    type: "courier",
+    label: "Courier (Standard)",
+    price: "15.00€",
+    baseWeight: "Up to 30 kg",
+    baseSize: "Up to 2000 mm",
+    extraWeight: "+0.50€ per kg (over 30kg)",
+    extraSize: "+20.00€ (if ≥ 2000 mm)",
+    maxCapacity: "2500 mm / 150.00€ Cap",
+    eta: "3 - 5 Business Days",
   },
   {
-    id: 2,
-    icon: "truck",
-    label: "Truck Delivery service",
-    maxSize: "Up to 50 lbs",
-    weightLimit: "< 75 lbs",
-    price: "$8.99",
-    eta: "5 - 7 Business Days",
-  },
-  {
-    id: 3,
-    icon: "package",
-    label: "Courier Shipping",
-    maxSize: "Up to 50 lbs",
-    weightLimit: "< 75 lbs",
-    price: "$8.99",
-    eta: "5 - 7 Business Days",
-  },
-  {
-    id: 4,
-    icon: "truck",
-    label: "Truck Delivery service",
-    maxSize: "Up to 50 lbs",
-    weightLimit: "< 75 lbs",
-    price: "$8.99",
-    eta: "5 - 7 Business Days",
+    id: "truck",
+    type: "truck",
+    label: "Truck (Heavy/Industrial)",
+    price: "60.00€",
+    baseWeight: "Up to 1000 kg",
+    baseSize: "Industrial Scale",
+    extraWeight: "+10.00€ per 500kg (over 1000kg)",
+    extraSize: " ",
+    maxCapacity: "No explicit limit",
+    eta: "15 - 30 Business Days",
   },
 ];
 
 export default function ShippingPolicy() {
   return (
-    <section className="bg-transparent text-slate-200 py-16">
+    <section
+      id="ShippingPolicy"
+      className="bg-transparent text-slate-200 py-16"
+    >
       <div className="max-w-[1200px] mx-auto px-6">
         <header className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">
@@ -73,13 +61,118 @@ export default function ShippingPolicy() {
         {/* Comparison Card */}
         <Card className="overflow-hidden py-0! rounded-2xl">
           <div className="bg-[rgb(105,23,7)] px-6 py-6 text-white">
-            <h3 className="text-lg font-semibold">Shipping Methods Comparison</h3>
+            <h3 className="text-lg font-semibold">
+              Shipping Methods Comparison
+            </h3>
             <p className="text-sm text-orange-100/80 mt-1">
               Choose the shipping option that best fits your timeline and budget
             </p>
           </div>
 
           <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
+                  <TableRow>
+                    <TableHead className="pl-6 w-[250px]">
+                      Shipping Method
+                    </TableHead>
+                    <TableHead className="text-center">Base Capacity</TableHead>
+                    <TableHead className="text-center">Surcharges</TableHead>
+                    <TableHead className="text-center">Weight Limit</TableHead>
+                    <TableHead className="text-right pr-6">
+                      Starting Price
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {SHIPPING_METHODS.map((m) => (
+                    <TableRow
+                      key={m.id}
+                      className="group hover:bg-slate-50/50 transition-colors"
+                    >
+                      <TableCell className="pl-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div
+                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${
+                              m.type === "truck"
+                                ? "bg-blue-50 border-blue-100 text-blue-600"
+                                : "bg-rose-50 border-rose-100 text-rose-600"
+                            }`}
+                          >
+                            {m.type === "truck" ? (
+                              <Truck className="w-6 h-6" />
+                            ) : (
+                              <Package className="w-6 h-6" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-900 dark:text-slate-100">
+                              {m.label}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {m.eta}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <div className="text-xs space-y-1">
+                          <p className="text-slate-500">
+                            Size:{" "}
+                            <span className="text-slate-700 font-medium">
+                              {m.baseSize}
+                            </span>
+                          </p>
+                          <p className="text-slate-500">
+                            Weight:{" "}
+                            <span className="text-slate-700 font-medium">
+                              {m.baseWeight}
+                            </span>
+                          </p>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <div className="text-xs space-y-1">
+                          <p className="text-slate-500">
+                            Weight:{" "}
+                            <span className="text-red-700 font-medium">
+                              {m.extraWeight}
+                            </span>
+                          </p>
+                          <p className="text-slate-500">
+                            Oversize:{" "}
+                            <span className="text-red-700 font-medium">
+                              {m.extraSize}
+                            </span>
+                          </p>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                          {m.maxCapacity}
+                        </span>
+                      </TableCell>
+
+                      <TableCell className="text-right pr-6">
+                        <div className="text-lg font-bold text-slate-900">
+                          {m.price}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                          Base Rate
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+          {/* <CardContent className="p-0">
             <div className="border-t border-slate-200/5">
               <Table>
                 <TableHeader>
@@ -88,7 +181,9 @@ export default function ShippingPolicy() {
                     <TableHead className="text-center">Max Size</TableHead>
                     <TableHead className="text-center">Weight Limit</TableHead>
                     <TableHead className="text-center">Base Price</TableHead>
-                    <TableHead className="text-center pr-6">Delivery Time</TableHead>
+                    <TableHead className="text-center pr-6">
+                      Delivery Time
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -128,7 +223,7 @@ export default function ShippingPolicy() {
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
+          </CardContent> */}
         </Card>
 
         {/* Info Cards */}
@@ -139,8 +234,12 @@ export default function ShippingPolicy() {
                 <Package className="w-6 h-6 text-rose-600" />
               </div>
             </div>
-            <h4 className="font-semibold text-slate-900 dark:text-white">Free Shipping</h4>
-            <p className="text-sm text-slate-500 mt-2">Orders over $500 qualify for free standard ground shipping.</p>
+            <h4 className="font-semibold text-slate-900 dark:text-white">
+              Free Shipping
+            </h4>
+            <p className="text-sm text-slate-500 mt-2">
+              Orders over $500 qualify for free standard ground shipping.
+            </p>
           </Card>
 
           <Card className="p-6 text-center">
@@ -149,8 +248,13 @@ export default function ShippingPolicy() {
                 <Truck className="w-6 h-6 text-rose-600" />
               </div>
             </div>
-            <h4 className="font-semibold text-slate-900 dark:text-white">Same Day Dispatch</h4>
-            <p className="text-sm text-slate-500 mt-2">Orders placed before 2 PM EST are processed and shipped the same day.</p>
+            <h4 className="font-semibold text-slate-900 dark:text-white">
+              Same Day Dispatch
+            </h4>
+            <p className="text-sm text-slate-500 mt-2">
+              Orders placed before 2 PM EST are processed and shipped the same
+              day.
+            </p>
           </Card>
 
           <Card className="p-6 text-center">
@@ -159,8 +263,13 @@ export default function ShippingPolicy() {
                 <Shield className="w-6 h-6 text-rose-600" />
               </div>
             </div>
-            <h4 className="font-semibold text-slate-900 dark:text-white">Protected Delivery</h4>
-            <p className="text-sm text-slate-500 mt-2">Signature required on delivery for orders over $1,000 to ensure security.</p>
+            <h4 className="font-semibold text-slate-900 dark:text-white">
+              Protected Delivery
+            </h4>
+            <p className="text-sm text-slate-500 mt-2">
+              Signature required on delivery for orders over $1,000 to ensure
+              security.
+            </p>
           </Card>
         </div>
       </div>
