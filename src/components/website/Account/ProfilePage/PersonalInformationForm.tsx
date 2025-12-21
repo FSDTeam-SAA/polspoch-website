@@ -85,6 +85,7 @@ export function PersonalInformationForm() {
 
   const [formData, setFormData] = useState<FormDataType>(emptyForm);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   console.log(formData);
 
@@ -122,6 +123,7 @@ export function PersonalInformationForm() {
           location: profile.location ?? "",
           postalCode: profile.postalCode ?? "",
           photo: profile.image?.url ?? null,
+          companyName: profile.companyName ?? "",
         });
         setHasChanges(false);
       });
@@ -137,7 +139,12 @@ export function PersonalInformationForm() {
   };
 
   const handleSave = () => {
-    updateProfileMutation.mutate(formData);
+    updateProfileMutation.mutate(formData, {
+      onSuccess: () => {
+        setIsEditing(false);
+        setHasChanges(false);
+      },
+    });
   };
 
   const handleDiscard = () => {
@@ -153,11 +160,13 @@ export function PersonalInformationForm() {
         location: (profile as any).location ?? "",
         postalCode: (profile as any).postalCode ?? "",
         photo: (profile as any).image ?? null,
+        companyName: (profile as any).companyName ?? "",
       });
     } else {
       setFormData(emptyForm);
     }
     setHasChanges(false);
+    setIsEditing(false);
   };
 
   /* 🔥 Return Skeleton Instead of Loader */
@@ -187,10 +196,20 @@ export function PersonalInformationForm() {
         </div>
 
         <div className="ml-4">
-          <Button className="bg-[#7a200e] hover:bg-[#6a1a0f] text-white shadow-sm px-4 py-2 rounded-md flex items-center gap-2">
-            <Pencil className="w-4 h-4" />
-            Edit Profile
-          </Button>
+          {!isEditing ? (
+            <Button
+              onClick={() => setIsEditing(true)}
+              className="bg-[#7a200e] hover:bg-[#6a1a0f] text-white shadow-sm px-4 py-2 rounded-md flex items-center gap-2"
+            >
+              <Pencil className="w-4 h-4" />
+              Edit Profile
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 px-4 py-2 text-[#7a200e] bg-orange-50 rounded-md border border-orange-100 animate-pulse font-medium text-sm">
+              <Pencil className="w-4 h-4" />
+              Editing Mode
+            </div>
+          )}
         </div>
       </CardHeader>
 
@@ -200,6 +219,7 @@ export function PersonalInformationForm() {
           value={formData.gender}
           onValueChange={(value) => handleInputChange("gender", value)}
           className="flex items-center gap-6"
+          disabled={!isEditing}
         >
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <RadioGroupItem value="male" id="male" />
@@ -220,6 +240,7 @@ export function PersonalInformationForm() {
             <Input
               value={formData.firstName}
               onChange={(e) => handleInputChange("firstName", e.target.value)}
+              disabled={!isEditing}
             />
           </div>
 
@@ -229,6 +250,7 @@ export function PersonalInformationForm() {
             <Input
               value={formData.lastName}
               onChange={(e) => handleInputChange("lastName", e.target.value)}
+              disabled={!isEditing}
             />
           </div>
 
@@ -239,6 +261,7 @@ export function PersonalInformationForm() {
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
+              disabled={!isEditing || true} // Email usually disabled as it's the primary key/identity
             />
           </div>
 
@@ -248,6 +271,7 @@ export function PersonalInformationForm() {
             <Input
               value={formData.phone}
               onChange={(e) => handleInputChange("phone", e.target.value)}
+              disabled={!isEditing}
             />
           </div>
 
@@ -255,8 +279,9 @@ export function PersonalInformationForm() {
           <div className="md:col-span-2 space-y-2">
             <Label>Company Name</Label>
             <Input
-              value={formData.companyName || " "} // ✔ FIXED
+              value={formData.companyName || ""} // ✔ FIXED
               onChange={(e) => handleInputChange("companyName", e.target.value)}
+              disabled={!isEditing}
             />
           </div>
 
@@ -266,6 +291,7 @@ export function PersonalInformationForm() {
             <Input
               value={formData.location}
               onChange={(e) => handleInputChange("location", e.target.value)}
+              disabled={!isEditing}
             />
           </div>
 
@@ -275,29 +301,34 @@ export function PersonalInformationForm() {
             <Input
               value={formData.postalCode}
               onChange={(e) => handleInputChange("postalCode", e.target.value)}
+              disabled={!isEditing}
             />
           </div>
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-end gap-4 pt-4">
-          <Button
-            variant="outline"
-            onClick={handleDiscard}
-            disabled={!hasChanges}
-          >
-            Discard Changes
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!hasChanges || updateProfileMutation.status === "pending"}
-            className="bg-[#7a200e] hover:bg-[#6a1a0f] text-white"
-          >
-            {updateProfileMutation.status === "pending"
-              ? "Saving..."
-              : "Save Changes"}
-          </Button>
-        </div>
+        {isEditing && (
+          <div className="flex justify-end gap-4 pt-4">
+            <Button
+              variant="outline"
+              onClick={handleDiscard}
+              disabled={updateProfileMutation.status === "pending"}
+            >
+              Discard Changes
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={
+                !hasChanges || updateProfileMutation.status === "pending"
+              }
+              className="bg-[#7a200e] hover:bg-[#6a1a0f] text-white"
+            >
+              {updateProfileMutation.status === "pending"
+                ? "Saving..."
+                : "Save Changes"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

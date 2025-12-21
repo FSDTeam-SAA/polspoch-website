@@ -1,46 +1,69 @@
+"use client";
+
 import type { FC } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 import { BsTwitterX } from "react-icons/bs";
 import { FaFacebook, FaLinkedin } from "react-icons/fa";
+import { useProducts } from "@/lib/hooks/useProducts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const companyLinks = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/products" },
-  { label: "Services", href: "/services" },
+  { label: "Services", href: "/#service-card" },
   { label: "About", href: "/about-us" },
   { label: "Contact Us", href: "/contact-us" },
 ];
 
-const productLinks = Array.from({ length: 5 }, (_, i) => ({
-  label: `Product ${i + 1}`,
-  href: "#",
-}));
-
 const legalLinks = [
-  { label: "Terms & Conditions", href: "#" },
-  { label: "Privacy & Policy", href: "#" },
-  { label: "Shipping Policy", href: "#" },
-  { label: "FAQs", href: "#" },
+  { label: "Terms & Conditions", href: "/privacy-policy" },
+  { label: "Privacy & Policy", href: "/terms-conditions" },
+  { label: "Shipping Policy", href: "/#ShippingPolicy" },
+  { label: "FAQs", href: "/contact-us#faq-section" },
 ];
-const FooterList: FC<{ title: string; items: { label: string; href: string }[] }> = ({ title, items }) => (
+
+const FooterList: FC<{
+  title: string;
+  items: { label: string; href: string }[];
+  isLoading?: boolean;
+}> = ({ title, items, isLoading }) => (
   <div>
     <h3 className="text-white text-xl font-semibold mb-4">{title}</h3>
     <ul className="space-y-2 text-white">
-      {items.map((item, idx) => (
-        <li key={idx}>
-          <Link href={item.href} className="hover:text-white hover:underline transition">
-            {item.label}
-          </Link>
-        </li>
-      ))}
+      {isLoading ? (
+        Array.from({ length: 5 }).map((_, i) => (
+          <li key={i}>
+            <Skeleton className="h-4 w-32 bg-white/10" />
+          </li>
+        ))
+      ) : items.length > 0 ? (
+        items.map((item, idx) => (
+          <li key={idx}>
+            <Link
+              href={item.href}
+              className="hover:text-white hover:underline transition"
+            >
+              {item.label}
+            </Link>
+          </li>
+        ))
+      ) : (
+        <li className="text-sm text-gray-400">No items available</li>
+      )}
     </ul>
   </div>
 );
 
-
 const Footer = () => {
+  const { data, isLoading } = useProducts({ limit: 5 }, true);
+
+  const productLinks = (data?.data || []).map((p) => ({
+    label: p.productName,
+    href: `/products/${p._id}`,
+  }));
+
   return (
     <footer className="relative w-full text-white py-12 overflow-hidden">
       <div className="absolute inset-0 bg-cover bg-[#2C0800] bg-center bg-no-repeat"></div>
@@ -58,19 +81,23 @@ const Footer = () => {
             />
           </Link>
           <p className="text-white">
-            Design amazing digital experiences that create more happy in the world.
+            Design amazing digital experiences that create more happy in the
+            world.
           </p>
         </div>
 
         <FooterList title="Company" items={companyLinks} />
-        <FooterList title="Product" items={productLinks} />
+        <FooterList
+          title="Product"
+          items={productLinks}
+          isLoading={isLoading}
+        />
         <FooterList title="Legal" items={legalLinks} />
 
         {/* Contact Section */}
         <div>
           <h3 className="font-semibold text-3xl text-white mb-4">Contact Us</h3>
           <ul className="space-y-4 text-white">
-
             <li className="flex items-center gap-2">
               <Phone className="w-4 h-4" />
               <a
@@ -93,7 +120,9 @@ const Footer = () => {
 
             <li className="flex items-start gap-2">
               <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-[10px] sm:text-xs md:text-sm">Madrid, SP</span>
+              <span className="text-[10px] sm:text-xs md:text-sm">
+                Madrid, SP
+              </span>
             </li>
           </ul>
         </div>
@@ -102,7 +131,9 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="relative mt-12 border-t container mx-auto border-gray-600 pt-6 text-center text-gray-300 text-sm">
         <div className="flex justify-between items-center">
-          <p className="text-white">© 2025 HIERRO A MEDIDA. All rights reserved.</p>
+          <p className="text-white">
+            © 2025 HIERRO A MEDIDA. All rights reserved.
+          </p>
 
           <div className="flex items-center gap-6">
             <BsTwitterX className="w-5 h-5" />

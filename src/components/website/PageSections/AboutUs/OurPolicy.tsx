@@ -12,40 +12,28 @@ import React from "react";
 
 const SHIPPING_METHODS = [
   {
-    id: 1,
-    icon: "package",
-    label: "Courier Shipping",
-    maxSize: "Up to 50 lbs",
-    weightLimit: "< 75 lbs",
-    price: "$8.99",
-    eta: "5 - 7 Business Days",
+    id: "courier",
+    type: "courier",
+    label: "Courier (Standard)",
+    price: "15.00€",
+    baseWeight: "Up to 30 kg",
+    baseSize: "Up to 2000 mm",
+    extraWeight: "+0.50€ per kg (over 30kg)",
+    extraSize: "+20.00€ (if ≥ 2000 mm)",
+    maxCapacity: "2500 mm / 150.00€ Cap",
+    eta: "3 - 5 Business Days",
   },
   {
-    id: 2,
-    icon: "truck",
-    label: "Truck Delivery service",
-    maxSize: "Up to 50 lbs",
-    weightLimit: "< 75 lbs",
-    price: "$8.99",
-    eta: "5 - 7 Business Days",
-  },
-  {
-    id: 3,
-    icon: "package",
-    label: "Courier Shipping",
-    maxSize: "Up to 50 lbs",
-    weightLimit: "< 75 lbs",
-    price: "$8.99",
-    eta: "5 - 7 Business Days",
-  },
-  {
-    id: 4,
-    icon: "truck",
-    label: "Truck Delivery service",
-    maxSize: "Up to 50 lbs",
-    weightLimit: "< 75 lbs",
-    price: "$8.99",
-    eta: "5 - 7 Business Days",
+    id: "truck",
+    type: "truck",
+    label: "Truck (Heavy/Industrial)",
+    price: "60.00€",
+    baseWeight: "Up to 1000 kg",
+    baseSize: "Industrial Scale",
+    extraWeight: "+10.00€ per 500kg (over 1000kg)",
+    extraSize: " ",
+    maxCapacity: "No explicit limit",
+    eta: "15 - 30 Business Days",
   },
 ];
 
@@ -133,35 +121,84 @@ const OurPolicy = () => {
 
                 <TableBody>
                   {SHIPPING_METHODS.map((m) => (
-                    <TableRow key={m.id} className="border-t">
-                      <TableCell className="pl-6 py-6 flex items-center gap-3">
-                        <span className="w-10 h-10 rounded-md bg-rose-50 text-rose-600 flex items-center justify-center">
-                          {m.icon === "truck" ? (
-                            <Truck className="w-5 h-5" />
-                          ) : (
-                            <Package className="w-5 h-5" />
-                          )}
+                    <TableRow
+                      key={m.id}
+                      className="group hover:bg-slate-50/50 transition-colors"
+                    >
+                      <TableCell className="pl-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div
+                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${
+                              m.type === "truck"
+                                ? "bg-blue-50 border-blue-100 text-blue-600"
+                                : "bg-rose-50 border-rose-100 text-rose-600"
+                            }`}
+                          >
+                            {m.type === "truck" ? (
+                              <Truck className="w-6 h-6" />
+                            ) : (
+                              <Package className="w-6 h-6" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-900 dark:text-slate-100">
+                              {m.label}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {m.eta}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <div className="text-xs space-y-1">
+                          <p className="text-slate-500">
+                            Size:{" "}
+                            <span className="text-slate-700 font-medium">
+                              {m.baseSize}
+                            </span>
+                          </p>
+                          <p className="text-slate-500">
+                            Weight:{" "}
+                            <span className="text-slate-700 font-medium">
+                              {m.baseWeight}
+                            </span>
+                          </p>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <div className="text-xs space-y-1">
+                          <p className="text-slate-500">
+                            Weight:{" "}
+                            <span className="text-red-700 font-medium">
+                              {m.extraWeight}
+                            </span>
+                          </p>
+                          <p className="text-slate-500">
+                            Oversize:{" "}
+                            <span className="text-red-700 font-medium">
+                              {m.extraSize}
+                            </span>
+                          </p>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                          {m.maxCapacity}
                         </span>
-                        <span className="font-medium text-slate-800">
-                          {m.label}
-                        </span>
                       </TableCell>
 
-                      <TableCell className="text-center text-sm text-slate-500">
-                        {m.maxSize}
-                      </TableCell>
-
-                      <TableCell className="text-center text-sm text-slate-500">
-                        {m.weightLimit}
-                      </TableCell>
-
-                      <TableCell className="text-center font-semibold text-rose-600">
-                        {m.price}
-                      </TableCell>
-
-                      <TableCell className="text-center pr-6 text-sm flex items-center justify-center gap-2 text-slate-600">
-                        <Clock className="w-4 h-4 text-rose-600" />
-                        {m.eta}
+                      <TableCell className="text-right pr-6">
+                        <div className="text-lg font-bold text-slate-900">
+                          {m.price}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                          Base Rate
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

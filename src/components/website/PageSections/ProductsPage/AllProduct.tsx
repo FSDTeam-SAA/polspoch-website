@@ -238,16 +238,17 @@ const AllProduct: React.FC = () => {
                         "High-quality industrial steel product built for precision and durability."}
                     </p>
                   </CardContent>
-
-                  <CardFooter className="p-0 mt-4 pt-0">
-                    <Button className="group w-full bg-[#7E1800] hover:bg-[#7E1800]/90 cursor-pointer text-white rounded-lg flex items-center justify-center gap-2 py-5 transition-all relative z-20 font-bold">
-                      <span>View Details</span>
-                      <ShoppingBag
-                        size={18}
-                        className="transition-transform duration-300 group-hover:translate-x-1"
-                      />
-                    </Button>
-                  </CardFooter>
+                  <Link href={`/products/${p._id}`}>
+                    <CardFooter className="p-0 mt-4 pt-0">
+                      <Button className="group w-full bg-[#7E1800] hover:bg-[#7E1800]/90 cursor-pointer text-white rounded-lg flex items-center justify-center gap-2 py-5 transition-all relative z-20 font-bold">
+                        <span>Buy Now</span>
+                        <ShoppingBag
+                          size={18}
+                          className="opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1"
+                        />
+                      </Button>
+                    </CardFooter>
+                  </Link>
                 </Card>
               ))}
           </div>
