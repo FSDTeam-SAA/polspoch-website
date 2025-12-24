@@ -18,8 +18,8 @@ const companyLinks = [
 ];
 
 const legalLinks = [
-  { label: "Terms & Conditions", href: "/privacy-policy" },
-  { label: "Privacy & Policy", href: "/terms-conditions" },
+  { label: "Terms & Conditions", href: "/terms-conditions" },
+  { label: "Privacy & Policy", href: "/privacy-policy" },
   { label: "Shipping Policy", href: "/#ShippingPolicy" },
   { label: "FAQs", href: "/contact-us#faq-section" },
 ];
