@@ -41,7 +41,8 @@ export default function VerifyOTP() {
   };
 
   // Verify OTP
-  const handleVerify = async () => {
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault(); // REQUIRED
     const otpCode = otp.join("");
 
     const res = await handleVerifyOtp(otpCode);
@@ -86,62 +87,64 @@ export default function VerifyOTP() {
         <p className="text-gray-500 mb-6">
           Enter the 6-digit code sent to your email to continue.
         </p>
-
-        {/* OTP Inputs */}
-        <div className="flex items-center gap-3 justify-center mb-4">
-          {otp.map((digit, i) => (
-            <input
-              key={i}
-              id={`otp-${i}`}
-              type="text"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(e.target.value, i)}
-              className={`w-14 h-14 text-2xl text-center border rounded-lg outline-none transition
+        <form>
+          {/* OTP Inputs */}
+          <div className="flex items-center gap-3 justify-center mb-4">
+            {otp.map((digit, i) => (
+              <input
+                key={i}
+                id={`otp-${i}`}
+                type="text"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleChange(e.target.value, i)}
+                className={`w-14 h-14 text-2xl text-center border rounded-lg outline-none transition
                 ${
                   digit
                     ? "border-red-600 text-red-600"
                     : "border-gray-300 text-gray-700"
                 }`}
-            />
-          ))}
-        </div>
-
-        {/* Timer + Resend */}
-        <div className="flex justify-between items-center text-sm text-gray-600 mb-6">
-          <div className="flex items-center gap-2">
-            <span>⏱</span>
-            <span>{String(timer).padStart(2, "0")} Second</span>
+              />
+            ))}
           </div>
 
-          <div className="items-end">
-            <span className="text-gray-500 text-md mr-2 mb-1">
-              Didn’t get a code?
-            </span>
+          {/* Timer + Resend */}
+          <div className="flex justify-between items-center text-sm text-gray-600 mb-6">
+            <div className="flex items-center gap-2">
+              <span>⏱</span>
+              <span>{String(timer).padStart(2, "0")} Second</span>
+            </div>
 
-            <button
-              onClick={handleResend}
-              disabled={!canResend}
-              className={`font-medium ${
-                canResend
-                  ? "text-red-600 hover:underline cursor-pointer"
-                  : "text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              Resend
-            </button>
+            <div className="items-end">
+              <span className="text-gray-500 text-md mr-2 mb-1">
+                Didn’t get a code?
+              </span>
+
+              <button
+                onClick={handleResend}
+                disabled={!canResend}
+                className={`font-medium ${
+                  canResend
+                    ? "text-red-600 hover:underline cursor-pointer"
+                    : "text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                Resend
+              </button>
+            </div>
           </div>
-        </div>
 
-        <button
-          className={`w-full bg-red-700 text-white py-3 rounded-md text-lg font-medium transition
+          <button
+            className={`w-full bg-red-700 text-white py-3 rounded-md text-lg font-medium transition
     ${loading ? "opacity-60 cursor-not-allowed" : "hover:bg-red-800 cursor-pointer"}
   `}
-          onClick={handleVerify}
-          disabled={loading}
-        >
-          {loading ? "Verifying..." : "Verify"}
-        </button>
+            onClick={handleVerify}
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Verifying..." : "Verify"}
+          </button>
+        </form>
       </div>
     </div>
   );
