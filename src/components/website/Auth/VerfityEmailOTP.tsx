@@ -41,7 +41,8 @@ export default function VerfityEmailOTP() {
   };
 
   // Verify OTP
-  const handleVerify = async () => {
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault(); // ⬅️ REQUIRED
     const otpCode = otp.join("");
 
     const res = await handleEmailVerifyOtp(otpCode);

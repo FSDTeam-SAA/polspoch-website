@@ -275,7 +275,7 @@ export default function Navbar() {
 
                     <AlertDialogTrigger asChild>
                       <button
-                        className="px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-md"
+                        className="px-3 py-2 text-left cursor-pointer text-sm text-red-600 hover:bg-red-50 rounded-md"
                         onClick={() => setDropdownOpen(false)}
                       >
                         Logout
@@ -365,7 +365,7 @@ export default function Navbar() {
                         <AlertDialogTrigger asChild>
                           <button
                             onClick={() => setOpen(false)}
-                            className="py-2 px-2 rounded text-red-600 hover:bg-red-50 text-left"
+                            className="py-2 px-2 cursor-pointer rounded text-red-600 hover:bg-red-50 text-left"
                           >
                             Logout
                           </button>
@@ -466,12 +466,11 @@ export default function Navbar() {
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel className="cursor-pointer"> Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-red-600 cursor-pointer hover:bg-red-700 text-white"
             onClick={() => signOut()}
-          >
-            Logout
+          >Logout
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

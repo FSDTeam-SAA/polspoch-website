@@ -39,60 +39,61 @@ export default function ResetPassword() {
         <p className="text-gray-500 mb-6">
           Set a strong password to secure your account.
         </p>
+        <form>
+          {/* New Password */}
+          <label className="block text-gray-700 font-medium mb-1">
+            New Password
+          </label>
+          <div className="relative mb-5">
+            <input
+              type={showPassword1 ? "text" : "password"}
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:border-gray-500"
+              placeholder="********"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword1(!showPassword1)}
+              className="absolute right-3 top-3 text-gray-500"
+            >
+              {showPassword1 ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
 
-        {/* New Password */}
-        <label className="block text-gray-700 font-medium mb-1">
-          New Password
-        </label>
-        <div className="relative mb-5">
-          <input
-            type={showPassword1 ? "text" : "password"}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:border-gray-500"
-            placeholder="********"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
+          {/* Confirm Password */}
+          <label className="block text-gray-700 font-medium mb-1">
+            Confirm New Password
+          </label>
+          <div className="relative mb-8">
+            <input
+              type={showPassword2 ? "text" : "password"}
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:border-gray-500"
+              placeholder="********"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword2(!showPassword2)}
+              className="absolute right-3 top-3 text-gray-500"
+            >
+              {showPassword2 ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
+          {/* Save Button */}
           <button
-            type="button"
-            onClick={() => setShowPassword1(!showPassword1)}
-            className="absolute right-3 top-3 text-gray-500"
+            className={`w-full bg-red-700 text-white py-3 rounded-md text-lg font-medium hover:bg-red-800 transition flex justify-center items-center gap-2 cursor-pointer ${
+              loading ? "cursor-not-allowed opacity-70" : ""
+            }`}
+            onClick={handleSave}
+            disabled={loading}
           >
-            {showPassword1 ? <EyeOff size={20} /> : <Eye size={20} />}
+            {loading && <LoaderCircle />}
+            {loading ? "Saving..." : "Confirm"}
           </button>
-        </div>
-
-        {/* Confirm Password */}
-        <label className="block text-gray-700 font-medium mb-1">
-          Confirm New Password
-        </label>
-        <div className="relative mb-8">
-          <input
-            type={showPassword2 ? "text" : "password"}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 outline-none focus:border-gray-500"
-            placeholder="********"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword2(!showPassword2)}
-            className="absolute right-3 top-3 text-gray-500"
-          >
-            {showPassword2 ? <EyeOff size={20} /> : <Eye size={20} />}
-          </button>
-        </div>
-
-        {/* Save Button */}
-        <button
-          className={`w-full bg-red-700 text-white py-3 rounded-md text-lg font-medium hover:bg-red-800 transition flex justify-center items-center gap-2 cursor-pointer ${
-            loading ? "cursor-not-allowed opacity-70" : ""
-          }`}
-          onClick={handleSave}
-          disabled={loading}
-        >
-          {loading && <LoaderCircle />}
-          {loading ? "Saving..." : "Confirm"}
-        </button>
+        </form>
       </div>
     </div>
   );
