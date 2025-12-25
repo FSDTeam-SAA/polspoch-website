@@ -470,8 +470,7 @@ export default function Navbar() {
           <AlertDialogAction
             className="bg-red-600 cursor-pointer hover:bg-red-700 text-white"
             onClick={() => signOut()}
-          >
-            Logout
+          >Logout
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
