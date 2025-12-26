@@ -302,3 +302,14 @@ export async function getMyOrders(
     throw err;
   }
 }
+
+// Get Rebar Templates
+export async function getRebarTemplates() {
+  try {
+    const res = await api.get("/rebar/templates");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching rebar templates:", err);
+    throw new Error("Failed to fetch rebar templates");
+  }
+}
