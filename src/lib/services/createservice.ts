@@ -1,8 +1,5 @@
 export type ServiceSizes = {
-  A?: number;
-  B?: number;
-  C?: number;
-  D?: number;
+  [key: string]: number | undefined;
 };
 
 export type ServicePayload = {
@@ -12,4 +9,9 @@ export type ServicePayload = {
   price: number;
   diameter: number;
   sizes: ServiceSizes;
+  degrees?: {
+    degree1?: number;
+    degree2?: number;
+  };
+  material?: string;
 };
