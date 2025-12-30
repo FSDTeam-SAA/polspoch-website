@@ -1,10 +1,10 @@
 import React from "react";
-import CuttingConnector from "@/components/website/PageSections/ServicePage/cutting/CuttingConnector";
+import CuttingPage from "@/components/website/PageSections/ServicePage/cutting/CuttingPage";
 
 const page = () => {
   return (
     <>
-      <CuttingConnector />
+      <CuttingPage />
     </>
   );
 };

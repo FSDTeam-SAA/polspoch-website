@@ -313,3 +313,27 @@ export async function getRebarTemplates() {
     throw new Error("Failed to fetch rebar templates");
   }
 }
+
+
+//Get Bending Templates
+export async function getBendingTemplates() {
+  try {
+    const res = await api.get("/bending/bending-templates");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching bending templates:", err);
+    throw new Error("Failed to fetch bending templates");
+  }
+}
+
+
+//Get Cutting Templates
+export async function getCuttingTemplates() {
+  try {
+    const res = await api.get("/cutting");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching cutting templates:", err);
+    throw new Error("Failed to fetch cutting templates");
+  }
+}

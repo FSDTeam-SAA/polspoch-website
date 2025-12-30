@@ -2,52 +2,28 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Sparkles, ShoppingCart, Zap } from "lucide-react";
 import Image from "next/image";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { addToCart, createService, getRebarTemplates } from "@/lib/api";
-import { ServicePayload } from "@/lib/services/createservice";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { useRebarTemplates, RebarDimension } from "@/lib/hooks/useRebarTemplates";
+import { useService } from "@/lib/hooks/useService";
+import { useAddToCart } from "@/lib/hooks/useAddToCart";
 
-interface RebarDimension {
-  _id: string;
-  key: string;
-  label: string;
-  minRange: number;
-  maxRange: number;
-  unit: string;
-  isCalculated: boolean;
-}
 
-interface RebarTemplate {
-  _id: string;
-  type: string;
-  templateId: string;
-  shapeName: string;
-  imageUrl: string;
-  availableDiameters: number[];
-  dimensions: RebarDimension[];
-}
 
 const Rebar = () => {
-  // Fetch templates
-  const { data: templatesData, isLoading } = useQuery({
-    queryKey: ["rebarTemplates"],
-    queryFn: getRebarTemplates,
-  });
-
-  const templates: RebarTemplate[] = useMemo(
-    () => templatesData?.data || [],
-    [templatesData]
-  );
+  const DEFAULT_MATERIALS = ["RAWSEEL", "TEARDROP", "GALVANIZED", "CORTEN"];
+  // Fetch templates using custom hook
+  const { data: templates = [], isLoading } = useRebarTemplates();
 
   // State for user selections
   // Initial state might need to wait for data, but we can set defaults.
   // We'll sync with useEffect when data loads.
   const [selectedShapeId, setSelectedShapeId] = useState<string>("");
   const [thickness, setThickness] = useState("6");
+  const [material, setMaterial] = useState("");
   const [dimensions, setDimensions] = useState<{ [key: string]: number }>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [quantity, setQuantity] = useState(1);
@@ -56,17 +32,17 @@ const Rebar = () => {
 
   // Set default selection when templates load
   useEffect(() => {
-    if (
-      templatesData?.data &&
-      templatesData.data.length > 0 &&
-      !selectedShapeId
-    ) {
-      const firstTemplate = templatesData.data[0];
+    if (templates.length > 0 && !selectedShapeId) {
+      const firstTemplate = templates[0];
 
       // Make optimization to avoid synchronous setState warning
       void Promise.resolve().then(() => {
         setSelectedShapeId(firstTemplate._id);
         setThickness(String(firstTemplate.availableDiameters[0]));
+
+        if (firstTemplate.materials?.length > 0) {
+          setMaterial(firstTemplate.materials[0]);
+        }
 
         const initialDims: { [key: string]: number } = {};
         firstTemplate.dimensions.forEach((dim: RebarDimension) => {
@@ -75,66 +51,12 @@ const Rebar = () => {
         setDimensions(initialDims);
       });
     }
-  }, [templatesData, selectedShapeId]); // Kept selectedShapeId to ensure it only runs when empty
+  }, [templates, selectedShapeId]);
 
   const selectedTemplate = templates.find((t) => t._id === selectedShapeId);
 
-  const orderMutation = useMutation({
-    mutationFn: ({
-      data,
-      token,
-    }: {
-      data: { serviceId: string; type: string; quantity: number };
-      token: string;
-    }) => addToCart(data, token),
-    onSuccess: (data) => {
-      toast.success(`${data?.message}` || "Succssesfuly Added");
-    },
-  });
-
-  const serviceMutation = useMutation({
-    mutationFn: ({ data, token }: { data: ServicePayload; token: string }) =>
-      createService(data, token),
-
-    onSuccess: (res) => {
-      console.log("respons data for ", res);
-      orderMutation.mutate({
-        data: {
-          serviceId: res?.data?._id,
-          type: "service",
-          quantity: quantity,
-        },
-        token,
-      });
-    },
-  });
-
-  // Product configurations
-  const productConfig = {
-    materials: [
-      {
-        id: "steel",
-        name: "Steel",
-        color: "#4a5568",
-        priceMultiplier: 1,
-        gradient: "from-slate-600 to-slate-700",
-      },
-      {
-        id: "aluminum",
-        name: "Aluminum",
-        color: "#cbd5e0",
-        priceMultiplier: 1.3,
-        gradient: "from-slate-300 to-slate-400",
-      },
-      {
-        id: "stainless",
-        name: "Stainless Steel",
-        color: "#718096",
-        priceMultiplier: 1.8,
-        gradient: "from-slate-500 to-slate-600",
-      },
-    ],
-  };
+  const { mutate: addToCart } = useAddToCart({ token });
+  const { mutate: createService } = useService({ token });
 
   // Calculate price
   const calculatePrice = () => {
@@ -170,6 +92,10 @@ const Rebar = () => {
     if (!template.availableDiameters.includes(Number(thickness))) {
       setThickness(String(template.availableDiameters[0] || "6"));
     }
+
+    if (template.materials?.length > 0 && !template.materials.includes(material)) {
+      setMaterial(template.materials[0]);
+    }
   };
 
   const handleDimensionChange = (key: string, valueStr: string) => {
@@ -194,9 +120,8 @@ const Rebar = () => {
     setDimensions((prev) => ({ ...prev, [key]: value }));
   };
 
-  const getGridClass = (index: number) => {
-    if (index === 0) return "col-span-12 md:col-span-6";
-    return "col-span-6 md:col-span-4";
+  const getGridClass = () => {
+    return "col-span-6 md:col-span-3";
   };
 
   const servicehandel = () => {
@@ -207,19 +132,34 @@ const Rebar = () => {
       sizes[dim.key] = dimensions[dim.key] || 0;
     });
 
-    const data: ServicePayload = {
+    const data = {
       serviceType: "rebar",
       templateName: selectedTemplate.shapeName,
       units: quantity,
       price: calculatePrice(),
       diameter: Number(thickness),
-      //eslint-disable-next-line
-      sizes: sizes as any, // casting to allow dynamic keys if ServicePayload is strict
+      sizes: sizes,
+      material: material || "RAWSEEL",
     };
-    serviceMutation.mutate({ data, token });
+
+    createService(data, {
+      onSuccess: (res) => {
+        addToCart({
+          serviceId: res?.data?._id,
+          type: "service",
+          quantity: quantity,
+        });
+        toast.success("Successfully added to cart");
+      },
+      onError: () => {
+        toast.error("Failed to create service");
+      },
+    });
   };
 
-  const currentMaterial = productConfig.materials[0]; // Default to first material for now since material state was removed
+  const BASE_BOX =
+    "w-full h-12 px-3 box-border rounded-xl border-2 flex items-center transition-all duration-300";
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -249,8 +189,8 @@ const Rebar = () => {
               <div className="absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
               <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col">
                 <div className="absolute top-4 right-4 z-10">
-                  <div className="px-4 py-2 rounded-lg bg-[#7E1800] text-white text-sm font-semibold shadow-lg">
-                    {currentMaterial?.name}
+                  <div className="px-4 py-2 rounded-lg bg-[#7E1800] text-white text-sm font-semibold shadow-lg uppercase">
+                    {material || "Material"}
                   </div>
                 </div>
                 <div className="relative w-full flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 min-h-[520px]">
@@ -315,16 +255,15 @@ const Rebar = () => {
                       Loading templates...
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar">
+                    <div className="grid grid-cols-3 gap-3">
                       {templates.map((shape) => (
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
-                            selectedShapeId === shape._id
-                              ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
-                              : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                          }`}
+                          className={`group relative h-24 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
+                            ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                            }`}
                           title={shape.shapeName}
                         >
                           <Image
@@ -350,22 +289,43 @@ const Rebar = () => {
                   )}
                 </div>
 
-                {/* 2. Thickness Selection */}
+                {/* 2. Material Selection */}
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                    <div className="w-1 h-5 bg-[#7E1800] rounded-full"></div>
-                    DIAMETER
+                    <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                    MATERIAL
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(selectedTemplate?.materials?.length ? selectedTemplate.materials : DEFAULT_MATERIALS).map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => setMaterial(m)}
+                        className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 uppercase ${material === m
+                          ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                          }`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Thickness Selection */}
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                    <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                    DIAMETER (MM)
                   </label>
                   <div className="grid grid-cols-5 gap-2">
                     {selectedTemplate?.availableDiameters.map((t) => (
                       <button
                         key={t}
                         onClick={() => setThickness(String(t))}
-                        className={`py-3 px-2 rounded-lg border-2 font-semibold transition-all duration-300 ${
-                          thickness === String(t)
-                            ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
-                        }`}
+                        className={`py-3 px-2 rounded-lg border-2 font-semibold transition-all duration-300 ${thickness === String(t)
+                          ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
+                          }`}
                       >
                         {t}mm
                       </button>
@@ -378,18 +338,18 @@ const Rebar = () => {
                   </div>
                 </div>
 
-                {/* 3. Dimensions Grid */}
+                {/* 4. Dimensions Grid */}
                 {selectedTemplate && (
                   <div className="space-y-3">
                     <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                      <div className="w-1 h-5 bg-[#7E1800] rounded-full"></div>
-                      Sizes
+                      <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                      SIZES (MM)
                     </label>
                     <div className="grid grid-cols-12 gap-4">
-                      {selectedTemplate.dimensions.map((dim, index) => (
+                      {selectedTemplate.dimensions.map((dim) => (
                         <div
                           key={dim.key}
-                          className={`space-y-2 ${getGridClass(index)}`}
+                          className={`space-y-2 ${getGridClass()}`}
                         >
                           <div className="flex justify-between items-end">
                             <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
@@ -402,38 +362,29 @@ const Rebar = () => {
 
                           <div className="relative group">
                             {dim.isCalculated ? (
-                              <div className="w-full p-3 border-2 border-slate-100 bg-slate-50 rounded-xl text-slate-500 font-mono text-sm">
-                                {/* If calculated, we might display formula or just read-only value? 
-                                      Prompt says: "If the dimension has a calculated formula (e.g., SIZE C = SIZE A), display it accordingly."
-                                      Since we don't have the formula logic in the API response shown in prompt, 
-                                      I'll assume it's either read-only or just showing the value.
-                                      Wait, "Calculated" usually means derived.
-                                      I will display "Calculated" or the value if we have logic for it.
-                                      For now, making it read-only input.
-                                  */}
+                              <div className={`${BASE_BOX} border-slate-100 bg-slate-50 text-slate-500 font-mono text-sm`}>
                                 Calculated
                               </div>
                             ) : (
-                              <input
-                                type="number"
-                                min={dim.minRange}
-                                max={dim.maxRange}
-                                value={dimensions[dim.key] || ""} // Show empty string if undefined to avoid NaN
-                                onChange={(e) =>
-                                  handleDimensionChange(dim.key, e.target.value)
-                                }
-                                className={`w-full p-3 pr-12 border-2 rounded-xl outline-none focus:ring-4 transition-all duration-300 font-semibold text-slate-900 ${
-                                  errors[dim.key]
-                                    ? "border-red-500 focus:border-red-600 focus:ring-red-100"
-                                    : "border-slate-200 focus:border-[#7E1800] focus:ring-[#7E1800]/10"
-                                }`}
-                                placeholder={`${dim.minRange}`}
-                              />
-                            )}
-                            {!dim.isCalculated && (
-                              <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-slate-400 group-hover:text-[#7E1800] transition-colors">
-                                {dim.unit || "mm"}
-                              </span>
+                              <div className="relative">
+                                <input
+                                  type="number"
+                                  min={dim.minRange}
+                                  max={dim.maxRange}
+                                  value={dimensions[dim.key] || ""}
+                                  onChange={(e) =>
+                                    handleDimensionChange(dim.key, e.target.value)
+                                  }
+                                  className={`${BASE_BOX} pr-12 outline-none font-semibold text-slate-900 ${errors[dim.key]
+                                    ? "border-red-500 focus:border-red-600 ring-red-100"
+                                    : "border-slate-200 focus:border-[#7E1800] ring-[#7E1800]/10"
+                                    }`}
+                                  placeholder={`${dim.minRange}`}
+                                />
+                                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-slate-400 group-hover:text-[#7E1800] transition-colors">
+                                  {dim.unit || "mm"}
+                                </span>
+                              </div>
                             )}
                           </div>
                           {errors[dim.key] && (
