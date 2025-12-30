@@ -587,11 +587,10 @@ export default function ProductDetails() {
                   <button
                     key={idx}
                     onClick={() => setSelectedThumbnail(idx)}
-                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${
-                      selectedThumbnail === idx
-                        ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                        : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
-                    }`}
+                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${selectedThumbnail === idx
+                      ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                      : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
+                      }`}
                   >
                     <Image
                       src={img.url}
@@ -670,13 +669,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                            isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                          }`}
+                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                            : isAvailable
+                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                         >
                           {size}
                         </button>
@@ -687,10 +685,10 @@ export default function ProductDetails() {
 
                 {/* Size 2 (Height) - if applicable */}
                 {hasSize2 && (
-                  <div className="p-4 bg-gradient-to-br from-amber-50 via-[#7E1800]/5 to-white rounded-xl border-2 border-[#7E1800]/10">
+                  <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-amber-50/30 to-white rounded-xl border-2 border-[#7E1800]/10">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-amber-700 text-amber-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                        <div className="w-8 h-8 bg-[#7E1800]/90 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                           2
                         </div>
                         <h3 className="text-sm font-semibold text-gray-900">
@@ -721,13 +719,12 @@ export default function ProductDetails() {
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                              isSelected
-                                ? "bg-amber-700 text-amber-50 shadow-lg scale-105 ring-2 ring-amber-300"
-                                : isAvailable
-                                  ? "bg-white border border-amber-200 text-gray-700 hover:border-amber-400 hover:shadow-sm"
-                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                              }`}
                           >
                             {size}
                           </button>
@@ -738,10 +735,10 @@ export default function ProductDetails() {
                 )}
 
                 {/* Thickness */}
-                <div className="p-4 bg-gradient-to-br from-red-50 via-[#7E1800]/5 to-white rounded-xl border-2 border-red-200">
+                <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-red-700 text-red-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      <div className="w-8 h-8 bg-[#7E1800]/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                         3
                       </div>
                       <h3 className="text-sm font-semibold text-gray-900">
@@ -773,13 +770,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                            isSelected
-                              ? "bg-red-700 text-red-50 shadow-lg scale-105 ring-2 ring-red-300"
-                              : isAvailable
-                                ? "bg-white border border-red-200 text-gray-700 hover:border-red-400 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                          }`}
+                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                            : isAvailable
+                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                         >
                           {thickness}
                         </button>
@@ -789,10 +785,10 @@ export default function ProductDetails() {
                 </div>
 
                 {/* Finish Quality */}
-                <div className="p-4 bg-gradient-to-br from-yellow-50 via-amber-50 to-white rounded-xl border-2 border-yellow-200">
+                <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-yellow-700 text-yellow-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      <div className="w-8 h-8 bg-[#7E1800]/70 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                         4
                       </div>
                       <h3 className="text-sm font-semibold text-gray-900">
@@ -821,13 +817,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                            isSelected
-                              ? "bg-yellow-700 text-yellow-50 shadow-lg scale-105 ring-2 ring-yellow-300"
-                              : isAvailable
-                                ? "bg-white border border-yellow-200 text-gray-700 hover:border-yellow-400 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                          }`}
+                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                            : isAvailable
+                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                         >
                           {quality}
                         </button>
@@ -837,10 +832,10 @@ export default function ProductDetails() {
                 </div>
 
                 {/* Length Selection - Always Visible */}
-                <div className="p-4 bg-gradient-to-br from-green-50 via-emerald-50 to-white rounded-xl border-2 border-green-200 lg:col-span-2">
+                <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10 lg:col-span-2">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-green-700 text-green-50 rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                      <div className="w-8 h-8 bg-[#7E1800]/60 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
                         5
                       </div>
                       <h3 className="text-sm font-semibold text-gray-900">
@@ -854,11 +849,11 @@ export default function ProductDetails() {
                       />
                     </div>
                     {selectedUnitSizeMm === null ? (
-                      <span className="text-[10px] font-semibold text-green-800 bg-green-100 px-3 py-1 rounded-full border border-green-300">
+                      <span className="text-[10px] font-semibold text-[#7E1800] bg-[#7E1800]/5 px-3 py-1 rounded-full border border-[#7E1800]/20">
                         Custom Length
                       </span>
                     ) : (
-                      <span className="text-[10px] font-semibold text-blue-800 bg-blue-100 px-3 py-1 rounded-full border border-blue-300">
+                      <span className="text-[10px] font-semibold text-[#7E1800] bg-[#7E1800]/10 px-3 py-1 rounded-full border border-[#7E1800]/20">
                         Standard Size
                       </span>
                     )}
@@ -869,7 +864,7 @@ export default function ProductDetails() {
                     {availableUnitSizes.length > 0 && (
                       <div>
                         <div className="flex items-center gap-2 mb-3">
-                          <ListChecks size={16} className="text-green-700" />
+                          <ListChecks size={16} className="text-[#7E1800]/80" />
                           <span className="text-xs font-semibold text-gray-700">
                             Standard Lengths
                           </span>
@@ -879,11 +874,10 @@ export default function ProductDetails() {
                             <button
                               key={size}
                               onClick={() => handleUnitSizeSelect(size)}
-                              className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${
-                                selectedUnitSizeMm === size
-                                  ? "bg-green-700 text-green-50 shadow-lg scale-105 ring-2 ring-green-300"
-                                  : "bg-white border border-green-200 text-gray-700 hover:border-green-400 hover:shadow-sm"
-                              }`}
+                              className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
+                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                }`}
                             >
                               {size}mm
                             </button>
@@ -899,7 +893,7 @@ export default function ProductDetails() {
                       }
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <Ruler size={16} className="text-green-700" />
+                        <Ruler size={16} className="text-[#7E1800]/80" />
                         <span className="text-xs font-semibold text-gray-700">
                           Custom Length (mm)
                         </span>
@@ -1001,15 +995,15 @@ export default function ProductDetails() {
                     </div>
                     <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                       <div className="text-gray-500 text-xs mb-1">
-                        Weight/meter
+                        Weight/{product.measureUnit === "Mt" ? "meter" : product.measureUnit || "meter"}
                       </div>
                       <div className="font-semibold text-gray-900">
-                        {selectedFeature.kgsPerUnit} kg/m
+                        {selectedFeature.kgsPerUnit} kg/{product.measureUnit === "Mt" ? "m" : product.measureUnit || "m"}
                       </div>
                     </div>
                     <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                       <div className="text-gray-500 text-xs mb-1">
-                        Price/meter
+                        Price/{product.measureUnit === "Mt" ? "meter" : product.measureUnit || "meter"}
                       </div>
                       <div className="font-semibold text-[#7E1800]">
                         €{selectedFeature.miterPerUnitPrice}
@@ -1040,11 +1034,10 @@ export default function ProductDetails() {
                     />
                   </div>
                   <div
-                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${
-                      shippingMethod === "courier"
-                        ? "bg-green-50 border-green-300"
-                        : "bg-blue-50 border-blue-300"
-                    }`}
+                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${shippingMethod === "courier"
+                      ? "bg-green-50 border-green-300"
+                      : "bg-blue-50 border-blue-300"
+                      }`}
                   >
                     <div>
                       <div
@@ -1132,11 +1125,10 @@ export default function ProductDetails() {
                 <button
                   onClick={handleAddToCart}
                   disabled={!canCheckout || isPending}
-                  className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
-                    canCheckout && !isPending
-                      ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
+                  className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${canCheckout && !isPending
+                    ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    }`}
                 >
                   {isPending ? (
                     <Loader2 className="animate-spin" size={22} />
