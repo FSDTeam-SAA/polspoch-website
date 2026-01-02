@@ -3,16 +3,13 @@
 import Image from "next/image";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { useGetAllFamily } from "@/lib/hooks/useFamily";
+import { Skeleton } from "../ui/skeleton";
 
 export default function OurProducts() {
-  const products = [
-    { title: "Sheets", value: "Sheets", img: "/images/categories/sheets.png" },
-    { title: "Bars", value: "BEAMS", img: "/images/categories/bars.png" },
-    { title: "Tubes", value: "Tubes", img: "/images/categories/tubes.png" },
-    { title: "Plates", value: "Plates", img: "/images/categories/plates.png" },
-    { title: "Coils", value: "Coils", img: "/images/categories/coils.png" },
-    { title: "Rebars", value: "Rebars", img: "/images/categories/rebars.png" },
-  ];
+  const { data: familyData, isLoading } = useGetAllFamily();
+  const categories = familyData?.data || [];
+
 
   return (
     <section className="py-16 bg-white">
@@ -29,25 +26,37 @@ export default function OurProducts() {
 
         {/* Grid */}
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((p, index) => (
-            <Link
-              key={index}
-              href={`/products?family=${p.value}`}
-              className="group relative h-64 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 block"
-            >
-              <Image
-                src={p.img}
-                alt={p.title}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                <p className="text-white font-bold text-xl tracking-wide uppercase">
-                  {p.title}
-                </p>
+          {isLoading
+            ? [...Array(6)].map((_, index) => (
+              <div key={index} className="h-64 rounded-xl overflow-hidden relative">
+                <Skeleton className="absolute inset-0 w-full h-full" />
               </div>
-            </Link>
-          ))}
+            ))
+            : categories.map((p, index) => (
+              <Link
+                key={index}
+                href={`/products?family=${p.familyName}`}
+                className="group relative h-64 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 block"
+              >
+                {p.img?.url ? (
+                  <Image
+                    src={p.img.url}
+                    alt={p.familyName}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400">No Image</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                  <p className="text-white font-bold text-xl tracking-wide uppercase">
+                    {p.familyName}
+                  </p>
+                </div>
+              </Link>
+            ))}
         </div>
 
         {/* Button */}

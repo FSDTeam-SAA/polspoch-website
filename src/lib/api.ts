@@ -337,3 +337,16 @@ export async function getCuttingTemplates() {
     throw new Error("Failed to fetch cutting templates");
   }
 }
+
+
+
+//Get all family
+export async function getAllFamily() {
+  try {
+    const res = await api.get("/product/family/all");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching all family:", err);
+    throw new Error("Failed to fetch all family");
+  }
+}

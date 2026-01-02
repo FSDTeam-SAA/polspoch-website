@@ -10,6 +10,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { useProducts } from "@/lib/hooks/useProducts";
+import { useGetAllFamily } from "@/lib/hooks/useFamily";
 import { Product } from "@/lib/types/product";
 import Image from "next/image";
 import { ShoppingCart, ShoppingBag, Filter } from "lucide-react";
@@ -21,14 +22,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 const DEFAULT_LIMIT = 10;
 
-const CATEGORIES = [
-  { name: "Sheets", value: "Sheets", image: "/images/categories/sheets.png" },
-  { name: "Beams", value: "BEAMS", image: "/images/categories/bars.png" },
-  { name: "Tubes", value: "Tubes", image: "/images/categories/tubes.png" },
-  { name: "Plates", value: "Plates", image: "/images/categories/plates.png" },
-  { name: "Coils", value: "Coils", image: "/images/categories/coils.png" },
-  { name: "Rebars", value: "Rebars", image: "/images/categories/rebars.png" },
-];
+
 
 const AllProduct: React.FC = () => {
   const searchParams = useSearchParams();
@@ -68,6 +62,10 @@ const AllProduct: React.FC = () => {
   const { data, isLoading, isError } = useProducts(params, true);
   const products: Product[] = data?.data || [];
 
+  const { data: familyData, isLoading: isFamilyLoading } = useGetAllFamily();
+  const categories = familyData?.data || [];
+
+
   const lastPage = Math.max(
     1,
     Math.ceil((data?.total ?? products.length) / limit)
@@ -86,37 +84,49 @@ const AllProduct: React.FC = () => {
       {/* Category Filters */}
       <div className="mb-12">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.value}
-              onClick={() => handleCategoryClick(cat.value)}
-              className={clsx(
-                "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
-                family === cat.value
-                  ? "border-[#7E1800] shadow-xl scale-105 z-10"
-                  : "border-transparent hover:border-[#7E1800]/40"
-              )}
-            >
-              <Image
-                src={cat.image}
-                alt={cat.name}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div
+          {isFamilyLoading
+            ? [...Array(6)].map((_, i) => (
+              <div key={i} className="h-28 rounded-xl overflow-hidden relative">
+                <Skeleton className="absolute inset-0 w-full h-full" />
+              </div>
+            ))
+            : categories.map((cat) => (
+              <button
+                key={cat._id}
+                onClick={() => handleCategoryClick(cat.familyName)}
                 className={clsx(
-                  "absolute inset-0 flex items-center justify-center transition-colors duration-300",
-                  family === cat.value
-                    ? "bg-[#7E1800]/40"
-                    : "bg-black/40 group-hover:bg-black/20"
+                  "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
+                  family === cat.familyName
+                    ? "border-[#7E1800] shadow-xl scale-105 z-10"
+                    : "border-transparent hover:border-[#7E1800]/40"
                 )}
               >
-                <span className="text-white font-bold text-lg tracking-wide uppercase">
-                  {cat.name}
-                </span>
-              </div>
-            </button>
-          ))}
+                {cat.img?.url ? (
+                  <Image
+                    src={cat.img.url}
+                    alt={cat.familyName}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400 text-xs">No Image</span>
+                  </div>
+                )}
+                <div
+                  className={clsx(
+                    "absolute inset-0 flex items-center justify-center transition-colors duration-300",
+                    family === cat.familyName
+                      ? "bg-[#7E1800]/40"
+                      : "bg-black/40 group-hover:bg-black/20"
+                  )}
+                >
+                  <span className="text-white font-bold text-lg tracking-wide uppercase text-center px-2">
+                    {cat.familyName}
+                  </span>
+                </div>
+              </button>
+            ))}
         </div>
         {family && (
           <div className="flex justify-center mt-6">
