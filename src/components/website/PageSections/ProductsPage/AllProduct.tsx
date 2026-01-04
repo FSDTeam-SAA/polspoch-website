@@ -22,8 +22,6 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 const DEFAULT_LIMIT = 10;
 
-
-
 const AllProduct: React.FC = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -65,10 +63,9 @@ const AllProduct: React.FC = () => {
   const { data: familyData, isLoading: isFamilyLoading } = useGetAllFamily();
   const categories = familyData?.data || [];
 
-
   const lastPage = Math.max(
     1,
-    Math.ceil((data?.total ?? products.length) / limit)
+    Math.ceil((data?.total ?? products.length) / limit),
   );
 
   const handleCategoryClick = (value: string) => {
@@ -86,47 +83,50 @@ const AllProduct: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {isFamilyLoading
             ? [...Array(6)].map((_, i) => (
-              <div key={i} className="h-28 rounded-xl overflow-hidden relative">
-                <Skeleton className="absolute inset-0 w-full h-full" />
-              </div>
-            ))
-            : categories.map((cat) => (
-              <button
-                key={cat._id}
-                onClick={() => handleCategoryClick(cat.familyName)}
-                className={clsx(
-                  "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
-                  family === cat.familyName
-                    ? "border-[#7E1800] shadow-xl scale-105 z-10"
-                    : "border-transparent hover:border-[#7E1800]/40"
-                )}
-              >
-                {cat.img?.url ? (
-                  <Image
-                    src={cat.img.url}
-                    alt={cat.familyName}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400 text-xs">No Image</span>
-                  </div>
-                )}
                 <div
+                  key={i}
+                  className="h-28 rounded-xl overflow-hidden relative"
+                >
+                  <Skeleton className="absolute inset-0 w-full h-full" />
+                </div>
+              ))
+            : categories.map((cat) => (
+                <button
+                  key={cat._id}
+                  onClick={() => handleCategoryClick(cat.familyName)}
                   className={clsx(
-                    "absolute inset-0 flex items-center justify-center transition-colors duration-300",
+                    "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
                     family === cat.familyName
-                      ? "bg-[#7E1800]/40"
-                      : "bg-black/40 group-hover:bg-black/20"
+                      ? "border-[#7E1800] shadow-xl scale-105 z-10"
+                      : "border-transparent hover:border-[#7E1800]/40",
                   )}
                 >
-                  <span className="text-white font-bold text-lg tracking-wide uppercase text-center px-2">
-                    {cat.familyName}
-                  </span>
-                </div>
-              </button>
-            ))}
+                  {cat.img?.url ? (
+                    <Image
+                      src={cat.img.url}
+                      alt={cat.familyName}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-400 text-xs">No Image</span>
+                    </div>
+                  )}
+                  <div
+                    className={clsx(
+                      "absolute inset-0 flex items-center justify-center transition-colors duration-300",
+                      family === cat.familyName
+                        ? "bg-[#7E1800]/40"
+                        : "bg-black/40 group-hover:bg-black/20",
+                    )}
+                  >
+                    <span className="text-white font-bold text-lg tracking-wide uppercase text-center px-2">
+                      {cat.familyName}
+                    </span>
+                  </div>
+                </button>
+              ))}
         </div>
         {family && (
           <div className="flex justify-center mt-6">
@@ -237,7 +237,9 @@ const AllProduct: React.FC = () => {
                     </CardTitle>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
-                        {p.family}
+                        {typeof p.family === "string"
+                          ? p.family
+                          : p.family?.familyName}
                       </span>
                     </div>
                   </CardHeader>
@@ -293,7 +295,7 @@ const AllProduct: React.FC = () => {
                           key={pageNum}
                           onClick={() => {
                             const params = new URLSearchParams(
-                              searchParams.toString()
+                              searchParams.toString(),
                             );
                             params.set("page", String(pageNum));
                             router.push(`${pathname}?${params.toString()}`, {
@@ -304,7 +306,7 @@ const AllProduct: React.FC = () => {
                             "w-10 h-10 rounded-lg text-sm font-bold transition-all",
                             currentPage === pageNum
                               ? "bg-[#7E1800] text-white shadow-lg shadow-[#7E1800]/20"
-                              : "text-gray-600 hover:bg-gray-100"
+                              : "text-gray-600 hover:bg-gray-100",
                           )}
                         >
                           {pageNum}
