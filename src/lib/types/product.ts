@@ -19,10 +19,12 @@ export interface ProductFeature {
   _id?: string;
 }
 
+import { Family } from "./family";
+
 export interface Product {
   // data: any;
   _id: string;
-  family: string;
+  family: string | Family;
   productName: string;
   productDescription?: string;
   features: ProductFeature[];
