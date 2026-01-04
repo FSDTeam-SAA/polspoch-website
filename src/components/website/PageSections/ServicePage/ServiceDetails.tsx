@@ -646,6 +646,7 @@ const ProductConfigurator = () => {
                       <ShoppingCart className="w-5 h-5" />
                       Add to Cart
                     </button>
+
                     {/* <button className="group relative py-4 px-6 bg-gradient-to-r from-rose-600 to-orange-600 text-white rounded-xl hover:shadow-2xl active:scale-95 transition-all duration-300 font-bold flex items-center justify-center gap-2 overflow-hidden">
                       <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
                       <Zap className="w-5 h-5" />
