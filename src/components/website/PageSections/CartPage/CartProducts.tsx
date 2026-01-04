@@ -109,7 +109,7 @@ const CartProducts = () => {
         onError: (error: Error) => {
           console.error("Payment initiation failed", error);
         },
-      }
+      },
     );
   };
 
@@ -125,7 +125,7 @@ const CartProducts = () => {
               className="w-5 h-5 rounded border-gray-300"
             /> */}
             <span className="text-sm font-medium">
-              Total Cart Items {cartItems.length}
+              Total Cart Items {cartItems?.length}
             </span>
           </label>
 
@@ -133,7 +133,7 @@ const CartProducts = () => {
         </div>
 
         {/* Cart Rows */}
-        {cartItems.map((item) => (
+        {cartItems?.map((item) => (
           <div
             key={item._id}
             className="flex items-center justify-between py-6 border-b last:border-none"
@@ -155,21 +155,21 @@ const CartProducts = () => {
 
               <div className="w-[140px] h-[80px] bg-slate-100 rounded-lg flex items-center justify-center text-xs text-slate-400">
                 {/* Fallback image or custom SVG based on shape could go here */}
-                {item.serviceId?.templateName || "Product"}
+                {item?.serviceId?.templateName || "Product"}
               </div>
 
               <div>
                 <div className="font-semibold text-gray-800">
-                  {item.serviceId?.templateName || "Custom Product"}
+                  {item?.serviceId?.templateName || "Custom Product"}
                 </div>
                 <div className="text-sm text-gray-500">
-                  {item.serviceId?.material && (
+                  {item?.serviceId?.material && (
                     <span className="uppercase">{item.serviceId.material}</span>
                   )}
-                  {item.serviceId?.diameter && (
+                  {item?.serviceId?.diameter && (
                     <span> {item.serviceId.diameter}mm</span>
                   )}
-                  {item.product && (
+                  {item?.product && (
                     <span>
                       {" "}
                       {item.product.size ? `${item.product.size}mm` : ""}
@@ -178,11 +178,11 @@ const CartProducts = () => {
                 </div>
                 <div className="text-xs text-slate-400 mt-1">
                   Size{" "}
-                  {item.serviceId?.sizes
-                    ? Object.entries(item.serviceId.sizes)
+                  {item?.serviceId?.sizes
+                    ? Object.entries(item?.serviceId?.sizes)
                         .map(([key, val]) => `${key}:${val}`)
                         .join(", ")
-                    : item.product
+                    : item?.product
                       ? `${item.product.unitSize ?? item.product.range}m`
                       : ""}
                 </div>
@@ -194,12 +194,12 @@ const CartProducts = () => {
               <div className="font-semibold text-gray-900">
                 €{" "}
                 {(
-                  item.totalAmount ||
-                  (item.serviceId?.price || item.price || 0) * item.quantity
+                  item?.totalAmount ||
+                  (item?.serviceId?.price || item?.price || 0) * item?.quantity
                 ).toFixed(2)}
                 <span className="text-sm text-gray-500">
                   {" "}
-                  x {item.serviceId?.units || item.quantity} unit(s)
+                  x {item?.serviceId?.units || item?.quantity} unit(s)
                 </span>
               </div>
 

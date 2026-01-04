@@ -86,7 +86,9 @@ export default function MostPopularProducts() {
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
-                      {p.family}
+                      {typeof p.family === "string"
+                        ? p.family
+                        : p.family?.familyName}
                     </span>
                   </div>
                 </CardHeader>
