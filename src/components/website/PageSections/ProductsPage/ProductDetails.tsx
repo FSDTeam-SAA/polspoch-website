@@ -185,7 +185,8 @@ export default function ProductDetails() {
   // Adjust state during render to avoid cascading renders in useEffect
   if (product && product._id !== prevProductId) {
     setPrevProductId(product._id);
-    setRangeLengthMm(product.minRange ? product.minRange * 1000 : 1000);
+    const initialMinRange = product.features?.[0]?.minRange ?? product.minRange ?? 1;
+    setRangeLengthMm(initialMinRange * 1000);
     setSelectedThumbnail(0);
     setSelectedThickness(null);
     setSelectedSize1(null);
@@ -319,6 +320,26 @@ export default function ProductDetails() {
     if (newSize2 !== selectedSize2) setSelectedSize2(newSize2);
     if (newFinish !== selectedFinishQuality)
       setSelectedFinishQuality(newFinish);
+
+    // Update range if the new selected feature has a different min/max
+    const newFeature = featureList.find(
+      (f) =>
+        f.thickness === newThickness &&
+        f.size1 === newSize1 &&
+        f.size2 === newSize2 &&
+        f.finishQuality === newFinish
+    );
+
+    if (newFeature) {
+      const minVal = (newFeature.minRange ?? product?.minRange ?? 1) * 1000;
+      const maxVal = (newFeature.maxRange ?? product?.maxRange ?? 12) * 1000;
+
+      if (rangeLengthMm < minVal) {
+        setRangeLengthMm(minVal);
+      } else if (rangeLengthMm > maxVal) {
+        setRangeLengthMm(maxVal);
+      }
+    }
   };
 
   const selectedFeature = useMemo(() => {
@@ -410,7 +431,9 @@ export default function ProductDetails() {
     setSelectedSize2(null);
     setSelectedFinishQuality(null);
     setSelectedUnitSizeMm(null);
-    setRangeLengthMm(product?.minRange ? product.minRange * 1000 : 1000);
+    const initialMinRange =
+      product?.features?.[0]?.minRange ?? product?.minRange ?? 1;
+    setRangeLengthMm(initialMinRange * 1000);
   };
 
   const canCheckout =
@@ -582,7 +605,7 @@ export default function ProductDetails() {
                 </div>
               </div>
 
-              <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+              <div className="mt-4 flex gap-3 overflow-x-auto p-5">
                 {product.productImage?.map((img, idx) => (
                   <button
                     key={idx}
@@ -904,10 +927,16 @@ export default function ProductDetails() {
                         <input
                           type="range"
                           min={
-                            product.minRange ? product.minRange * 1000 : 1000
+                            (selectedFeature?.minRange ??
+                              product?.features?.[0]?.minRange ??
+                              product?.minRange ??
+                              1) * 1000
                           }
                           max={
-                            product.maxRange ? product.maxRange * 1000 : 12000
+                            (selectedFeature?.maxRange ??
+                              product?.features?.[0]?.maxRange ??
+                              product?.maxRange ??
+                              12) * 1000
                           }
                           step={100}
                           value={rangeLengthMm}
@@ -921,14 +950,16 @@ export default function ProductDetails() {
                             <input
                               type="number"
                               min={
-                                product.minRange
-                                  ? product.minRange * 1000
-                                  : 1000
+                                (selectedFeature?.minRange ??
+                                  product?.features?.[0]?.minRange ??
+                                  product?.minRange ??
+                                  1) * 1000
                               }
                               max={
-                                product.maxRange
-                                  ? product.maxRange * 1000
-                                  : 12000
+                                (selectedFeature?.maxRange ??
+                                  product?.features?.[0]?.maxRange ??
+                                  product?.maxRange ??
+                                  12) * 1000
                               }
                               step={100}
                               value={rangeLengthMm}
@@ -941,9 +972,15 @@ export default function ProductDetails() {
                           </div>
                           <div className="text-[10px] text-gray-500 whitespace-nowrap">
                             Range:{" "}
-                            {product.minRange ? product.minRange * 1000 : 1000}
+                            {(selectedFeature?.minRange ??
+                              product?.features?.[0]?.minRange ??
+                              product?.minRange ??
+                              1) * 1000}
                             mm -{" "}
-                            {product.maxRange ? product.maxRange * 1000 : 12000}
+                            {(selectedFeature?.maxRange ??
+                              product?.features?.[0]?.maxRange ??
+                              product?.maxRange ??
+                              12) * 1000}
                             mm
                           </div>
                         </div>
