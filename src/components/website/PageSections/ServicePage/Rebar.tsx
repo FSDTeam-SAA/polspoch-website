@@ -7,11 +7,12 @@ import { Sparkles, ShoppingCart, Zap } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { useRebarTemplates, RebarDimension } from "@/lib/hooks/useRebarTemplates";
+import {
+  useRebarTemplates,
+  RebarDimension,
+} from "@/lib/hooks/useRebarTemplates";
 import { useService } from "@/lib/hooks/useService";
 import { useAddToCart } from "@/lib/hooks/useAddToCart";
-
-
 
 const Rebar = () => {
   const DEFAULT_MATERIALS = ["RAWSEEL", "TEARDROP", "GALVANIZED", "CORTEN"];
@@ -65,7 +66,7 @@ const Rebar = () => {
     const sizesum =
       selectedTemplate?.dimensions.reduce(
         (sum, dim) => sum + (dimensions[dim.key] || 0),
-        0
+        0,
       ) || 0;
 
     const unitPrice = basePrice / quantity + ((sizesum - 30) / 10) * 0.01;
@@ -93,7 +94,10 @@ const Rebar = () => {
       setThickness(String(template.availableDiameters[0] || "6"));
     }
 
-    if (template.materials?.length > 0 && !template.materials.includes(material)) {
+    if (
+      template.materials?.length > 0 &&
+      !template.materials.includes(material)
+    ) {
       setMaterial(template.materials[0]);
     }
   };
@@ -101,7 +105,7 @@ const Rebar = () => {
   const handleDimensionChange = (key: string, valueStr: string) => {
     const value = parseInt(valueStr) || 0;
     const dimensionConfig = selectedTemplate?.dimensions.find(
-      (d) => d.key === key
+      (d) => d.key === key,
     );
 
     if (!dimensionConfig) return;
@@ -152,14 +156,13 @@ const Rebar = () => {
         toast.success("Successfully added to cart");
       },
       onError: () => {
-        toast.error("Failed to create service");
+        toast.error("Please login to add items to cart");
       },
     });
   };
 
   const BASE_BOX =
     "w-full h-12 px-3 box-border rounded-xl border-2 flex items-center transition-all duration-300";
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -185,54 +188,56 @@ const Rebar = () => {
           {/* LEFT: SVG Visualization */}
           <div className="lg:col-span-6">
             {/* Main Visualization Card */}
-            <div className="relative group h-full">
-              <div className="absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
-              <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col">
-                <div className="absolute top-4 right-4 z-10">
-                  <div className="px-4 py-2 rounded-lg bg-[#7E1800] text-white text-sm font-semibold shadow-lg uppercase">
-                    {material || "Material"}
+            <div className="sticky top-28 ">
+              <div className="relative group h-full">
+                <div className="absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
+                <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col">
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className="px-4 py-2 rounded-lg bg-[#7E1800] text-white text-sm font-semibold shadow-lg uppercase">
+                      {material || "Material"}
+                    </div>
                   </div>
-                </div>
-                <div className="relative w-full flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 min-h-[520px]">
-                  {/* Grid Background */}
-                  <svg
-                    className="absolute inset-0 w-full h-full"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <defs>
-                      <pattern
-                        id="grid"
-                        width="20"
-                        height="20"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <path
-                          d="M 20 0 L 0 0 0 20"
-                          fill="none"
-                          stroke="#e2e8f0"
-                          strokeWidth="0.5"
-                        />
-                      </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                  </svg>
+                  <div className="relative w-full flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 min-h-[520px]">
+                    {/* Grid Background */}
+                    <svg
+                      className="absolute inset-0 w-full h-full"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <defs>
+                        <pattern
+                          id="grid"
+                          width="20"
+                          height="20"
+                          patternUnits="userSpaceOnUse"
+                        >
+                          <path
+                            d="M 20 0 L 0 0 0 20"
+                            fill="none"
+                            stroke="#e2e8f0"
+                            strokeWidth="0.5"
+                          />
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill="url(#grid)" />
+                    </svg>
 
-                  {/* Shape Rendering */}
-                  <div className="relative z-10 w-4/5 h-4/5 flex items-center justify-center transition-all duration-500 ease-out transform hover:scale-105">
-                    {selectedTemplate?.imageUrl ? (
-                      <Image
-                        src={selectedTemplate.imageUrl}
-                        alt={selectedTemplate.shapeName}
-                        width={400}
-                        height={400}
-                        className="max-w-full max-h-full object-contain drop-shadow-2xl"
-                        priority
-                      />
-                    ) : (
-                      <div className="text-slate-400 font-medium">
-                        Select a shape to visualize
-                      </div>
-                    )}
+                    {/* Shape Rendering */}
+                    <div className="relative z-10 w-4/5 h-4/5 flex items-center justify-center transition-all duration-500 ease-out transform hover:scale-105">
+                      {selectedTemplate?.imageUrl ? (
+                        <Image
+                          src={selectedTemplate.imageUrl}
+                          alt={selectedTemplate.shapeName}
+                          width={400}
+                          height={400}
+                          className="max-w-full max-h-full object-contain drop-shadow-2xl"
+                          priority
+                        />
+                      ) : (
+                        <div className="text-slate-400 font-medium">
+                          Select a shape to visualize
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -260,10 +265,11 @@ const Rebar = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
-                            ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                            }`}
+                          className={`group relative h-24 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
+                            selectedShapeId === shape._id
+                              ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
+                              : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                          }`}
                           title={shape.shapeName}
                         >
                           <Image
@@ -296,14 +302,18 @@ const Rebar = () => {
                     MATERIAL
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    {(selectedTemplate?.materials?.length ? selectedTemplate.materials : DEFAULT_MATERIALS).map((m) => (
+                    {(selectedTemplate?.materials?.length
+                      ? selectedTemplate.materials
+                      : DEFAULT_MATERIALS
+                    ).map((m) => (
                       <button
                         key={m}
                         onClick={() => setMaterial(m)}
-                        className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 uppercase ${material === m
-                          ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                          }`}
+                        className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 uppercase ${
+                          material === m
+                            ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                        }`}
                       >
                         {m}
                       </button>
@@ -322,10 +332,11 @@ const Rebar = () => {
                       <button
                         key={t}
                         onClick={() => setThickness(String(t))}
-                        className={`py-3 px-2 rounded-lg border-2 font-semibold transition-all duration-300 ${thickness === String(t)
-                          ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
-                          }`}
+                        className={`py-3 px-2 rounded-lg border-2 font-semibold transition-all duration-300 ${
+                          thickness === String(t)
+                            ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
+                        }`}
                       >
                         {t}mm
                       </button>
@@ -362,7 +373,9 @@ const Rebar = () => {
 
                           <div className="relative group">
                             {dim.isCalculated ? (
-                              <div className={`${BASE_BOX} border-slate-100 bg-slate-50 text-slate-500 font-mono text-sm`}>
+                              <div
+                                className={`${BASE_BOX} border-slate-100 bg-slate-50 text-slate-500 font-mono text-sm`}
+                              >
                                 Calculated
                               </div>
                             ) : (
@@ -373,12 +386,16 @@ const Rebar = () => {
                                   max={dim.maxRange}
                                   value={dimensions[dim.key] || ""}
                                   onChange={(e) =>
-                                    handleDimensionChange(dim.key, e.target.value)
+                                    handleDimensionChange(
+                                      dim.key,
+                                      e.target.value,
+                                    )
                                   }
-                                  className={`${BASE_BOX} pr-12 outline-none font-semibold text-slate-900 ${errors[dim.key]
-                                    ? "border-red-500 focus:border-red-600 ring-red-100"
-                                    : "border-slate-200 focus:border-[#7E1800] ring-[#7E1800]/10"
-                                    }`}
+                                  className={`${BASE_BOX} pr-12 outline-none font-semibold text-slate-900 ${
+                                    errors[dim.key]
+                                      ? "border-red-500 focus:border-red-600 ring-red-100"
+                                      : "border-slate-200 focus:border-[#7E1800] ring-[#7E1800]/10"
+                                  }`}
                                   placeholder={`${dim.minRange}`}
                                 />
                                 <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-semibold text-slate-400 group-hover:text-[#7E1800] transition-colors">
@@ -421,7 +438,7 @@ const Rebar = () => {
                         value={quantity}
                         onChange={(e) =>
                           setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1)
+                            Math.max(1, parseInt(e.target.value) || 1),
                           )
                         }
                         className="w-16 h-12 border-2 border-slate-200 rounded-xl text-center font-bold text-lg text-slate-700 focus:border-[#7E1800] outline-none"

@@ -156,7 +156,7 @@ const CuttingPage = () => {
         toast.success("Successfully added to cart");
       },
       onError: () => {
-        toast.error("Failed to create service");
+        toast.error("Please login to add items to cart");
       },
     });
   };
@@ -187,52 +187,54 @@ const CuttingPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT: Visualization */}
           <div className="lg:col-span-6">
-            <div className="relative group h-full">
-              <div className="absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
-              <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col">
-                <div className="absolute top-4 right-4 z-10">
-                  <div className="px-4 py-2 rounded-lg bg-[#7E1800] text-white text-sm font-semibold shadow-lg uppercase">
-                    {material || "Material"}
+            <div className="sticky top-28 ">
+              <div className="relative group h-full">
+                <div className="absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
+                <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col">
+                  <div className="absolute top-4 right-4 z-10">
+                    <div className="px-4 py-2 rounded-lg bg-[#7E1800] text-white text-sm font-semibold shadow-lg uppercase">
+                      {material || "Material"}
+                    </div>
                   </div>
-                </div>
-                <div className="relative w-full flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 min-h-[520px]">
-                  <svg
-                    className="absolute inset-0 w-full h-full"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <defs>
-                      <pattern
-                        id="grid"
-                        width="20"
-                        height="20"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <path
-                          d="M 20 0 L 0 0 0 20"
-                          fill="none"
-                          stroke="#e2e8f0"
-                          strokeWidth="0.5"
-                        />
-                      </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                  </svg>
+                  <div className="relative w-full flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 min-h-[520px]">
+                    <svg
+                      className="absolute inset-0 w-full h-full"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <defs>
+                        <pattern
+                          id="grid"
+                          width="20"
+                          height="20"
+                          patternUnits="userSpaceOnUse"
+                        >
+                          <path
+                            d="M 20 0 L 0 0 0 20"
+                            fill="none"
+                            stroke="#e2e8f0"
+                            strokeWidth="0.5"
+                          />
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill="url(#grid)" />
+                    </svg>
 
-                  <div className="relative z-10 w-4/5 h-4/5 flex items-center justify-center transition-all duration-500 ease-out transform hover:scale-105">
-                    {selectedTemplate?.imageUrl ? (
-                      <Image
-                        src={selectedTemplate.imageUrl}
-                        alt={selectedTemplate.shapeName}
-                        width={400}
-                        height={400}
-                        className="max-w-full max-h-full object-contain drop-shadow-2xl"
-                        priority
-                      />
-                    ) : (
-                      <div className="text-slate-400 font-medium italic">
-                        Select a shape to visualize...
-                      </div>
-                    )}
+                    <div className="relative z-10 w-4/5 h-4/5 flex items-center justify-center transition-all duration-500 ease-out transform hover:scale-105">
+                      {selectedTemplate?.imageUrl ? (
+                        <Image
+                          src={selectedTemplate.imageUrl}
+                          alt={selectedTemplate.shapeName}
+                          width={400}
+                          height={400}
+                          className="max-w-full max-h-full object-contain drop-shadow-2xl"
+                          priority
+                        />
+                      ) : (
+                        <div className="text-slate-400 font-medium italic">
+                          Select a shape to visualize...
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
