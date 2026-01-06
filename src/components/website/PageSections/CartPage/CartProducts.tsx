@@ -1,3 +1,4 @@
+// src/components/website/PageSections/CartPage/CartProducts.tsx
 "use client";
 import { Trash2 } from "lucide-react";
 import { useDeleteCart, useGetCart } from "@/lib/hooks/useAddToCart";
@@ -20,9 +21,15 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { CartItem } from "@/lib/types/cart";
+import { Eye } from "lucide-react";
+import CartItemDetailsModal from "./CartItemDetailsModal";
+import { calculateShippingCost } from "@/lib/shippingUtils";
+import { useMemo } from "react";
+import Image from "next/image";
 
 const CartProducts = () => {
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [viewingItem, setViewingItem] = useState<CartItem | null>(null);
   const { data: session } = useSession();
   const token = session?.accessToken || "";
 
@@ -32,25 +39,65 @@ const CartProducts = () => {
   // 2. Payment Modal Mutation
   const { mutate: checkoutInModal } = useCheckoutCartInModal({ token });
 
-  const { data: cart } = useGetCart({ token }) as {
+  const { data: cart } = (useGetCart({ token }) as {
     data: { data: CartItem[] } | undefined;
-  };
+  }) || { data: undefined };
 
   const { mutate: deleteCartItem } = useDeleteCart({ token });
 
-  const cartItems = cart?.data || [];
+  const cartItems = useMemo(() => cart?.data || [], [cart?.data]);
 
   const handleDelete = (id: string) => {
     deleteCartItem(id);
   };
 
-  const subtotal = cartItems.reduce((acc, item) => {
-    const itemTotal =
-      item.totalAmount ||
-      (item.serviceId?.price || item.price || 0) * item.quantity;
-    return acc + itemTotal;
-  }, 0);
-  const shippingFee = 0; // Fixed for now or 0
+  // 3. Calculate Subtotal, Weight, and Shipping
+  const { subtotal, totalWeight, maxLength, isTruckRequired } = useMemo(() => {
+    let sub = 0;
+    let weight = 0;
+    let maxL = 0;
+    let truckReq = false;
+
+    cartItems.forEach((item) => {
+      // Subtotal calculation
+      const itemTotal =
+        item.totalAmount ||
+        (item.serviceId?.price || item.price || 0) * item.quantity;
+      sub += itemTotal;
+
+      // Weight and Length calculation for Products
+      if (item.product && item.product.selectedFeature) {
+        const feature = item.product.selectedFeature;
+        const lengthMeters = item.product.unitSize || item.product.range || 0;
+        const itemWeight = (feature.kgsPerUnit || 0) * lengthMeters * item.quantity;
+        weight += itemWeight;
+
+        const lengthMm = lengthMeters * 1000;
+        if (lengthMm > maxL) maxL = lengthMm;
+        if (lengthMm > 2500) truckReq = true;
+      } else if (item.serviceId) {
+        // Length calculation for Services
+        const serviceSizes = Object.values(item.serviceId.sizes || {});
+        const maxServiceL =
+          serviceSizes.length > 0 ? Math.max(...(serviceSizes as number[])) : 0;
+        if (maxServiceL > maxL) maxL = maxServiceL;
+        if (maxServiceL > 2500) truckReq = true;
+      }
+    });
+
+    return {
+      subtotal: sub,
+      totalWeight: weight,
+      maxLength: maxL,
+      isTruckRequired: truckReq,
+    };
+  }, [cartItems]);
+
+  const shippingFee = calculateShippingCost(
+    totalWeight,
+    maxLength,
+    !isTruckRequired
+  );
   const total = subtotal + shippingFee;
 
   // Handle Checkout (Create Order)
@@ -65,16 +112,9 @@ const CartProducts = () => {
 
     checkoutCart(payload, {
       onSuccess: (data: { data?: { _id: string }; _id?: string }) => {
-        // Assuming the response data contains the order ID in `data.data._id` or similar
-        // Adjust this based on actual API response structure
-        // If data itself is the order object:
         const createdOrderId = data?.data?._id || data?._id;
-
         if (createdOrderId) {
           setOrderId(createdOrderId);
-          console.log("Order created, ID:", createdOrderId);
-        } else {
-          console.error("Order ID not found in response:", data);
         }
       },
       onError: (error: Error) => {
@@ -85,12 +125,7 @@ const CartProducts = () => {
 
   // Handle Proceed to Checkout (Payment)
   const handleProceedToCheckout = () => {
-    if (!orderId) {
-      console.error("No Order ID found. Cannot proceed to payment.");
-      return;
-    }
-
-    console.log("Proceeding to payment with Order ID:", orderId);
+    if (!orderId) return;
 
     checkoutInModal(
       {
@@ -99,17 +134,11 @@ const CartProducts = () => {
       },
       {
         onSuccess: (data: { data?: { url?: string } }) => {
-          console.log("Payment initiated successfully", data);
           if (data?.data?.url) {
             window.location.href = data.data.url;
-          } else {
-            console.error("No payment URL found");
           }
         },
-        onError: (error: Error) => {
-          console.error("Payment initiation failed", error);
-        },
-      },
+      }
     );
   };
 
@@ -153,9 +182,30 @@ const CartProducts = () => {
                 <Trash2 size={18} />
               </button>
 
-              <div className="w-[140px] h-[80px] bg-slate-100 rounded-lg flex items-center justify-center text-xs text-slate-400">
-                {/* Fallback image or custom SVG based on shape could go here */}
-                {item?.serviceId?.templateName || "Product"}
+              <div className="w-[140px] h-[80px] bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border border-slate-100">
+                {item?.product?.productId?.productImage &&
+                  item.product.productId.productImage.length > 0 ? (
+                  <Image
+                    src={item.product.productId.productImage[0].url}
+                    alt={item.product.productId.productName}
+                    width={140}
+                    height={80}
+                    className="w-full h-full object-contain p-2"
+                  />
+                ) : item?.serviceId?.imageUrl ? (
+                  <Image
+                    src={item.serviceId.imageUrl}
+                    alt={item.serviceId.templateName}
+                    width={140}
+                    height={80}
+                    className="w-full h-full object-contain p-2"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-[10px] text-slate-400 font-medium px-2 text-center uppercase">
+                    <span>{item?.serviceId?.templateName || "Product"}</span>
+                    <span>{item?.product?.productId?.productName}</span>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -180,8 +230,8 @@ const CartProducts = () => {
                   Size{" "}
                   {item?.serviceId?.sizes
                     ? Object.entries(item?.serviceId?.sizes)
-                        .map(([key, val]) => `${key}:${val}`)
-                        .join(", ")
+                      .map(([key, val]) => `${key}:${val}`)
+                      .join(", ")
                     : item?.product
                       ? `${item.product.unitSize ?? item.product.range}m`
                       : ""}
@@ -190,42 +240,36 @@ const CartProducts = () => {
             </div>
 
             {/* Price + Qty */}
-            <div className="flex items-center gap-6">
-              <div className="font-semibold text-gray-900">
+            <div className="flex items-center gap-4">
+              <div className="font-semibold text-gray-900 text-right">
                 €{" "}
                 {(
                   item?.totalAmount ||
                   (item?.serviceId?.price || item?.price || 0) * item?.quantity
                 ).toFixed(2)}
-                <span className="text-sm text-gray-500">
-                  {" "}
-                  x {item?.serviceId?.units || item?.quantity} unit(s)
-                </span>
+                <div className="text-[10px] text-gray-500 font-normal">
+                  {item?.serviceId?.units || item?.quantity} unit(s)
+                </div>
               </div>
 
-              {/* Qty Button */}
-              {/* <div className="flex items-center gap-3">
-                <button className="border rounded-md p-1">
-                  <Minus size={16} />
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewingItem(item)}
+                  className="p-2 text-slate-400 hover:text-[#7E1800] transition-colors cursor-pointer bg-slate-50 hover:bg-[#7E1800]/5 rounded-lg"
+                  title="View Details"
+                >
+                  <Eye size={18} />
                 </button>
 
-                <span className="w-6 text-center font-medium">
-                  {item.quantity}
-                </span>
-
-                <button className="border rounded-md p-1 bg-green-100 text-green-700">
-                  <Plus size={16} />
+                <button
+                  onClick={() => handleDelete(item._id)}
+                  className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer bg-slate-50 hover:bg-red-50 rounded-lg"
+                  title="Remove item"
+                >
+                  <Trash2 size={18} />
                 </button>
-              </div> */}
-
-              {/* Delete Button (Desktop) */}
-              <button
-                onClick={() => handleDelete(item._id)}
-                className="hidden md:block p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                title="Remove item"
-              >
-                <Trash2 size={20} />
-              </button>
+              </div>
             </div>
           </div>
         ))}
@@ -249,8 +293,13 @@ const CartProducts = () => {
             <span>€ {subtotal.toFixed(2)}</span>
           </div>
 
-          <div className="flex justify-between">
-            <span>Shipping Fee</span>
+          <div className="flex justify-between items-center">
+            <span className="flex flex-col">
+              <span>Shipping Fee</span>
+              <span className="text-[10px] text-gray-500">
+                {totalWeight.toFixed(2)}kg • {maxLength / 1000}m max
+              </span>
+            </span>
             <span>€ {shippingFee.toFixed(2)}</span>
           </div>
         </div>
@@ -317,6 +366,12 @@ const CartProducts = () => {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+
+      <CartItemDetailsModal
+        item={viewingItem}
+        isOpen={!!viewingItem}
+        onClose={() => setViewingItem(null)}
+      />
     </div>
   );
 };

@@ -61,18 +61,24 @@ const AllProduct: React.FC = () => {
   const products: Product[] = data?.data || [];
 
   const { data: familyData, isLoading: isFamilyLoading } = useGetAllFamily();
-  const categories = familyData?.data || [];
+  const categories = useMemo(() => familyData?.data || [], [familyData?.data]);
 
   const lastPage = Math.max(
     1,
     Math.ceil((data?.total ?? products.length) / limit),
   );
 
-  const handleCategoryClick = (value: string) => {
-    if (family === value) {
+  const selectedFamilyName = useMemo(() => {
+    if (!family || categories.length === 0) return family;
+    const found = categories.find((c) => c._id === family);
+    return found ? found.familyName : family;
+  }, [family, categories]);
+
+  const handleCategoryClick = (id: string) => {
+    if (family === id) {
       updateQueryParams(undefined);
     } else {
-      updateQueryParams(value);
+      updateQueryParams(id);
     }
   };
 
@@ -83,50 +89,50 @@ const AllProduct: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {isFamilyLoading
             ? [...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-28 rounded-xl overflow-hidden relative"
-                >
-                  <Skeleton className="absolute inset-0 w-full h-full" />
-                </div>
-              ))
+              <div
+                key={i}
+                className="h-28 rounded-xl overflow-hidden relative"
+              >
+                <Skeleton className="absolute inset-0 w-full h-full" />
+              </div>
+            ))
             : categories.map((cat) => (
-                <button
-                  key={cat._id}
-                  onClick={() => handleCategoryClick(cat.familyName)}
+              <button
+                key={cat._id}
+                onClick={() => handleCategoryClick(cat._id)}
+                className={clsx(
+                  "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
+                  family === cat._id
+                    ? "border-[#7E1800] shadow-xl scale-105 z-10"
+                    : "border-transparent hover:border-[#7E1800]/40",
+                )}
+              >
+                {cat.img?.url ? (
+                  <Image
+                    src={cat.img.url}
+                    alt={cat.familyName}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400 text-xs">No Image</span>
+                  </div>
+                )}
+                <div
                   className={clsx(
-                    "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
-                    family === cat.familyName
-                      ? "border-[#7E1800] shadow-xl scale-105 z-10"
-                      : "border-transparent hover:border-[#7E1800]/40",
+                    "absolute inset-0 flex items-center justify-center transition-colors duration-300",
+                    family === cat._id
+                      ? "bg-[#7E1800]/40"
+                      : "bg-black/40 group-hover:bg-black/20",
                   )}
                 >
-                  {cat.img?.url ? (
-                    <Image
-                      src={cat.img.url}
-                      alt={cat.familyName}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">No Image</span>
-                    </div>
-                  )}
-                  <div
-                    className={clsx(
-                      "absolute inset-0 flex items-center justify-center transition-colors duration-300",
-                      family === cat.familyName
-                        ? "bg-[#7E1800]/40"
-                        : "bg-black/40 group-hover:bg-black/20",
-                    )}
-                  >
-                    <span className="text-white font-bold text-lg tracking-wide uppercase text-center px-2">
-                      {cat.familyName}
-                    </span>
-                  </div>
-                </button>
-              ))}
+                  <span className="text-white font-bold text-lg tracking-wide uppercase text-center px-2">
+                    {cat.familyName}
+                  </span>
+                </div>
+              </button>
+            ))}
         </div>
         {family && (
           <div className="flex justify-center mt-6">
@@ -138,7 +144,7 @@ const AllProduct: React.FC = () => {
               className="text-[#7E1800] border-[#7E1800] hover:bg-[#7E1800] hover:text-white transition-all"
             >
               <Filter className="mr-2" size={16} />
-              Clear Filter: {family}
+              Clear Filter: {selectedFamilyName}
             </Button>
           </div>
         )}
