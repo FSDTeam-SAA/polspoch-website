@@ -35,7 +35,7 @@ export default function OurProducts() {
             : categories.map((p, index) => (
               <Link
                 key={index}
-                href={`/products?family=${p.familyName}`}
+                href={`/products?family=${p._id}`}
                 className="group relative h-64 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 block"
               >
                 {p.img?.url ? (

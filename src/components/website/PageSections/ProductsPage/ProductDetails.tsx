@@ -19,46 +19,9 @@ import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import SelectedConfiguration from "./SelectedConfiguration";
 
-// Shipping cost calculation based on weight and length
-function calculateShippingCost(
-  weightKg: number,
-  lengthMm: number,
-  isCourier: boolean
-): number {
-  if (isCourier) {
-    // COURIER SHIPPING (Green Sizes)
-    // BASE PRICE: 15 € (0-2000mm, Up to 30kgs)
-    let cost = 15;
-
-    // Extra Size: +20 € (>= 2000mm)
-    if (lengthMm >= 2000) {
-      cost += 20;
-    }
-
-    // Extra KG: +0.5 €/KG (> 30kgs)
-    if (weightKg > 30) {
-      const extraKg = weightKg - 30;
-      cost += extraKg * 0.5;
-    }
-
-    // MAXIMUM: 150 € (Cap)
-    return Math.min(cost, 150);
-  } else {
-    // TRUCK DELIVERY SERVICE (Blue Sizes)
-    // MINIMUM PRICE: 60 € (Up to 1000 kgs)
-    let cost = 60;
-
-    // Extra 500 kgs: +10 €/500 kgs (> 1000 kgs)
-    if (weightKg > 1000) {
-      const extraWeight = weightKg - 1000;
-      const extra500kgUnits = Math.ceil(extraWeight / 500);
-      cost += extra500kgUnits * 10;
-    }
-
-    return cost;
-  }
-}
+import { calculateShippingCost } from "@/lib/shippingUtils";
 
 // Helper tooltips
 const TOOLTIPS = {
@@ -185,7 +148,8 @@ export default function ProductDetails() {
   // Adjust state during render to avoid cascading renders in useEffect
   if (product && product._id !== prevProductId) {
     setPrevProductId(product._id);
-    setRangeLengthMm(product.minRange ? product.minRange * 1000 : 1000);
+    const initialMinRange = product.features?.[0]?.minRange ?? product.minRange ?? 1;
+    setRangeLengthMm(initialMinRange * 1000);
     setSelectedThumbnail(0);
     setSelectedThickness(null);
     setSelectedSize1(null);
@@ -319,6 +283,26 @@ export default function ProductDetails() {
     if (newSize2 !== selectedSize2) setSelectedSize2(newSize2);
     if (newFinish !== selectedFinishQuality)
       setSelectedFinishQuality(newFinish);
+
+    // Update range if the new selected feature has a different min/max
+    const newFeature = featureList.find(
+      (f) =>
+        f.thickness === newThickness &&
+        f.size1 === newSize1 &&
+        f.size2 === newSize2 &&
+        f.finishQuality === newFinish
+    );
+
+    if (newFeature) {
+      const minVal = (newFeature.minRange ?? product?.minRange ?? 1) * 1000;
+      const maxVal = (newFeature.maxRange ?? product?.maxRange ?? 12) * 1000;
+
+      if (rangeLengthMm < minVal) {
+        setRangeLengthMm(minVal);
+      } else if (rangeLengthMm > maxVal) {
+        setRangeLengthMm(maxVal);
+      }
+    }
   };
 
   const selectedFeature = useMemo(() => {
@@ -346,6 +330,19 @@ export default function ProductDetails() {
     selectedSize2,
     selectedFinishQuality,
   ]);
+
+  const hasRange = useMemo(() => {
+    //eslint-disable-next-line
+    const checkValue = (val: any) => typeof val === "number" && val > 0;
+    if (selectedFeature) {
+      return checkValue(selectedFeature.minRange) || checkValue(selectedFeature.maxRange);
+    }
+    return (
+      featureList.some((f) => checkValue(f.minRange) || checkValue(f.maxRange)) ||
+      checkValue(product?.minRange) ||
+      checkValue(product?.maxRange)
+    );
+  }, [selectedFeature, featureList, product]);
 
   const availableUnitSizes = useMemo(
     () => selectedFeature?.unitSizes || [],
@@ -410,7 +407,9 @@ export default function ProductDetails() {
     setSelectedSize2(null);
     setSelectedFinishQuality(null);
     setSelectedUnitSizeMm(null);
-    setRangeLengthMm(product?.minRange ? product.minRange * 1000 : 1000);
+    const initialMinRange =
+      product?.features?.[0]?.minRange ?? product?.minRange ?? 1;
+    setRangeLengthMm(initialMinRange * 1000);
   };
 
   const canCheckout =
@@ -582,7 +581,7 @@ export default function ProductDetails() {
                 </div>
               </div>
 
-              <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+              <div className="mt-4 flex gap-3 overflow-x-auto p-5">
                 {product.productImage?.map((img, idx) => (
                   <button
                     key={idx}
@@ -830,187 +829,150 @@ export default function ProductDetails() {
                     })}
                   </div>
                 </div>
-
-                {/* Length Selection - Always Visible */}
-                <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10 lg:col-span-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-[#7E1800]/60 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
-                        5
-                      </div>
-                      <h3 className="text-sm font-semibold text-gray-900">
-                        Length Selection
-                      </h3>
-                      <Tooltip
-                        text={TOOLTIPS.length}
-                        step="length"
-                        showTooltip={showTooltip}
-                        setShowTooltip={setShowTooltip}
-                      />
-                    </div>
-                    {selectedUnitSizeMm === null ? (
-                      <span className="text-[10px] font-semibold text-[#7E1800] bg-[#7E1800]/5 px-3 py-1 rounded-full border border-[#7E1800]/20">
-                        Custom Length
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-semibold text-[#7E1800] bg-[#7E1800]/10 px-3 py-1 rounded-full border border-[#7E1800]/20">
-                        Standard Size
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Standard Lengths */}
-                    {availableUnitSizes.length > 0 && (
-                      <div>
-                        <div className="flex items-center gap-2 mb-3">
-                          <ListChecks size={16} className="text-[#7E1800]/80" />
-                          <span className="text-xs font-semibold text-gray-700">
-                            Standard Lengths
-                          </span>
+                {/* Length Selection */}
+                {hasRange && (
+                  <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10 lg:col-span-2">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-[#7E1800]/60 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+                          5
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {availableUnitSizes.map((size) => (
-                            <button
-                              key={size}
-                              onClick={() => handleUnitSizeSelect(size)}
-                              className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
-                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                }`}
-                            >
-                              {size}mm
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Custom Length in millimeters */}
-                    <div
-                      className={
-                        availableUnitSizes.length === 0 ? "col-span-2" : ""
-                      }
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <Ruler size={16} className="text-[#7E1800]/80" />
-                        <span className="text-xs font-semibold text-gray-700">
-                          Custom Length (mm)
-                        </span>
-                      </div>
-
-                      <div className="space-y-3">
-                        {/* Slider */}
-                        <input
-                          type="range"
-                          min={
-                            product.minRange ? product.minRange * 1000 : 1000
-                          }
-                          max={
-                            product.maxRange ? product.maxRange * 1000 : 12000
-                          }
-                          step={100}
-                          value={rangeLengthMm}
-                          onChange={handleRangeChange}
-                          className="w-full h-1.5 bg-[#7E1800]/10 rounded-lg appearance-none cursor-pointer accent-[#7E1800]"
+                        <h3 className="text-sm font-semibold text-gray-900">
+                          Length Selection
+                        </h3>
+                        <Tooltip
+                          text={TOOLTIPS.length}
+                          step="length"
+                          showTooltip={showTooltip}
+                          setShowTooltip={setShowTooltip}
                         />
+                      </div>
+                      {selectedUnitSizeMm === null ? (
+                        <span className="text-[10px] font-semibold text-[#7E1800] bg-[#7E1800]/5 px-3 py-1 rounded-full border border-[#7E1800]/20">
+                          Custom Length
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-[#7E1800] bg-[#7E1800]/10 px-3 py-1 rounded-full border border-[#7E1800]/20">
+                          Standard Size
+                        </span>
+                      )}
+                    </div>
 
-                        {/* Number Input */}
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 flex items-center border border-[#7E1800]/20 rounded-lg bg-white overflow-hidden focus-within:border-[#7E1800] transition-colors">
-                            <input
-                              type="number"
-                              min={
-                                product.minRange
-                                  ? product.minRange * 1000
-                                  : 1000
-                              }
-                              max={
-                                product.maxRange
-                                  ? product.maxRange * 1000
-                                  : 12000
-                              }
-                              step={100}
-                              value={rangeLengthMm}
-                              onChange={handleRangeChange}
-                              className="flex-1 px-3 py-2 text-center text-sm font-medium focus:outline-none"
-                            />
-                            <span className="px-3 text-xs text-gray-600 font-medium bg-[#7E1800]/5 h-full flex items-center border-l border-[#7E1800]/20">
-                              mm
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Standard Lengths */}
+                      {availableUnitSizes.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <ListChecks size={16} className="text-[#7E1800]/80" />
+                            <span className="text-xs font-semibold text-gray-700">
+                              Standard Lengths
                             </span>
                           </div>
-                          <div className="text-[10px] text-gray-500 whitespace-nowrap">
-                            Range:{" "}
-                            {product.minRange ? product.minRange * 1000 : 1000}
-                            mm -{" "}
-                            {product.maxRange ? product.maxRange * 1000 : 12000}
-                            mm
+                          <div className="flex flex-wrap gap-2">
+                            {availableUnitSizes.map((size) => (
+                              <button
+                                key={size}
+                                onClick={() => handleUnitSizeSelect(size)}
+                                className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
+                                  ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                  : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                  }`}
+                              >
+                                {size}mm
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Custom Length in millimeters */}
+                      <div
+                        className={
+                          availableUnitSizes.length === 0 ? "col-span-2" : ""
+                        }
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          <Ruler size={16} className="text-[#7E1800]/80" />
+                          <span className="text-xs font-semibold text-gray-700">
+                            Custom Length (mm)
+                          </span>
+                        </div>
+
+                        <div className="space-y-3">
+                          {/* Slider */}
+                          <input
+                            type="range"
+                            min={
+                              (selectedFeature?.minRange ??
+                                product?.features?.[0]?.minRange ??
+                                product?.minRange ??
+                                1) * 1000
+                            }
+                            max={
+                              (selectedFeature?.maxRange ??
+                                product?.features?.[0]?.maxRange ??
+                                product?.maxRange ??
+                                12) * 1000
+                            }
+                            step={100}
+                            value={rangeLengthMm}
+                            onChange={handleRangeChange}
+                            className="w-full h-1.5 bg-[#7E1800]/10 rounded-lg appearance-none cursor-pointer accent-[#7E1800]"
+                          />
+
+                          {/* Number Input */}
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 flex items-center border border-[#7E1800]/20 rounded-lg bg-white overflow-hidden focus-within:border-[#7E1800] transition-colors">
+                              <input
+                                type="number"
+                                min={
+                                  (selectedFeature?.minRange ??
+                                    product?.features?.[0]?.minRange ??
+                                    product?.minRange ??
+                                    1) * 1000
+                                }
+                                max={
+                                  (selectedFeature?.maxRange ??
+                                    product?.features?.[0]?.maxRange ??
+                                    product?.maxRange ??
+                                    12) * 1000
+                                }
+                                step={100}
+                                value={rangeLengthMm}
+                                onChange={handleRangeChange}
+                                className="flex-1 px-3 py-2 text-center text-sm font-medium focus:outline-none"
+                              />
+                              <span className="px-3 text-xs text-gray-600 font-medium bg-[#7E1800]/5 h-full flex items-center border-l border-[#7E1800]/20">
+                                mm
+                              </span>
+                            </div>
+                            <div className="text-[10px] text-gray-500 whitespace-nowrap">
+                              Range:{" "}
+                              {(selectedFeature?.minRange ??
+                                product?.features?.[0]?.minRange ??
+                                product?.minRange ??
+                                1) * 1000}
+                              mm -{" "}
+                              {(selectedFeature?.maxRange ??
+                                product?.features?.[0]?.maxRange ??
+                                product?.maxRange ??
+                                12) * 1000}
+                              mm
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Configuration Summary */}
               {selectedFeature && (
-                <div className="mb-6 p-5 border-2 border-[#7E1800]/20 rounded-xl bg-gradient-to-br from-[#7E1800]/5 via-amber-50 to-white">
-                  <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <span className="w-6 h-6 bg-[#7E1800] text-white rounded-full flex items-center justify-center text-xs">
-                      ✓
-                    </span>
-                    Selected Configuration
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
-                      <div className="text-gray-500 text-xs mb-1">
-                        Reference
-                      </div>
-                      <div className="font-semibold text-gray-900">
-                        {selectedFeature.reference}
-                      </div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
-                      <div className="text-gray-500 text-xs mb-1">
-                        Thickness
-                      </div>
-                      <div className="font-semibold text-gray-900">
-                        {selectedFeature.thickness}mm
-                      </div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
-                      <div className="text-gray-500 text-xs mb-1">
-                        Dimensions
-                      </div>
-                      <div className="font-semibold text-gray-900">
-                        {selectedFeature.size1} × {selectedFeature.size2}mm
-                      </div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
-                      <div className="text-gray-500 text-xs mb-1">Finish</div>
-                      <div className="font-semibold text-gray-900">
-                        {selectedFeature.finishQuality}
-                      </div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
-                      <div className="text-gray-500 text-xs mb-1">
-                        Weight/{product.measureUnit === "Mt" ? "meter" : product.measureUnit || "meter"}
-                      </div>
-                      <div className="font-semibold text-gray-900">
-                        {selectedFeature.kgsPerUnit} kg/{product.measureUnit === "Mt" ? "m" : product.measureUnit || "m"}
-                      </div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
-                      <div className="text-gray-500 text-xs mb-1">
-                        Price/{product.measureUnit === "Mt" ? "meter" : product.measureUnit || "meter"}
-                      </div>
-                      <div className="font-semibold text-[#7E1800]">
-                        €{selectedFeature.miterPerUnitPrice}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <SelectedConfiguration
+                  selectedFeature={selectedFeature}
+                  measureUnit={product.measureUnit}
+                />
               )}
 
               {/* Shipping Method */}

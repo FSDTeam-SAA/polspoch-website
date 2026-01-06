@@ -1,6 +1,8 @@
+import { ProductFeature } from "./product";
+
 export interface CartItem {
   _id: string;
-  price?: number; // Top-level price for products
+  price?: number;
   serviceId?: {
     _id: string;
     serviceType: string;
@@ -11,15 +13,30 @@ export interface CartItem {
     sizes: Record<string, number>;
     material?: string;
     degrees?: Record<string, number>;
+    imageUrl?: string;
   };
   product?: {
-    _id: string; // product ID
-    productId: string;
-    featuredId?: string;
+    productId: {
+      _id: string;
+      productName: string;
+      measureUnit: string;
+      family: string;
+      productImage: { url: string; _id: string }[];
+    } | null;
+    featuredId: string;
     size?: number;
     unitSize?: number;
     range?: number;
+    selectedFeature?: ProductFeature;
   };
+  userId: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
+  type: "product" | "service";
   quantity: number;
   totalAmount?: number;
+  createdAt: string;
+  updatedAt: string;
 }

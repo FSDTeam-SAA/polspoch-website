@@ -16,6 +16,8 @@ export interface ProductFeature {
   unitSizes?: number[];
   kgsPerUnit?: number;
   miterPerUnitPrice?: number;
+  minRange?: number;
+  maxRange?: number;
   _id?: string;
 }
 
