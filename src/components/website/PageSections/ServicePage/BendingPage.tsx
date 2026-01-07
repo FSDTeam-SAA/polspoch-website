@@ -13,7 +13,6 @@ import {
 import { toast } from "sonner";
 
 const BendingPage = () => {
-  const DEFAULT_MATERIALS = ["RAWSEEL", "TEARDROP", "GALVANIZED", "CORTEN"];
   const { data: templates = [], isLoading } = useBendingTemplates();
   const [selectedShapeId, setSelectedShapeId] = useState<string>("");
   const [thickness, setThickness] = useState("");
@@ -33,13 +32,13 @@ const BendingPage = () => {
       void Promise.resolve().then(() => {
         setSelectedShapeId(firstTemplate._id);
 
-        const diameters = firstTemplate.thicknesses || [];
-        if (diameters.length > 0) {
-          setThickness(String(diameters[0]));
-        }
-
-        if (firstTemplate.materials?.length > 0) {
-          setMaterial(firstTemplate.materials[0]);
+        // Find first material and its thicknesses
+        const firstMaterialObj = firstTemplate.materials?.[0];
+        if (firstMaterialObj) {
+          setMaterial(firstMaterialObj.material);
+          if (firstMaterialObj.thickness?.length > 0) {
+            setThickness(String(firstMaterialObj.thickness[0]));
+          }
         }
 
         const initialDims: { [key: string]: number } = {};
@@ -70,18 +69,13 @@ const BendingPage = () => {
     setDimensions(newDims);
     setErrors({});
 
-    const diameters = template.thicknesses || [];
-    if (diameters.length > 0 && !diameters.includes(Number(thickness))) {
-      setThickness(String(diameters[0]));
-    } else if (diameters.length === 0) {
-      setThickness("");
-    }
-
-    if (
-      template.materials?.length > 0 &&
-      !template.materials.includes(material)
-    ) {
-      setMaterial(template.materials[0]);
+    // Reset material and thickness based on new template
+    const firstMaterialObj = template.materials?.[0];
+    if (firstMaterialObj) {
+      setMaterial(firstMaterialObj.material);
+      if (firstMaterialObj.thickness?.length > 0) {
+        setThickness(String(firstMaterialObj.thickness[0]));
+      }
     }
   };
 
@@ -263,20 +257,23 @@ const BendingPage = () => {
                         MATERIAL
                       </label>
                       <div className="grid grid-cols-2 gap-2">
-                        {(selectedTemplate.materials?.length
-                          ? selectedTemplate.materials
-                          : DEFAULT_MATERIALS
-                        ).map((m) => (
+                        {selectedTemplate.materials?.map((mObj) => (
                           <button
-                            key={m}
-                            onClick={() => setMaterial(m)}
+                            key={mObj._id}
+                            onClick={() => {
+                              setMaterial(mObj.material);
+                              // Reset thickness to first available for this material
+                              if (mObj.thickness?.length > 0) {
+                                setThickness(String(mObj.thickness[0]));
+                              }
+                            }}
                             className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 uppercase ${
-                              material === m
+                              material === mObj.material
                                 ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
                                 : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
                             }`}
                           >
-                            {m}
+                            {mObj.material}
                           </button>
                         ))}
                       </div>
@@ -288,19 +285,21 @@ const BendingPage = () => {
                         THICKNESS (MM)
                       </label>
                       <div className="grid grid-cols-5 gap-2">
-                        {(selectedTemplate?.thicknesses || []).map((t) => (
-                          <button
-                            key={t}
-                            onClick={() => setThickness(String(t))}
-                            className={`py-3 rounded-lg border-2 font-semibold transition-all duration-300 ${
-                              thickness === String(t)
-                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                            }`}
-                          >
-                            {t}mm
-                          </button>
-                        ))}
+                        {selectedTemplate.materials
+                          ?.find((m) => m.material === material)
+                          ?.thickness.map((t) => (
+                            <button
+                              key={t}
+                              onClick={() => setThickness(String(t))}
+                              className={`py-3 rounded-lg border-2 font-semibold transition-all duration-300 ${
+                                thickness === String(t)
+                                  ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                  : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                              }`}
+                            >
+                              {t}mm
+                            </button>
+                          ))}
                       </div>
                     </div>
 
