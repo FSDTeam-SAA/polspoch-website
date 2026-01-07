@@ -26,6 +26,7 @@ import CartItemDetailsModal from "./CartItemDetailsModal";
 import { calculateShippingCost } from "@/lib/shippingUtils";
 import { useMemo } from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 const CartProducts = () => {
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -210,32 +211,49 @@ const CartProducts = () => {
 
               <div>
                 <div className="font-semibold text-gray-800">
-                  {item?.serviceId?.templateName || "Custom Product"}
+                  {item?.product?.productId?.productName ||
+                    item?.serviceId?.templateName ||
+                    "Custom Product"}
                 </div>
-                <div className="text-sm text-gray-500">
-                  {item?.serviceId?.material && (
-                    <span className="uppercase">{item.serviceId.material}</span>
-                  )}
-                  {item?.serviceId?.diameter && (
-                    <span> {item.serviceId.diameter}mm</span>
-                  )}
-                  {item?.product && (
-                    <span>
-                      {" "}
-                      {item.product.size ? `${item.product.size}mm` : ""}
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-slate-400 mt-1">
-                  Size{" "}
-                  {item?.serviceId?.sizes
-                    ? Object.entries(item?.serviceId?.sizes)
-                      .map(([key, val]) => `${key}:${val}`)
-                      .join(", ")
-                    : item?.product
-                      ? `${item.product.unitSize ?? item.product.range}m`
-                      : ""}
-                </div>
+                {/* eye button for viewing the modal */}
+                <motion.button
+                  onClick={() => setViewingItem(item)}
+                  whileHover="hover"
+                  whileTap="tap"
+                  variants={{
+                    hover: {
+                      scale: 1.1,
+                      backgroundColor: "rgba(126, 24, 0, 0.05)",
+                      color: "#7E1800",
+                      boxShadow: "0px 4px 15px rgba(126, 24, 0, 0.1)",
+                    },
+                    tap: { scale: 0.95 },
+                  }}
+                  className="p-2 text-slate-400 cursor-pointer bg-slate-100/50 rounded-lg flex items-center justify-center relative overflow-hidden group"
+                  title="View Details"
+                >
+                  <motion.div
+                    variants={{
+                      hover: { scale: 1.2, rotate: 15 },
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <Eye size={18} />
+                  </motion.div>
+                  {/* Sophisticated Shimmer */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent -skew-x-12"
+                    variants={{
+                      hover: { x: ["-150%", "150%"] },
+                    }}
+                    transition={{
+                      duration: 0.75,
+                      repeat: Infinity,
+                      repeatDelay: 0.1,
+                      ease: "easeInOut",
+                    }}
+                  />
+                </motion.button>
               </div>
             </div>
 
@@ -254,21 +272,38 @@ const CartProducts = () => {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
-                <button
+                {/* <button
                   onClick={() => setViewingItem(item)}
                   className="p-2 text-slate-400 hover:text-[#7E1800] transition-colors cursor-pointer bg-slate-50 hover:bg-[#7E1800]/5 rounded-lg"
                   title="View Details"
                 >
                   <Eye size={18} />
-                </button>
+                </button> */}
 
-                <button
+                <motion.button
                   onClick={() => handleDelete(item._id)}
-                  className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer bg-slate-50 hover:bg-red-50 rounded-lg"
+                  whileHover="hover"
+                  whileTap="tap"
+                  variants={{
+                    hover: {
+                      scale: 1.1,
+                      backgroundColor: "rgba(239, 68, 68, 0.05)",
+                      color: "#ef4444",
+                    },
+                    tap: { scale: 0.95 },
+                  }}
+                  className="p-2 text-slate-400 cursor-pointer bg-slate-100/50 rounded-lg flex items-center justify-center"
                   title="Remove item"
                 >
-                  <Trash2 size={18} />
-                </button>
+                  <motion.div
+                    variants={{
+                      hover: { rotate: [0, -10, 10, -10, 10, 0] },
+                    }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <Trash2 size={18} />
+                  </motion.div>
+                </motion.button>
               </div>
             </div>
           </div>
