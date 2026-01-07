@@ -30,12 +30,14 @@ const SelectedConfiguration: React.FC<SelectedConfigurationProps> = ({
                         {selectedFeature.reference}
                     </div>
                 </div>
-                <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
-                    <div className="text-gray-500 text-xs mb-1">Thickness</div>
-                    <div className="font-semibold text-gray-900">
-                        {selectedFeature.thickness}mm
+                {selectedFeature.thickness && selectedFeature.thickness > 0 && (
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                        <div className="text-gray-500 text-xs mb-1">Thickness</div>
+                        <div className="font-semibold text-gray-900">
+                            {selectedFeature.thickness}mm
+                        </div>
                     </div>
-                </div>
+                )}
                 <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                     <div className="text-gray-500 text-xs mb-1">Dimensions</div>
                     <div className="font-semibold text-gray-900">
