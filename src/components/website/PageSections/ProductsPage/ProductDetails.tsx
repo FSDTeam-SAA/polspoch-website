@@ -148,8 +148,8 @@ export default function ProductDetails() {
   // Adjust state during render to avoid cascading renders in useEffect
   if (product && product._id !== prevProductId) {
     setPrevProductId(product._id);
-    const initialMinRange = product.features?.[0]?.minRange ?? product.minRange ?? 1;
-    setRangeLengthMm(initialMinRange * 1000);
+    const initialMinRange = product.features?.[0]?.minRange ?? product.minRange ?? 0;
+    setRangeLengthMm(initialMinRange);
     setSelectedThumbnail(0);
     setSelectedThickness(null);
     setSelectedSize1(null);
@@ -168,7 +168,11 @@ export default function ProductDetails() {
 
   const allThicknesses = useMemo(() => {
     const all = new Set<number>();
-    featureList.forEach((f) => f.thickness && all.add(f.thickness));
+    featureList.forEach((f) => {
+      if (f.thickness && f.thickness > 0) {
+        all.add(f.thickness);
+      }
+    });
     return Array.from(all).sort((a, b) => a - b);
   }, [featureList]);
 
@@ -294,8 +298,8 @@ export default function ProductDetails() {
     );
 
     if (newFeature) {
-      const minVal = (newFeature.minRange ?? product?.minRange ?? 1) * 1000;
-      const maxVal = (newFeature.maxRange ?? product?.maxRange ?? 12) * 1000;
+      const minVal = newFeature.minRange ?? product?.minRange ?? 0;
+      const maxVal = newFeature.maxRange ?? product?.maxRange ?? 0;
 
       if (rangeLengthMm < minVal) {
         setRangeLengthMm(minVal);
@@ -306,21 +310,29 @@ export default function ProductDetails() {
   };
 
   const selectedFeature = useMemo(() => {
+    if (!product?.features) return null;
+
+    const needsThickness = allThicknesses.length > 0;
+    const needsSize1 = allSize1s.length > 0;
+    const needsSize2 = hasSize2 && allSize2s.length > 0;
+    const needsFinish = allFinishQualities.length > 0;
+
     if (
-      !product?.features ||
-      selectedThickness === null ||
-      selectedSize1 === null ||
-      selectedSize2 === null ||
-      selectedFinishQuality === null
-    )
+      (needsThickness && selectedThickness === null) ||
+      (needsSize1 && selectedSize1 === null) ||
+      (needsSize2 && selectedSize2 === null) ||
+      (needsFinish && selectedFinishQuality === null)
+    ) {
       return null;
+    }
+
     return (
       product.features.find(
         (f) =>
-          f.thickness === selectedThickness &&
-          f.size1 === selectedSize1 &&
-          f.size2 === selectedSize2 &&
-          f.finishQuality === selectedFinishQuality
+          (!needsThickness || f.thickness === selectedThickness) &&
+          (!needsSize1 || f.size1 === selectedSize1) &&
+          (!needsSize2 || f.size2 === selectedSize2) &&
+          (!needsFinish || f.finishQuality === selectedFinishQuality)
       ) || null
     );
   }, [
@@ -329,20 +341,37 @@ export default function ProductDetails() {
     selectedSize1,
     selectedSize2,
     selectedFinishQuality,
+    allThicknesses,
+    allSize1s,
+    hasSize2,
+    allSize2s,
+    allFinishQualities,
   ]);
 
   const hasRange = useMemo(() => {
     //eslint-disable-next-line
     const checkValue = (val: any) => typeof val === "number" && val > 0;
     if (selectedFeature) {
-      return checkValue(selectedFeature.minRange) || checkValue(selectedFeature.maxRange);
+      return (
+        checkValue(selectedFeature.minRange) ||
+        checkValue(selectedFeature.maxRange)
+      );
     }
     return (
-      featureList.some((f) => checkValue(f.minRange) || checkValue(f.maxRange)) ||
+      featureList.some(
+        (f) => checkValue(f.minRange) || checkValue(f.maxRange)
+      ) ||
       checkValue(product?.minRange) ||
       checkValue(product?.maxRange)
     );
   }, [selectedFeature, featureList, product]);
+
+  const hasAnyLengthOption = useMemo(() => {
+    return (
+      hasRange ||
+      featureList.some((f) => f.unitSizes && f.unitSizes.length > 0)
+    );
+  }, [hasRange, featureList]);
 
   const availableUnitSizes = useMemo(
     () => selectedFeature?.unitSizes || [],
@@ -356,9 +385,12 @@ export default function ProductDetails() {
       const meters = selectedUnitSizeMm / 1000;
       return kgsPerUnit * meters * quantity;
     }
-    const meters = rangeLengthMm / 1000;
-    return kgsPerUnit * meters * quantity;
-  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity]);
+    if (hasRange && rangeLengthMm > 0) {
+      const meters = rangeLengthMm / 1000;
+      return kgsPerUnit * meters * quantity;
+    }
+    return 0;
+  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity, hasRange]);
 
   const { shippingCost, shippingMethod } = useMemo(() => {
     if (!selectedFeature) return { shippingCost: 0, shippingMethod: "courier" };
@@ -378,9 +410,12 @@ export default function ProductDetails() {
       const meters = selectedUnitSizeMm / 1000;
       return pricePerMeter * meters * quantity;
     }
-    const meters = rangeLengthMm / 1000;
-    return pricePerMeter * meters * quantity;
-  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity]);
+    if (hasRange && rangeLengthMm > 0) {
+      const meters = rangeLengthMm / 1000;
+      return pricePerMeter * meters * quantity;
+    }
+    return 0;
+  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity, hasRange]);
 
   const totalPrice = useMemo(
     () => productPrice + shippingCost,
@@ -408,13 +443,13 @@ export default function ProductDetails() {
     setSelectedFinishQuality(null);
     setSelectedUnitSizeMm(null);
     const initialMinRange =
-      product?.features?.[0]?.minRange ?? product?.minRange ?? 1;
-    setRangeLengthMm(initialMinRange * 1000);
+      product?.features?.[0]?.minRange ?? product?.minRange ?? 0;
+    setRangeLengthMm(initialMinRange);
   };
 
   const canCheckout =
     !!selectedFeature &&
-    (selectedUnitSizeMm !== null || rangeLengthMm > 0) &&
+    (selectedUnitSizeMm !== null || (hasRange && rangeLengthMm > 0)) &&
     quantity > 0;
 
   const hasAnySelection =
@@ -637,9 +672,6 @@ export default function ProductDetails() {
                 <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-amber-50 to-white rounded-xl border-2 border-[#7E1800]/10">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-[#7E1800] text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
-                        1
-                      </div>
                       <h3 className="text-sm font-semibold text-gray-900">
                         Width / Diameter
                       </h3>
@@ -687,9 +719,6 @@ export default function ProductDetails() {
                   <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-amber-50/30 to-white rounded-xl border-2 border-[#7E1800]/10">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-[#7E1800]/90 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
-                          2
-                        </div>
                         <h3 className="text-sm font-semibold text-gray-900">
                           Height / Second Dimension
                         </h3>
@@ -734,62 +763,58 @@ export default function ProductDetails() {
                 )}
 
                 {/* Thickness */}
-                <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-[#7E1800]/80 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
-                        3
+                {allThicknesses.length > 0 && (
+                  <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-semibold text-gray-900">
+                          Thickness
+                        </h3>
+                        <Tooltip
+                          text={TOOLTIPS.thickness}
+                          step="thickness"
+                          showTooltip={showTooltip}
+                          setShowTooltip={setShowTooltip}
+                        />
                       </div>
-                      <h3 className="text-sm font-semibold text-gray-900">
-                        Thickness
-                      </h3>
-                      <Tooltip
-                        text={TOOLTIPS.thickness}
-                        step="thickness"
-                        showTooltip={showTooltip}
-                        setShowTooltip={setShowTooltip}
-                      />
+                      <span className="text-[10px] text-gray-500 font-medium">
+                        in mm
+                      </span>
                     </div>
-                    <span className="text-[10px] text-gray-500 font-medium">
-                      in mm
-                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {allThicknesses.map((thickness) => {
+                        const isAvailable =
+                          availableThicknesses.includes(thickness);
+                        const isSelected = selectedThickness === thickness;
+                        return (
+                          <button
+                            key={thickness}
+                            onClick={() =>
+                              handleSelectionChange(
+                                "thickness",
+                                isSelected ? null : thickness
+                              )
+                            }
+                            disabled={!isAvailable && !isSelected}
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                              }`}
+                          >
+                            {thickness}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {allThicknesses.map((thickness) => {
-                      const isAvailable =
-                        availableThicknesses.includes(thickness);
-                      const isSelected = selectedThickness === thickness;
-                      return (
-                        <button
-                          key={thickness}
-                          onClick={() =>
-                            handleSelectionChange(
-                              "thickness",
-                              isSelected ? null : thickness
-                            )
-                          }
-                          disabled={!isAvailable && !isSelected}
-                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                            : isAvailable
-                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
-                        >
-                          {thickness}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                )}
 
                 {/* Finish Quality */}
                 <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-[#7E1800]/70 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
-                        4
-                      </div>
                       <h3 className="text-sm font-semibold text-gray-900">
                         Finish Quality
                       </h3>
@@ -830,13 +855,10 @@ export default function ProductDetails() {
                   </div>
                 </div>
                 {/* Length Selection */}
-                {hasRange && (
+                {hasAnyLengthOption && (
                   <div className="p-4 bg-gradient-to-br from-[#7E1800]/5 via-white to-white rounded-xl border-2 border-[#7E1800]/10 lg:col-span-2">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center mb-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-[#7E1800]/60 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
-                          5
-                        </div>
                         <h3 className="text-sm font-semibold text-gray-900">
                           Length Selection
                         </h3>
@@ -847,121 +869,133 @@ export default function ProductDetails() {
                           setShowTooltip={setShowTooltip}
                         />
                       </div>
-                      {selectedUnitSizeMm === null ? (
-                        <span className="text-[10px] font-semibold text-[#7E1800] bg-[#7E1800]/5 px-3 py-1 rounded-full border border-[#7E1800]/20">
-                          Custom Length
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-semibold text-[#7E1800] bg-[#7E1800]/10 px-3 py-1 rounded-full border border-[#7E1800]/20">
-                          Standard Size
-                        </span>
-                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Standard Lengths */}
-                      {availableUnitSizes.length > 0 && (
-                        <div>
-                          <div className="flex items-center gap-2 mb-3">
-                            <ListChecks size={16} className="text-[#7E1800]/80" />
-                            <span className="text-xs font-semibold text-gray-700">
-                              Standard Lengths
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {availableUnitSizes.map((size) => (
-                              <button
-                                key={size}
-                                onClick={() => handleUnitSizeSelect(size)}
-                                className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
-                                  ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                  : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                  }`}
-                              >
-                                {size}mm
-                              </button>
-                            ))}
-                          </div>
+                      {!selectedFeature ? (
+                        <div className="col-span-2 py-4 text-center border-2 border-dashed border-[#7E1800]/10 rounded-lg bg-[#7E1800]/5">
+                          <p className="text-sm font-medium text-[#7E1800]/60">
+                            Please select width and quality above to see
+                            available lengths
+                          </p>
                         </div>
-                      )}
+                      ) : (
+                        <>
+                          {/* Standard Lengths */}
+                          {availableUnitSizes.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-3">
+                                <ListChecks
+                                  size={16}
+                                  className="text-[#7E1800]/80"
+                                />
+                                <span className="text-xs font-semibold text-gray-700">
+                                  Standard Lengths
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {availableUnitSizes.map((size) => (
+                                  <button
+                                    key={size}
+                                    onClick={() => handleUnitSizeSelect(size)}
+                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
+                                      ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                      : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                      }`}
+                                  >
+                                    {size}mm
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
-                      {/* Custom Length in millimeters */}
-                      <div
-                        className={
-                          availableUnitSizes.length === 0 ? "col-span-2" : ""
-                        }
-                      >
-                        <div className="flex items-center gap-2 mb-3">
-                          <Ruler size={16} className="text-[#7E1800]/80" />
-                          <span className="text-xs font-semibold text-gray-700">
-                            Custom Length (mm)
-                          </span>
-                        </div>
+                          {/* Custom Length in millimeters */}
+                          {hasRange && (
+                            <div
+                              className={
+                                availableUnitSizes.length === 0
+                                  ? "col-span-2"
+                                  : ""
+                              }
+                            >
+                              <div className="flex items-center gap-2 mb-3">
+                                <Ruler
+                                  size={16}
+                                  className="text-[#7E1800]/80"
+                                />
+                                <span className="text-xs font-semibold text-gray-700">
+                                  Custom Length (mm)
+                                </span>
+                              </div>
 
-                        <div className="space-y-3">
-                          {/* Slider */}
-                          <input
-                            type="range"
-                            min={
-                              (selectedFeature?.minRange ??
-                                product?.features?.[0]?.minRange ??
-                                product?.minRange ??
-                                1) * 1000
-                            }
-                            max={
-                              (selectedFeature?.maxRange ??
-                                product?.features?.[0]?.maxRange ??
-                                product?.maxRange ??
-                                12) * 1000
-                            }
-                            step={100}
-                            value={rangeLengthMm}
-                            onChange={handleRangeChange}
-                            className="w-full h-1.5 bg-[#7E1800]/10 rounded-lg appearance-none cursor-pointer accent-[#7E1800]"
-                          />
-
-                          {/* Number Input */}
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1 flex items-center border border-[#7E1800]/20 rounded-lg bg-white overflow-hidden focus-within:border-[#7E1800] transition-colors">
-                              <input
-                                type="number"
-                                min={
-                                  (selectedFeature?.minRange ??
+                              <div className="space-y-3">
+                                {/* Slider */}
+                                <input
+                                  type="range"
+                                  min={
+                                    selectedFeature?.minRange ??
                                     product?.features?.[0]?.minRange ??
                                     product?.minRange ??
-                                    1) * 1000
-                                }
-                                max={
-                                  (selectedFeature?.maxRange ??
+                                    0
+                                  }
+                                  max={
+                                    selectedFeature?.maxRange ??
                                     product?.features?.[0]?.maxRange ??
                                     product?.maxRange ??
-                                    12) * 1000
-                                }
-                                step={100}
-                                value={rangeLengthMm}
-                                onChange={handleRangeChange}
-                                className="flex-1 px-3 py-2 text-center text-sm font-medium focus:outline-none"
-                              />
-                              <span className="px-3 text-xs text-gray-600 font-medium bg-[#7E1800]/5 h-full flex items-center border-l border-[#7E1800]/20">
-                                mm
-                              </span>
+                                    0
+                                  }
+                                  step={100}
+                                  value={rangeLengthMm}
+                                  onChange={handleRangeChange}
+                                  className="w-full h-1.5 bg-[#7E1800]/10 rounded-lg appearance-none cursor-pointer accent-[#7E1800]"
+                                />
+
+                                {/* Number Input */}
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-1 flex items-center border border-[#7E1800]/20 rounded-lg bg-white overflow-hidden focus-within:border-[#7E1800] transition-colors">
+                                    <input
+                                      type="number"
+                                      min={
+                                        selectedFeature?.minRange ??
+                                        product?.features?.[0]?.minRange ??
+                                        product?.minRange ??
+                                        0
+                                      }
+                                      max={
+                                        selectedFeature?.maxRange ??
+                                        product?.features?.[0]?.maxRange ??
+                                        product?.maxRange ??
+                                        0
+                                      }
+                                      step={100}
+                                      value={rangeLengthMm}
+                                      onChange={handleRangeChange}
+                                      className="flex-1 px-3 py-2 text-center text-sm font-medium focus:outline-none"
+                                    />
+                                    <span className="px-3 text-xs text-gray-600 font-medium bg-[#7E1800]/5 h-full flex items-center border-l border-[#7E1800]/20">
+                                      mm
+                                    </span>
+                                  </div>
+                                  <div className="text-[10px] text-gray-500 whitespace-nowrap">
+                                    Range:{" "}
+                                    {selectedFeature?.minRange ??
+                                      product?.features?.[0]?.minRange ??
+                                      product?.minRange ??
+                                      0}
+                                    mm -{" "}
+                                    {selectedFeature?.maxRange ??
+                                      product?.features?.[0]?.maxRange ??
+                                      product?.maxRange ??
+                                      0}
+                                    mm
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-[10px] text-gray-500 whitespace-nowrap">
-                              Range:{" "}
-                              {(selectedFeature?.minRange ??
-                                product?.features?.[0]?.minRange ??
-                                product?.minRange ??
-                                1) * 1000}
-                              mm -{" "}
-                              {(selectedFeature?.maxRange ??
-                                product?.features?.[0]?.maxRange ??
-                                product?.maxRange ??
-                                12) * 1000}
-                              mm
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -977,11 +1011,8 @@ export default function ProductDetails() {
 
               {/* Shipping Method */}
               {selectedFeature && (
-                <div className="mb-6 p-5 rounded-xl border-2 border-[#7E1800]/20 bg-gradient-to-br from-[#7E1800]/5 to-white">
+                <div className="mb-6 mt-4 p-5 rounded-xl border-2 border-[#7E1800]/20 bg-gradient-to-br from-[#7E1800]/5 to-white">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="w-8 h-8 bg-[#7E1800] text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
-                      6
-                    </span>
                     <h3 className="text-base font-semibold text-gray-900">
                       Shipping Method
                     </h3>
@@ -1084,25 +1115,36 @@ export default function ProductDetails() {
                 </div>
 
                 {/* Add to Cart Button */}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!canCheckout || isPending}
-                  className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${canCheckout && !isPending
-                    ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
-                >
-                  {isPending ? (
-                    <Loader2 className="animate-spin" size={22} />
-                  ) : (
-                    <ShoppingCart size={22} />
-                  )}
-                  {isPending
-                    ? "Adding to Cart..."
-                    : canCheckout
-                      ? "Add to Cart"
-                      : "Select Configuration to Continue"}
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!canCheckout || isPending}
+                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${canCheckout && !isPending
+                      ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      }`}
+                  >
+                    {isPending ? (
+                      <Loader2 className="animate-spin" size={22} />
+                    ) : (
+                      <ShoppingCart size={22} />
+                    )}
+                    {isPending
+                      ? "Adding to Cart..."
+                      : canCheckout
+                        ? "Add to Cart"
+                        : "Select Length to Continue"}
+                  </button>
+
+                  {selectedFeature &&
+                    !selectedUnitSizeMm &&
+                    (!hasRange || rangeLengthMm === 0) && (
+                      <p className="text-center text-xs font-medium text-[#7E1800] animate-pulse">
+                        ⚠️ Please choose a standard length or custom range to
+                        calculate price
+                      </p>
+                    )}
+                </div>
 
                 {!selectedFeature && (
                   <p className="text-center text-sm text-gray-500 mt-3">
