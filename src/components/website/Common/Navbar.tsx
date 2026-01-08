@@ -198,12 +198,12 @@ export default function Navbar() {
               scrolled ? "text-white" : "text-primary"
             }`}
           >
-            <button
+            {/* <button
               onClick={() => setSearchOpen(true)}
               className="cursor-pointer"
             >
               <Search />
-            </button>
+            </button> */}
 
             <SearchModal
               isOpen={searchOpen}
@@ -466,11 +466,15 @@ export default function Navbar() {
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel className="cursor-pointer"> Cancel</AlertDialogCancel>
+          <AlertDialogCancel className="cursor-pointer">
+            {" "}
+            Cancel
+          </AlertDialogCancel>
           <AlertDialogAction
             className="bg-red-600 cursor-pointer hover:bg-red-700 text-white"
             onClick={() => signOut()}
-          >Logout
+          >
+            Logout
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
