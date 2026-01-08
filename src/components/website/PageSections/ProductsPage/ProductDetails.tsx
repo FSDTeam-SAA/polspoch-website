@@ -81,7 +81,7 @@ const getAvailableOptions = (
     size1: number | null;
     size2: number | null;
     finishQuality: string | null;
-  }
+  },
 ) => {
   const { thickness, size1, size2, finishQuality } = selections;
   //eslint-disable-next-line
@@ -127,7 +127,7 @@ export default function ProductDetails() {
   });
 
   const [selectedThickness, setSelectedThickness] = useState<number | null>(
-    null
+    null,
   );
   const [selectedSize1, setSelectedSize1] = useState<number | null>(null);
   const [selectedSize2, setSelectedSize2] = useState<number | null>(null);
@@ -136,7 +136,7 @@ export default function ProductDetails() {
   >(null);
 
   const [selectedUnitSizeMm, setSelectedUnitSizeMm] = useState<number | null>(
-    null
+    null,
   );
   const [rangeLengthMm, setRangeLengthMm] = useState<number>(1000);
   const [quantity, setQuantity] = useState<number>(1);
@@ -148,7 +148,8 @@ export default function ProductDetails() {
   // Adjust state during render to avoid cascading renders in useEffect
   if (product && product._id !== prevProductId) {
     setPrevProductId(product._id);
-    const initialMinRange = product.features?.[0]?.minRange ?? product.minRange ?? 0;
+    const initialMinRange =
+      product.features?.[0]?.minRange ?? product.minRange ?? 0;
     setRangeLengthMm(initialMinRange);
     setSelectedThumbnail(0);
     setSelectedThickness(null);
@@ -184,7 +185,7 @@ export default function ProductDetails() {
 
   const hasSize2 = useMemo(
     () => featureList.some((f) => !!f.size2),
-    [featureList]
+    [featureList],
   );
 
   const allSize2s = useMemo(() => {
@@ -201,7 +202,7 @@ export default function ProductDetails() {
         size2: selectedSize2,
         finishQuality: selectedFinishQuality,
       }),
-    [featureList, selectedSize1, selectedSize2, selectedFinishQuality]
+    [featureList, selectedSize1, selectedSize2, selectedFinishQuality],
   );
 
   const availableSize1s = useMemo(
@@ -212,7 +213,7 @@ export default function ProductDetails() {
         size2: selectedSize2,
         finishQuality: selectedFinishQuality,
       }),
-    [featureList, selectedThickness, selectedSize2, selectedFinishQuality]
+    [featureList, selectedThickness, selectedSize2, selectedFinishQuality],
   );
 
   const availableSize2s = useMemo(
@@ -223,7 +224,7 @@ export default function ProductDetails() {
         size2: null,
         finishQuality: selectedFinishQuality,
       }),
-    [featureList, selectedThickness, selectedSize1, selectedFinishQuality]
+    [featureList, selectedThickness, selectedSize1, selectedFinishQuality],
   );
 
   const availableFinishQualities = useMemo(
@@ -234,12 +235,12 @@ export default function ProductDetails() {
         size2: selectedSize2,
         finishQuality: null,
       }),
-    [featureList, selectedThickness, selectedSize1, selectedSize2]
+    [featureList, selectedThickness, selectedSize1, selectedSize2],
   );
 
   const handleSelectionChange = (
     field: "thickness" | "size1" | "size2" | "finishQuality",
-    value: number | string | null
+    value: number | string | null,
   ) => {
     let newThickness =
       field === "thickness" ? (value as number | null) : selectedThickness;
@@ -279,7 +280,7 @@ export default function ProductDetails() {
     };
 
     (["thickness", "size1", "size2", "finishQuality"] as const).forEach(
-      validate
+      validate,
     );
 
     if (newThickness !== selectedThickness) setSelectedThickness(newThickness);
@@ -294,7 +295,7 @@ export default function ProductDetails() {
         f.thickness === newThickness &&
         f.size1 === newSize1 &&
         f.size2 === newSize2 &&
-        f.finishQuality === newFinish
+        f.finishQuality === newFinish,
     );
 
     if (newFeature) {
@@ -332,7 +333,7 @@ export default function ProductDetails() {
           (!needsThickness || f.thickness === selectedThickness) &&
           (!needsSize1 || f.size1 === selectedSize1) &&
           (!needsSize2 || f.size2 === selectedSize2) &&
-          (!needsFinish || f.finishQuality === selectedFinishQuality)
+          (!needsFinish || f.finishQuality === selectedFinishQuality),
       ) || null
     );
   }, [
@@ -359,7 +360,7 @@ export default function ProductDetails() {
     }
     return (
       featureList.some(
-        (f) => checkValue(f.minRange) || checkValue(f.maxRange)
+        (f) => checkValue(f.minRange) || checkValue(f.maxRange),
       ) ||
       checkValue(product?.minRange) ||
       checkValue(product?.maxRange)
@@ -368,14 +369,13 @@ export default function ProductDetails() {
 
   const hasAnyLengthOption = useMemo(() => {
     return (
-      hasRange ||
-      featureList.some((f) => f.unitSizes && f.unitSizes.length > 0)
+      hasRange || featureList.some((f) => f.unitSizes && f.unitSizes.length > 0)
     );
   }, [hasRange, featureList]);
 
   const availableUnitSizes = useMemo(
     () => selectedFeature?.unitSizes || [],
-    [selectedFeature]
+    [selectedFeature],
   );
 
   const totalWeight = useMemo(() => {
@@ -419,7 +419,7 @@ export default function ProductDetails() {
 
   const totalPrice = useMemo(
     () => productPrice + shippingCost,
-    [productPrice, shippingCost]
+    [productPrice, shippingCost],
   );
 
   const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -621,10 +621,11 @@ export default function ProductDetails() {
                   <button
                     key={idx}
                     onClick={() => setSelectedThumbnail(idx)}
-                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${selectedThumbnail === idx
-                      ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                      : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
-                      }`}
+                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${
+                      selectedThumbnail === idx
+                        ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                        : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
+                    }`}
                   >
                     <Image
                       src={img.url}
@@ -696,16 +697,17 @@ export default function ProductDetails() {
                           onClick={() =>
                             handleSelectionChange(
                               "size1",
-                              isSelected ? null : size
+                              isSelected ? null : size,
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                            : isAvailable
-                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                            isSelected
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                          }`}
                         >
                           {size}
                         </button>
@@ -743,16 +745,17 @@ export default function ProductDetails() {
                             onClick={() =>
                               handleSelectionChange(
                                 "size2",
-                                isSelected ? null : size
+                                isSelected ? null : size,
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                              }`}
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                              isSelected
+                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                : isAvailable
+                                  ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                           >
                             {size}
                           </button>
@@ -792,16 +795,17 @@ export default function ProductDetails() {
                             onClick={() =>
                               handleSelectionChange(
                                 "thickness",
-                                isSelected ? null : thickness
+                                isSelected ? null : thickness,
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                              }`}
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                              isSelected
+                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                : isAvailable
+                                  ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                           >
                             {thickness}
                           </button>
@@ -837,16 +841,17 @@ export default function ProductDetails() {
                           onClick={() =>
                             handleSelectionChange(
                               "finishQuality",
-                              isSelected ? null : quality
+                              isSelected ? null : quality,
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                            : isAvailable
-                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                            isSelected
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                          }`}
                         >
                           {quality}
                         </button>
@@ -898,10 +903,11 @@ export default function ProductDetails() {
                                   <button
                                     key={size}
                                     onClick={() => handleUnitSizeSelect(size)}
-                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
-                                      ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                      : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                      }`}
+                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${
+                                      selectedUnitSizeMm === size
+                                        ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                        : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                    }`}
                                   >
                                     {size}mm
                                   </button>
@@ -1027,10 +1033,11 @@ export default function ProductDetails() {
                     />
                   </div>
                   <div
-                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${shippingMethod === "courier"
-                      ? "bg-green-50 border-green-300"
-                      : "bg-blue-50 border-blue-300"
-                      }`}
+                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${
+                      shippingMethod === "courier"
+                        ? "bg-green-50 border-green-300"
+                        : "bg-blue-50 border-blue-300"
+                    }`}
                   >
                     <div>
                       <div
@@ -1119,10 +1126,11 @@ export default function ProductDetails() {
                   <button
                     onClick={handleAddToCart}
                     disabled={!canCheckout || isPending}
-                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${canCheckout && !isPending
-                      ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      }`}
+                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
+                      canCheckout && !isPending
+                        ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    }`}
                   >
                     {isPending ? (
                       <Loader2 className="animate-spin" size={22} />

@@ -12,8 +12,6 @@ import {
 import { useService } from "@/lib/hooks/useService";
 import { useAddToCart } from "@/lib/hooks/useAddToCart";
 
-const DEFAULT_MATERIALS = ["RAWSEEL", "TEARDROP", "GALVANIZED", "CORTEN"];
-
 const CuttingPage = () => {
   // Fetch templates using custom hook
   const { data: templates = [], isLoading } = useCuttingTemplates();
@@ -37,13 +35,14 @@ const CuttingPage = () => {
       const firstTemplate = templates[0];
       void Promise.resolve().then(() => {
         setSelectedShapeId(firstTemplate._id);
-        if (firstTemplate.thicknesses?.length > 0) {
-          setThickness(String(firstTemplate.thicknesses[0]));
-        }
-        if (firstTemplate.materials?.length > 0) {
-          setMaterial(firstTemplate.materials[0]);
-        } else {
-          setMaterial(DEFAULT_MATERIALS[0]);
+
+        // Find first material and its thicknesses
+        const firstMaterialObj = firstTemplate.materials?.[0];
+        if (firstMaterialObj) {
+          setMaterial(firstMaterialObj.material);
+          if (firstMaterialObj.thickness?.length > 0) {
+            setThickness(String(firstMaterialObj.thickness[0]));
+          }
         }
 
         const initialDims: { [key: string]: number } = {};
@@ -78,18 +77,13 @@ const CuttingPage = () => {
     setDimensions(newDims);
     setErrors({});
 
-    // Reset thickness and material if invalid
-    if (
-      template.thicknesses?.length > 0 &&
-      !template.thicknesses.includes(Number(thickness))
-    ) {
-      setThickness(String(template.thicknesses[0]));
-    }
-    if (
-      template.materials?.length > 0 &&
-      !template.materials.includes(material)
-    ) {
-      setMaterial(template.materials[0]);
+    // Reset material and thickness based on new template
+    const firstMaterialObj = template.materials?.[0];
+    if (firstMaterialObj) {
+      setMaterial(firstMaterialObj.material);
+      if (firstMaterialObj.thickness?.length > 0) {
+        setThickness(String(firstMaterialObj.thickness[0]));
+      }
     }
   };
 
@@ -300,20 +294,23 @@ const CuttingPage = () => {
                         MATERIAL
                       </label>
                       <div className="grid grid-cols-2 gap-3">
-                        {(selectedTemplate.materials?.length
-                          ? selectedTemplate.materials
-                          : DEFAULT_MATERIALS
-                        ).map((m) => (
+                        {selectedTemplate.materials?.map((mObj) => (
                           <button
-                            key={m}
-                            onClick={() => setMaterial(m)}
+                            key={mObj._id}
+                            onClick={() => {
+                              setMaterial(mObj.material);
+                              // Reset thickness to first available for this material
+                              if (mObj.thickness?.length > 0) {
+                                setThickness(String(mObj.thickness[0]));
+                              }
+                            }}
                             className={`py-3.5 rounded-xl border-2 font-bold transition-all duration-300 uppercase tracking-wider text-sm ${
-                              material === m
+                              material === mObj.material
                                 ? "border-[#7E1800] bg-[#7E1800] text-white shadow-xl transform scale-[1.02]"
                                 : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
                             }`}
                           >
-                            {m}
+                            {mObj.material}
                           </button>
                         ))}
                       </div>
@@ -326,19 +323,21 @@ const CuttingPage = () => {
                         THICKNESS (MM)
                       </label>
                       <div className="grid grid-cols-5 gap-2">
-                        {(selectedTemplate.thicknesses || []).map((t) => (
-                          <button
-                            key={t}
-                            onClick={() => setThickness(String(t))}
-                            className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 text-sm ${
-                              thickness === String(t)
-                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                            }`}
-                          >
-                            {t}mm
-                          </button>
-                        ))}
+                        {selectedTemplate.materials
+                          ?.find((m) => m.material === material)
+                          ?.thickness.map((t) => (
+                            <button
+                              key={t}
+                              onClick={() => setThickness(String(t))}
+                              className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 text-sm ${
+                                thickness === String(t)
+                                  ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                  : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                              }`}
+                            >
+                              {t}mm
+                            </button>
+                          ))}
                       </div>
                     </div>
 
