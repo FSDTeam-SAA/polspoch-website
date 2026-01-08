@@ -70,7 +70,8 @@ const CartProducts = () => {
       if (item.product && item.product.selectedFeature) {
         const feature = item.product.selectedFeature;
         const lengthMeters = item.product.unitSize || item.product.range || 0;
-        const itemWeight = (feature.kgsPerUnit || 0) * lengthMeters * item.quantity;
+        const itemWeight =
+          (feature.kgsPerUnit || 0) * lengthMeters * item.quantity;
         weight += itemWeight;
 
         const lengthMm = lengthMeters * 1000;
@@ -97,7 +98,7 @@ const CartProducts = () => {
   const shippingFee = calculateShippingCost(
     totalWeight,
     maxLength,
-    !isTruckRequired
+    !isTruckRequired,
   );
   const total = subtotal + shippingFee;
 
@@ -139,7 +140,7 @@ const CartProducts = () => {
             window.location.href = data.data.url;
           }
         },
-      }
+      },
     );
   };
 
@@ -185,7 +186,7 @@ const CartProducts = () => {
 
               <div className="w-[140px] h-[80px] bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border border-slate-100">
                 {item?.product?.productId?.productImage &&
-                  item.product.productId.productImage.length > 0 ? (
+                item.product.productId.productImage.length > 0 ? (
                   <Image
                     src={item.product.productId.productImage[0].url}
                     alt={item.product.productId.productName}
