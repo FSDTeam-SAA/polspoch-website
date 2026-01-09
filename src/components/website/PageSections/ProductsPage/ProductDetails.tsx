@@ -396,12 +396,23 @@ export default function ProductDetails() {
     if (!selectedFeature) return { shippingCost: 0, shippingMethod: "courier" };
     const lengthMm = selectedUnitSizeMm ?? rangeLengthMm;
     const isCourier = lengthMm <= 2500;
-    const cost = calculateShippingCost(totalWeight, lengthMm, isCourier);
+
+    // Calculate weight for a single unit
+    const kgsPerUnit = selectedFeature.kgsPerUnit ?? 0;
+    const meters = lengthMm / 1000;
+    const singleUnitWeight = kgsPerUnit * meters;
+
+    // Calculate shipping cost for a single unit
+    const singleUnitShippingCost = calculateShippingCost(singleUnitWeight, lengthMm, isCourier);
+
+    // Multiply by quantity to get total shipping cost
+    const totalShippingCost = singleUnitShippingCost * quantity;
+
     return {
-      shippingCost: cost,
+      shippingCost: totalShippingCost,
       shippingMethod: isCourier ? "courier" : "truck",
     };
-  }, [selectedFeature, totalWeight, selectedUnitSizeMm, rangeLengthMm]);
+  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity]);
 
   const productPrice = useMemo(() => {
     if (!selectedFeature) return 0;
@@ -621,11 +632,10 @@ export default function ProductDetails() {
                   <button
                     key={idx}
                     onClick={() => setSelectedThumbnail(idx)}
-                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${
-                      selectedThumbnail === idx
+                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${selectedThumbnail === idx
                         ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
                         : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
-                    }`}
+                      }`}
                   >
                     <Image
                       src={img.url}
@@ -701,13 +711,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                            isSelected
+                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
                               ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
                               : isAvailable
                                 ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
                                 : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                          }`}
+                            }`}
                         >
                           {size}
                         </button>
@@ -749,13 +758,12 @@ export default function ProductDetails() {
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                              isSelected
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
                                 ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
                                 : isAvailable
                                   ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
                                   : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                              }`}
                           >
                             {size}
                           </button>
@@ -799,13 +807,12 @@ export default function ProductDetails() {
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                              isSelected
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
                                 ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
                                 : isAvailable
                                   ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
                                   : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                              }`}
                           >
                             {thickness}
                           </button>
@@ -845,13 +852,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                            isSelected
+                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
                               ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
                               : isAvailable
                                 ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
                                 : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                          }`}
+                            }`}
                         >
                           {quality}
                         </button>
@@ -903,11 +909,10 @@ export default function ProductDetails() {
                                   <button
                                     key={size}
                                     onClick={() => handleUnitSizeSelect(size)}
-                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${
-                                      selectedUnitSizeMm === size
+                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
                                         ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
                                         : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                    }`}
+                                      }`}
                                   >
                                     {size}mm
                                   </button>
@@ -1033,11 +1038,10 @@ export default function ProductDetails() {
                     />
                   </div>
                   <div
-                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${
-                      shippingMethod === "courier"
+                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${shippingMethod === "courier"
                         ? "bg-green-50 border-green-300"
                         : "bg-blue-50 border-blue-300"
-                    }`}
+                      }`}
                   >
                     <div>
                       <div
@@ -1126,11 +1130,10 @@ export default function ProductDetails() {
                   <button
                     onClick={handleAddToCart}
                     disabled={!canCheckout || isPending}
-                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
-                      canCheckout && !isPending
+                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${canCheckout && !isPending
                         ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     {isPending ? (
                       <Loader2 className="animate-spin" size={22} />
