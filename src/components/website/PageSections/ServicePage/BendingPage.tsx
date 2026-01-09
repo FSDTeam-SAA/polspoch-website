@@ -4,17 +4,22 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, ShoppingCart, Zap } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { useService } from "@/lib/hooks/useService";
 import { useAddToCart } from "@/lib/hooks/useAddToCart";
 import {
   useBendingTemplates,
   BendingDimension,
 } from "@/lib/hooks/useBendingTemplates";
+import { useCalculateBending } from "@/lib/hooks/useCalculation";
+import {
+  CalculateBendingResponse,
+  CalculateBendingPayload,
+} from "@/lib/services/calculationService";
 import { toast } from "sonner";
 
 const BendingPage = () => {
   const { data: templates = [], isLoading } = useBendingTemplates();
   const [selectedShapeId, setSelectedShapeId] = useState<string>("");
+  const selectedTemplate = templates.find((t) => t._id === selectedShapeId);
   const [thickness, setThickness] = useState("");
   const [material, setMaterial] = useState("");
   const [dimensions, setDimensions] = useState<{ [key: string]: number }>({});
@@ -23,8 +28,73 @@ const BendingPage = () => {
   const { data: session } = useSession();
   const token = session?.accessToken || "";
 
+  const [calculationResult, setCalculationResult] =
+    useState<CalculateBendingResponse | null>(null);
+  const { mutate: calculateBending } = useCalculateBending();
+
   const { mutate: addToCart } = useAddToCart({ token });
-  const { mutate: createService } = useService({ token });
+
+  const handleCalculate = React.useCallback(
+    (
+      currentQuantity: number = quantity,
+      currentDimensions: { [key: string]: number } = dimensions,
+      currentThickness: string = thickness,
+      currentMaterial: string = material,
+    ) => {
+      if (!selectedTemplate) return;
+
+      const payload: CalculateBendingPayload = {
+        shapeName: selectedTemplate.shapeName,
+        material: currentMaterial,
+        thickness: Number(currentThickness),
+        units: currentQuantity,
+        length: 1000, // Default as per example
+        numBends:
+          selectedTemplate.dimensions.filter((d) =>
+            d.key.toLowerCase().includes("degree"),
+          ).length || 1,
+      };
+
+      // Map dimensions and degrees sequentially based on key
+      let sizeIdx = 1;
+      let degreeIdx = 1;
+
+      const alphabeticalKeys = ["A", "B", "C", "D", "E", "F"];
+
+      selectedTemplate.dimensions.forEach((dim) => {
+        if (dim.key.toLowerCase().includes("degree")) {
+          payload[`degree${degreeIdx}`] = currentDimensions[dim.key] || 0;
+          degreeIdx++;
+        } else {
+          const char =
+            alphabeticalKeys[sizeIdx - 1] || String.fromCharCode(64 + sizeIdx);
+          payload[`size${char}`] = currentDimensions[dim.key] || 0;
+          sizeIdx++;
+        }
+      });
+
+      // Fill remaining with 0 if needed (api example showed up to 6)
+      for (let i = sizeIdx; i <= 6; i++) {
+        const char = alphabeticalKeys[i - 1] || String.fromCharCode(64 + i);
+        if (!payload[`size${char}`]) payload[`size${char}`] = 0;
+      }
+      for (let i = degreeIdx; i <= 6; i++) {
+        if (!payload[`degree${i}`]) payload[`degree${i}`] = 0;
+      }
+
+      calculateBending(payload, {
+        onSuccess: (data) => setCalculationResult(data),
+      });
+    },
+    [
+      selectedTemplate,
+      calculateBending,
+      quantity,
+      dimensions,
+      thickness,
+      material,
+    ],
+  );
 
   useEffect(() => {
     if (templates.length > 0 && !selectedShapeId) {
@@ -46,16 +116,19 @@ const BendingPage = () => {
           initialDims[dim.key] = dim.minRange;
         });
         setDimensions(initialDims);
+
+        const firstThickness =
+          firstTemplate.materials?.[0]?.thickness?.[0] || "";
+        const firstMaterial = firstTemplate.materials?.[0]?.material || "";
+        handleCalculate(
+          quantity,
+          initialDims,
+          String(firstThickness),
+          firstMaterial,
+        );
       });
     }
-  }, [templates, selectedShapeId]);
-
-  const selectedTemplate = templates.find((t) => t._id === selectedShapeId);
-
-  const calculatePrice = () => {
-    const basePrice = 117.66;
-    return Math.round(basePrice * quantity);
-  };
+  }, [templates, selectedShapeId, handleCalculate, quantity]);
 
   const handleShapeSelect = (templateId: string) => {
     const template = templates.find((t) => t._id === templateId);
@@ -70,13 +143,19 @@ const BendingPage = () => {
     setErrors({});
 
     // Reset material and thickness based on new template
+    let nextMaterial = material;
+    let nextThickness = thickness;
     const firstMaterialObj = template.materials?.[0];
     if (firstMaterialObj) {
-      setMaterial(firstMaterialObj.material);
+      nextMaterial = firstMaterialObj.material;
+      setMaterial(nextMaterial);
       if (firstMaterialObj.thickness?.length > 0) {
-        setThickness(String(firstMaterialObj.thickness[0]));
+        nextThickness = String(firstMaterialObj.thickness[0]);
+        setThickness(nextThickness);
       }
     }
+
+    handleCalculate(quantity, newDims, nextThickness, nextMaterial);
   };
 
   const handleDimensionChange = (key: string, valueStr: string) => {
@@ -94,34 +173,33 @@ const BendingPage = () => {
     else if (value > max) error = `Max: ${max}mm`;
 
     setErrors((prev) => ({ ...prev, [key]: error }));
-    setDimensions((prev) => ({ ...prev, [key]: value }));
+    const nextDims = { ...dimensions, [key]: value };
+    setDimensions(nextDims);
+
+    if (!error) {
+      handleCalculate(quantity, nextDims, thickness, material);
+    }
   };
 
   const handleAddToCart = () => {
-    if (!selectedTemplate) return;
+    if (!calculationResult) {
+      toast.error("Please calculate dimensions first");
+      return;
+    }
 
-    const sizes: { [key: string]: number } = {};
-    selectedTemplate.dimensions.forEach((dim) => {
-      sizes[dim.key] = dimensions[dim.key] || 0;
-    });
-
-    const data = {
-      serviceType: "bending",
-      templateName: selectedTemplate.shapeName,
-      units: quantity,
-      price: calculatePrice(),
-      diameter: Number(thickness),
-      sizes: sizes,
-      material: material || "RAWSEEL",
+    const payload = {
+      type: "service",
+      totalAmount: calculationResult.pricing.finalQuote,
+      serviceData: {
+        serviceType: "bending",
+        ...calculationResult.summary,
+      },
+      pricing: calculationResult.pricing,
+      shippingStatus: calculationResult.shippingStatus,
     };
 
-    createService(data, {
-      onSuccess: (res) => {
-        addToCart({
-          serviceId: res?.data?._id,
-          type: "service",
-          quantity: quantity,
-        });
+    addToCart(payload, {
+      onSuccess: () => {
         toast.success("Successfully added to cart");
       },
       onError: () => {
@@ -262,10 +340,17 @@ const BendingPage = () => {
                             key={mObj._id}
                             onClick={() => {
                               setMaterial(mObj.material);
-                              // Reset thickness to first available for this material
-                              if (mObj.thickness?.length > 0) {
-                                setThickness(String(mObj.thickness[0]));
-                              }
+                              const newThickness =
+                                mObj.thickness?.length > 0
+                                  ? String(mObj.thickness[0])
+                                  : thickness;
+                              setThickness(newThickness);
+                              handleCalculate(
+                                quantity,
+                                dimensions,
+                                newThickness,
+                                mObj.material,
+                              );
                             }}
                             className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 uppercase ${
                               material === mObj.material
@@ -290,7 +375,15 @@ const BendingPage = () => {
                           ?.thickness.map((t) => (
                             <button
                               key={t}
-                              onClick={() => setThickness(String(t))}
+                              onClick={() => {
+                                setThickness(String(t));
+                                handleCalculate(
+                                  quantity,
+                                  dimensions,
+                                  String(t),
+                                  material,
+                                );
+                              }}
                               className={`py-3 rounded-lg border-2 font-semibold transition-all duration-300 ${
                                 thickness === String(t)
                                   ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
@@ -308,16 +401,20 @@ const BendingPage = () => {
                         <div className="w-1.5 h-6 bg-[#7E1800]"></div>
                         SIZES (MM)
                       </label>
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                         {selectedTemplate.dimensions.map((dim) => (
                           <div key={dim.key} className="space-y-2">
-                            <div className="flex justify-between items-end">
+                            <div className="flex justify-between">
                               <label className="block text-[10px] font-bold text-slate-600 uppercase">
                                 {dim.unit === "º"
                                   ? dim.label
                                   : `Size ${dim.label || dim.key}`}
                               </label>
+                              <span className="text-[12px] text-slate-400 font-mono">
+                                {dim.minRange}-{dim.maxRange}mm
+                              </span>
                             </div>
+
                             <div className="relative group">
                               <input
                                 type="number"
@@ -355,14 +452,42 @@ const BendingPage = () => {
                             Total Price
                           </p>
                           <div className="text-4xl font-bold text-[#7E1800]">
-                            €{calculatePrice()}
+                            €{calculationResult?.pricing?.finalQuote || 0}
                           </div>
+                          {calculationResult && (
+                            <div className="mt-2 space-y-1 text-xs text-slate-500 font-medium text-left">
+                              <div className="">
+                                <span>Price Per Unit:</span>
+                                <span>
+                                  €{" "}
+                                  {calculationResult.pricing.pricePerUnit || 0}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>
+                                  Shipping (
+                                  {calculationResult.shippingStatus.method}):
+                                </span>
+                                <span>
+                                  €{" "}
+                                  {calculationResult.pricing.shippingPrice || 0}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-3">
                           <button
-                            onClick={() =>
-                              setQuantity(Math.max(1, quantity - 1))
-                            }
+                            onClick={() => {
+                              const newQty = Math.max(1, quantity - 1);
+                              setQuantity(newQty);
+                              handleCalculate(
+                                newQty,
+                                dimensions,
+                                thickness,
+                                material,
+                              );
+                            }}
                             className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 transition-all flex items-center justify-center font-bold"
                           >
                             −
@@ -370,15 +495,32 @@ const BendingPage = () => {
                           <input
                             type="number"
                             value={quantity}
-                            onChange={(e) =>
-                              setQuantity(
-                                Math.max(1, parseInt(e.target.value) || 1),
-                              )
-                            }
+                            onChange={(e) => {
+                              const newQty = Math.max(
+                                1,
+                                parseInt(e.target.value) || 1,
+                              );
+                              setQuantity(newQty);
+                              handleCalculate(
+                                newQty,
+                                dimensions,
+                                thickness,
+                                material,
+                              );
+                            }}
                             className="w-16 h-10 border-2 border-slate-200 rounded-xl text-center font-bold focus:border-[#7E1800] outline-none"
                           />
                           <button
-                            onClick={() => setQuantity(quantity + 1)}
+                            onClick={() => {
+                              const newQty = quantity + 1;
+                              setQuantity(newQty);
+                              handleCalculate(
+                                newQty,
+                                dimensions,
+                                thickness,
+                                material,
+                              );
+                            }}
                             className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 transition-all flex items-center justify-center font-bold"
                           >
                             +

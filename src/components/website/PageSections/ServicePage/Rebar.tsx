@@ -6,23 +6,31 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, ShoppingCart, Zap } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { toast } from "sonner";
 import {
   useRebarTemplates,
   RebarDimension,
 } from "@/lib/hooks/useRebarTemplates";
-import { useService } from "@/lib/hooks/useService";
+import { useCalculateRebar } from "@/lib/hooks/useCalculation";
 import { useAddToCart } from "@/lib/hooks/useAddToCart";
+import {
+  CalculateRebarResponse,
+  CalculateRebarPayload,
+} from "@/lib/services/calculationService";
+import { toast } from "sonner";
 
 const Rebar = () => {
-  const DEFAULT_MATERIALS = ["RAWSEEL", "TEARDROP", "GALVANIZED", "CORTEN"];
   // Fetch templates using custom hook
   const { data: templates = [], isLoading } = useRebarTemplates();
+
+  const [calculationResult, setCalculationResult] =
+    useState<CalculateRebarResponse | null>(null);
+  const { mutate: calculateRebar } = useCalculateRebar();
 
   // State for user selections
   // Initial state might need to wait for data, but we can set defaults.
   // We'll sync with useEffect when data loads.
   const [selectedShapeId, setSelectedShapeId] = useState<string>("");
+  const selectedTemplate = templates.find((t) => t._id === selectedShapeId);
   const [thickness, setThickness] = useState("6");
   const [material, setMaterial] = useState("");
   const [dimensions, setDimensions] = useState<{ [key: string]: number }>({});
@@ -30,6 +38,36 @@ const Rebar = () => {
   const [quantity, setQuantity] = useState(1);
   const { data: session } = useSession();
   const token = session?.accessToken || "";
+
+  const { mutate: addToCart } = useAddToCart({ token });
+
+  const handleCalculate = React.useCallback(
+    (
+      currentQuantity: number = quantity,
+      currentDimensions: { [key: string]: number } = dimensions,
+      currentThickness: string = thickness,
+    ) => {
+      if (!selectedTemplate) return;
+
+      const payload: CalculateRebarPayload = {
+        shapeName: selectedTemplate.shapeName,
+        diameter: Number(currentThickness),
+        units: currentQuantity,
+      };
+
+      selectedTemplate.dimensions.forEach((dim, index) => {
+        const letter = String.fromCharCode(65 + index); // 65 is 'A'
+        payload[`size${letter}`] = currentDimensions[dim.key] || 0;
+      });
+
+      calculateRebar(payload, {
+        onSuccess: (data) => {
+          setCalculationResult(data);
+        },
+      });
+    },
+    [selectedTemplate, calculateRebar, quantity, dimensions, thickness],
+  );
 
   // Set default selection when templates load
   useEffect(() => {
@@ -50,29 +88,14 @@ const Rebar = () => {
           initialDims[dim.key] = dim.minRange;
         });
         setDimensions(initialDims);
+        handleCalculate(
+          quantity,
+          initialDims,
+          String(firstTemplate.availableDiameters[0]),
+        );
       });
     }
-  }, [templates, selectedShapeId]);
-
-  const selectedTemplate = templates.find((t) => t._id === selectedShapeId);
-
-  const { mutate: addToCart } = useAddToCart({ token });
-  const { mutate: createService } = useService({ token });
-
-  // Calculate price
-  const calculatePrice = () => {
-    const basePrice = 100;
-
-    const sizesum =
-      selectedTemplate?.dimensions.reduce(
-        (sum, dim) => sum + (dimensions[dim.key] || 0),
-        0,
-      ) || 0;
-
-    const unitPrice = basePrice / quantity + ((sizesum - 30) / 10) * 0.01;
-
-    return Math.round(unitPrice * quantity);
-  };
+  }, [templates, selectedShapeId, handleCalculate, quantity]);
 
   const handleShapeSelect = (templateId: string) => {
     const template = templates.find((t) => t._id === templateId);
@@ -100,6 +123,8 @@ const Rebar = () => {
     ) {
       setMaterial(template.materials[0]);
     }
+
+    handleCalculate(quantity, newDims, thickness);
   };
 
   const handleDimensionChange = (key: string, valueStr: string) => {
@@ -121,38 +146,37 @@ const Rebar = () => {
     }
 
     setErrors((prev) => ({ ...prev, [key]: error }));
-    setDimensions((prev) => ({ ...prev, [key]: value }));
+    const nextDimensions = { ...dimensions, [key]: value };
+    setDimensions(nextDimensions);
+
+    if (!error) {
+      handleCalculate(quantity, nextDimensions, thickness);
+    }
   };
 
   const getGridClass = () => {
     return "col-span-6 md:col-span-3";
   };
 
-  const servicehandel = () => {
-    if (!selectedTemplate) return;
+  const handleAddToCart = () => {
+    if (!calculationResult) {
+      toast.error("Please calculate dimensions first");
+      return;
+    }
 
-    const sizes: { [key: string]: number } = {};
-    selectedTemplate.dimensions.forEach((dim) => {
-      sizes[dim.key] = dimensions[dim.key] || 0;
-    });
-
-    const data = {
-      serviceType: "rebar",
-      templateName: selectedTemplate.shapeName,
-      units: quantity,
-      price: calculatePrice(),
-      diameter: Number(thickness),
-      sizes: sizes,
-      material: material || "RAWSEEL",
+    const payload = {
+      type: "service",
+      totalAmount: calculationResult.pricing.finalQuote,
+      serviceData: {
+        serviceType: "rebar",
+        ...calculationResult.summary,
+      },
+      pricing: calculationResult.pricing,
+      shippingStatus: calculationResult.shippingStatus,
     };
 
-    createService(data, {
-      onSuccess: (res) => {
-        addToCart({
-          serviceId: res?.data?._id,
-          type: "service",
-          quantity: quantity,
-        });
+    addToCart(payload, {
+      onSuccess: () => {
         toast.success("Successfully added to cart");
       },
       onError: () => {
@@ -295,32 +319,6 @@ const Rebar = () => {
                   )}
                 </div>
 
-                {/* 2. Material Selection */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                    <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                    MATERIAL
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(selectedTemplate?.materials?.length
-                      ? selectedTemplate.materials
-                      : DEFAULT_MATERIALS
-                    ).map((m) => (
-                      <button
-                        key={m}
-                        onClick={() => setMaterial(m)}
-                        className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 uppercase ${
-                          material === m
-                            ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                        }`}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* 3. Thickness Selection */}
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
@@ -331,7 +329,10 @@ const Rebar = () => {
                     {selectedTemplate?.availableDiameters.map((t) => (
                       <button
                         key={t}
-                        onClick={() => setThickness(String(t))}
+                        onClick={() => {
+                          setThickness(String(t));
+                          handleCalculate(quantity, dimensions, String(t));
+                        }}
                         className={`py-3 px-2 rounded-lg border-2 font-semibold transition-all duration-300 ${
                           thickness === String(t)
                             ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
@@ -366,8 +367,8 @@ const Rebar = () => {
                             <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
                               {dim.label || `Size ${dim.key}`}
                             </label>
-                            <span className="text-[10px] text-slate-400 font-mono">
-                              {dim.minRange}-{dim.maxRange}mm
+                            <span className="text-[12px] text-slate-400 font-mono">
+                              {dim.minRange}mm-{dim.maxRange}mm
                             </span>
                           </div>
 
@@ -423,12 +424,36 @@ const Rebar = () => {
                         Total Price
                       </p>
                       <div className="text-4xl font-bold text-[#7E1800]">
-                        €{calculatePrice()}
+                        €{calculationResult?.pricing?.finalQuote || 0}
                       </div>
+                      {calculationResult && (
+                        <div className="mt-2 space-y-1 text-xs text-slate-500 font-medium text-left">
+                          <div className="">
+                            <span>Price Per Unit:</span>
+                            <span>
+                              € {calculationResult.pricing.pricePerUnit || 0}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>
+                              Shipping Method (
+                              {calculationResult.shippingStatus.method}):
+                            </span>
+                            <span>
+                              {" "}
+                              € {calculationResult.pricing.shippingPrice || 0}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        onClick={() => {
+                          const newQty = Math.max(1, quantity - 1);
+                          setQuantity(newQty);
+                          handleCalculate(newQty);
+                        }}
                         className="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all duration-200 flex items-center justify-center font-bold text-slate-700 text-xl"
                       >
                         −
@@ -436,15 +461,22 @@ const Rebar = () => {
                       <input
                         type="number"
                         value={quantity}
-                        onChange={(e) =>
-                          setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1),
-                          )
-                        }
+                        onChange={(e) => {
+                          const newQty = Math.max(
+                            1,
+                            parseInt(e.target.value) || 1,
+                          );
+                          setQuantity(newQty);
+                          handleCalculate(newQty);
+                        }}
                         className="w-16 h-12 border-2 border-slate-200 rounded-xl text-center font-bold text-lg text-slate-700 focus:border-[#7E1800] outline-none"
                       />
                       <button
-                        onClick={() => setQuantity(quantity + 1)}
+                        onClick={() => {
+                          const newQty = quantity + 1;
+                          setQuantity(newQty);
+                          handleCalculate(newQty);
+                        }}
                         className="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all duration-200 flex items-center justify-center font-bold text-slate-700 text-xl"
                       >
                         +
@@ -453,7 +485,7 @@ const Rebar = () => {
                   </div>
 
                   <button
-                    onClick={servicehandel}
+                    onClick={handleAddToCart}
                     className="w-full py-4 bg-[#7E1800] hover:bg-[#961D00] text-white rounded-xl font-bold text-lg shadow-xl shadow-[#7E1800]/20 hover:shadow-2xl hover:shadow-[#7E1800]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
                   >
                     <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
