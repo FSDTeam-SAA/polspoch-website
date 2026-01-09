@@ -1,6 +1,6 @@
 // src/components/website/PageSections/CartPage/CartProducts.tsx
 "use client";
-import { Trash2 } from "lucide-react";
+import { Trash2, Loader2 } from "lucide-react";
 import { useDeleteCart, useGetCart } from "@/lib/hooks/useAddToCart";
 import { useSession } from "next-auth/react";
 import {
@@ -31,6 +31,9 @@ import { motion } from "framer-motion";
 const CartProducts = () => {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [viewingItem, setViewingItem] = useState<CartItem | null>(null);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const { data: session } = useSession();
   const token = session?.accessToken || "";
 
@@ -119,6 +122,9 @@ const CartProducts = () => {
 
   // Handle Checkout (Create Order)
   const handleCheckout = () => {
+    setIsCreatingOrder(true);
+    const startTime = Date.now();
+
     const payload = {
       type: "cart",
       cartItems: cartItems.map((item) => ({
@@ -133,9 +139,26 @@ const CartProducts = () => {
         if (createdOrderId) {
           setOrderId(createdOrderId);
         }
+
+        // Ensure loading shows for at least 1 second
+        const elapsed = Date.now() - startTime;
+        const remainingDelay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+          setIsCreatingOrder(false);
+          setShowModal(true);
+        }, remainingDelay);
       },
       onError: (error: Error) => {
         console.error("Failed to create order:", error);
+
+        // Still show loading for at least 1 second even on error
+        const elapsed = Date.now() - startTime;
+        const remainingDelay = Math.max(1000 - elapsed, 0);
+
+        setTimeout(() => {
+          setIsCreatingOrder(false);
+        }, remainingDelay);
       },
     });
   };
@@ -143,6 +166,8 @@ const CartProducts = () => {
   // Handle Proceed to Checkout (Payment)
   const handleProceedToCheckout = () => {
     if (!orderId) return;
+
+    setIsProcessingPayment(true);
 
     checkoutInModal(
       {
@@ -153,7 +178,12 @@ const CartProducts = () => {
         onSuccess: (data: { data?: { url?: string } }) => {
           if (data?.data?.url) {
             window.location.href = data.data.url;
+          } else {
+            setIsProcessingPayment(false);
           }
+        },
+        onError: () => {
+          setIsProcessingPayment(false);
         },
       },
     );
@@ -365,17 +395,27 @@ const CartProducts = () => {
         </div>
 
         {/* Button with AlertDialog */}
-        <AlertDialog>
+        <AlertDialog open={showModal} onOpenChange={setShowModal}>
           <AlertDialogTrigger asChild>
             <button
               onClick={handleCheckout}
+              disabled={isCreatingOrder || cartItems.length === 0}
               className="w-full rounded-xl bg-[#7E1800] 
                  py-3.5 text-base font-semibold text-white 
                  shadow-lg transition-all duration-200
                  hover:from-red-700 hover:to-red-800 hover:shadow-xl
-                 active:scale-[0.98] cursor-pointer"
+                 active:scale-[0.98] cursor-pointer
+                 disabled:opacity-50 disabled:cursor-not-allowed
+                 flex items-center justify-center gap-2"
             >
-              Order Now
+              {isCreatingOrder ? (
+                <>
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Creating Order...</span>
+                </>
+              ) : (
+                "Order Now"
+              )}
             </button>
           </AlertDialogTrigger>
 
@@ -407,12 +447,21 @@ const CartProducts = () => {
 
               <AlertDialogAction
                 onClick={handleProceedToCheckout}
+                disabled={isProcessingPayment}
                 className="flex-1 rounded-xl bg-red-700 
                    text-white font-semibold transition
                    hover:bg-red-800 active:scale-[0.98]
-                   cursor-pointer"
+                   cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
+                   flex items-center justify-center gap-2"
               >
-                Proceed to Payment
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  "Proceed to Payment"
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
