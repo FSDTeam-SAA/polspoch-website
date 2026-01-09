@@ -15,6 +15,18 @@ export interface CartItem {
     degrees?: Record<string, number>;
     imageUrl?: string;
   };
+  serviceData?: {
+    material: string;
+    thickness: number;
+    units: number;
+    serviceType: string;
+    sizeA?: number;
+    sizeB?: number;
+    totalLength?: number;
+    totalWidth?: number;
+    internalCuts?: number;
+    totalWeight?: number;
+  };
   product?: {
     productId: {
       _id: string;

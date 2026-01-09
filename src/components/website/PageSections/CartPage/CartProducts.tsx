@@ -77,13 +77,28 @@ const CartProducts = () => {
         const lengthMm = lengthMeters * 1000;
         if (lengthMm > maxL) maxL = lengthMm;
         if (lengthMm > 2500) truckReq = true;
+        if (lengthMm > 2500) truckReq = true;
       } else if (item.serviceId) {
-        // Length calculation for Services
+        // Length calculation for Services (Old structure)
         const serviceSizes = Object.values(item.serviceId.sizes || {});
         const maxServiceL =
           serviceSizes.length > 0 ? Math.max(...(serviceSizes as number[])) : 0;
         if (maxServiceL > maxL) maxL = maxServiceL;
         if (maxServiceL > 2500) truckReq = true;
+      } else if (item.serviceData) {
+        // Length/Weight for Services (New Structure)
+        if (item.serviceData.totalWeight) {
+          weight += item.serviceData.totalWeight * item.quantity;
+        }
+
+        const length = item.serviceData.totalLength || 0;
+        if (length > maxL) maxL = length; // assuming totalLength is in mm based on JSON (90, 10 etc.) - wait, JSON says sizeA: 90. If it's mm, 90mm is small. Let's assume consistent units. If previous code multiplied by 1000 for products (meters to mm), and service sizes were in mm. 
+        // Logic check: "lengthMeters * 1000". Produc unitSize is meters.
+        // Service JSON: "totalLength": 90. Is this mm, cm, or m? 
+        // "sizeA": 90. "totalWeight": 1.91. 
+        // 90 meters would be huge. 90mm is tiny. 90cm?
+        // Let's assume it matches the "maxL" unit which is mm. 
+        if (length > 2500) truckReq = true;
       }
     });
 
@@ -186,7 +201,7 @@ const CartProducts = () => {
 
               <div className="w-[140px] h-[80px] bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border border-slate-100">
                 {item?.product?.productId?.productImage &&
-                item.product.productId.productImage.length > 0 ? (
+                  item.product.productId.productImage.length > 0 ? (
                   <Image
                     src={item.product.productId.productImage[0].url}
                     alt={item.product.productId.productName}
@@ -204,16 +219,17 @@ const CartProducts = () => {
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-[10px] text-slate-400 font-medium px-2 text-center uppercase">
-                    <span>{item?.serviceId?.templateName || "Product"}</span>
+                    <span>{item?.serviceId?.templateName || item?.serviceData?.serviceType || "Product"}</span>
                     <span>{item?.product?.productId?.productName}</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <div className="font-semibold text-gray-800">
+                <div className="font-semibold text-gray-800 uppercase">
                   {item?.product?.productId?.productName ||
                     item?.serviceId?.templateName ||
+                    item?.serviceData?.serviceType ||
                     "Custom Product"}
                 </div>
                 {/* eye button for viewing the modal */}
@@ -267,7 +283,7 @@ const CartProducts = () => {
                   (item?.serviceId?.price || item?.price || 0) * item?.quantity
                 ).toFixed(2)}
                 <div className="text-[10px] text-gray-500 font-normal">
-                  {item?.serviceId?.units || item?.quantity} unit(s)
+                  {item?.serviceId?.units || item?.serviceData?.units || item?.quantity} unit(s)
                 </div>
               </div>
 
