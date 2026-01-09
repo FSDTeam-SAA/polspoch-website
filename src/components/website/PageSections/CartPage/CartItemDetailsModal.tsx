@@ -52,7 +52,9 @@ const ProductDetailsContent = ({ item }: { item: CartItem }) => {
                         {product.productId.productName}
                     </div>
                     <div className="text-sm text-gray-500 mt-1 uppercase">
+                        {/* {product.productId.family} */}
                         {product.productId.family}
+
                     </div>
                 </div>
             </div>
@@ -66,6 +68,75 @@ const ProductDetailsContent = ({ item }: { item: CartItem }) => {
 
 const ServiceDetailsContent = ({ item }: { item: CartItem }) => {
     const service = item.serviceId;
+    const serviceData = item.serviceData;
+
+    if (serviceData) {
+        return (
+            <div className="space-y-6">
+                <div className="flex gap-4 items-start pb-4 border-b">
+                    <div className="w-1/3 aspect-square relative rounded-lg overflow-hidden border bg-slate-50 flex items-center justify-center">
+                        <span className="text-4xl">🛠️</span>
+                    </div>
+                    <div className="flex-1">
+                        <div className="font-bold text-xl text-gray-900 uppercase">
+                            {serviceData.serviceType}
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1 uppercase">
+                            Service
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                        <div className="text-gray-500 text-xs mb-1">Material</div>
+                        <div className="font-semibold text-gray-900 uppercase">
+                            {serviceData.material || "N/A"}
+                        </div>
+                    </div>
+                    {serviceData.thickness !== undefined && (
+                        <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                            <div className="text-gray-500 text-xs mb-1">Thickness</div>
+                            <div className="font-semibold text-gray-900">{serviceData.thickness}mm</div>
+                        </div>
+                    )}
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                        <div className="text-gray-500 text-xs mb-1">Units</div>
+                        <div className="font-semibold text-gray-900">{serviceData.units}</div>
+                    </div>
+
+                    {(serviceData.sizeA !== undefined || serviceData.sizeB !== undefined) && (
+                        <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                            <div className="text-gray-500 text-xs mb-1">Dimensions</div>
+                            <div className="font-semibold text-gray-900">
+                                {serviceData.sizeA || 0} x {serviceData.sizeB || 0}
+                            </div>
+                        </div>
+                    )}
+
+                    {serviceData.totalLength !== undefined && (
+                        <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                            <div className="text-gray-500 text-xs mb-1">Total Length</div>
+                            <div className="font-semibold text-gray-900">{serviceData.totalLength}</div>
+                        </div>
+                    )}
+                    {serviceData.totalWidth !== undefined && (
+                        <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                            <div className="text-gray-500 text-xs mb-1">Total Width</div>
+                            <div className="font-semibold text-gray-900">{serviceData.totalWidth}</div>
+                        </div>
+                    )}
+                    {serviceData.totalWeight !== undefined && (
+                        <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                            <div className="text-gray-500 text-xs mb-1">Total Weight</div>
+                            <div className="font-semibold text-gray-900">{serviceData.totalWeight.toFixed(2)}kg</div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
     if (!service) return null;
 
     return (
