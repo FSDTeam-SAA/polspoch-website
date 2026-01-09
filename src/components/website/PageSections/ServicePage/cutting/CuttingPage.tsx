@@ -9,8 +9,12 @@ import {
   useCuttingTemplates,
   CuttingDimension,
 } from "@/lib/hooks/useCuttingTemplates";
-import { useService } from "@/lib/hooks/useService";
 import { useAddToCart } from "@/lib/hooks/useAddToCart";
+import { useCalculateCutting } from "@/lib/hooks/useCalculation";
+import {
+  CalculateCuttingResponse,
+  CalculateCuttingPayload,
+} from "@/lib/services/calculationService";
 
 const CuttingPage = () => {
   // Fetch templates using custom hook
@@ -18,6 +22,7 @@ const CuttingPage = () => {
 
   // State for user selections
   const [selectedShapeId, setSelectedShapeId] = useState<string>("");
+  const selectedTemplate = templates.find((t) => t._id === selectedShapeId);
   const [thickness, setThickness] = useState("");
   const [material, setMaterial] = useState("");
   const [dimensions, setDimensions] = useState<{ [key: string]: number }>({});
@@ -26,8 +31,48 @@ const CuttingPage = () => {
   const { data: session } = useSession();
   const token = session?.accessToken || "";
 
+  const [calculationResult, setCalculationResult] =
+    useState<CalculateCuttingResponse | null>(null);
+  const { mutate: calculateCutting } = useCalculateCutting();
+
   const { mutate: addToCart } = useAddToCart({ token });
-  const { mutate: createService } = useService({ token });
+
+  const handleCalculate = React.useCallback(
+    (
+      currentQuantity: number = quantity,
+      currentDimensions: { [key: string]: number } = dimensions,
+      currentThickness: string = thickness,
+    ) => {
+      if (!selectedTemplate) return;
+
+      const payload: CalculateCuttingPayload = {
+        shapeName: selectedTemplate.shapeName,
+        material: material,
+        thickness: Number(currentThickness),
+        units: currentQuantity,
+        internalCuts: selectedTemplate.cuts || 0,
+      };
+
+      selectedTemplate.dimensions?.forEach((dim, index) => {
+        const letter = String.fromCharCode(65 + index); // 65 is 'A'
+        payload[`size${letter}`] = currentDimensions[dim.key] || 0;
+      });
+
+      calculateCutting(payload, {
+        onSuccess: (data) => {
+          setCalculationResult(data);
+        },
+      });
+    },
+    [
+      selectedTemplate,
+      calculateCutting,
+      quantity,
+      dimensions,
+      thickness,
+      material,
+    ],
+  );
 
   // Set default selection when templates load
   useEffect(() => {
@@ -50,18 +95,14 @@ const CuttingPage = () => {
           initialDims[dim.key] = dim.minRange;
         });
         setDimensions(initialDims);
+
+        const firstThickness =
+          firstTemplate.materials?.[0]?.thickness?.[0] || "";
+
+        handleCalculate(quantity, initialDims, String(firstThickness));
       });
     }
-  }, [templates, selectedShapeId]);
-
-  const selectedTemplate = templates.find((t) => t._id === selectedShapeId);
-
-  // Calculate price
-  const calculatePrice = () => {
-    const basePrice = 100;
-    // This logic can be more complex if needed
-    return Math.round(basePrice * quantity);
-  };
+  }, [templates, selectedShapeId, handleCalculate, quantity]);
 
   const handleShapeSelect = (templateId: string) => {
     const template = templates.find((t) => t._id === templateId);
@@ -78,13 +119,17 @@ const CuttingPage = () => {
     setErrors({});
 
     // Reset material and thickness based on new template
+    let newThickness = thickness;
     const firstMaterialObj = template.materials?.[0];
     if (firstMaterialObj) {
       setMaterial(firstMaterialObj.material);
       if (firstMaterialObj.thickness?.length > 0) {
-        setThickness(String(firstMaterialObj.thickness[0]));
+        newThickness = String(firstMaterialObj.thickness[0]);
+        setThickness(newThickness);
       }
     }
+
+    handleCalculate(quantity, newDims, newThickness);
   };
 
   const handleDimensionChange = (key: string, valueStr: string) => {
@@ -106,47 +151,33 @@ const CuttingPage = () => {
     }
 
     setErrors((prev) => ({ ...prev, [key]: error }));
-    setDimensions((prev) => ({ ...prev, [key]: value }));
+    const nextDimensions = { ...dimensions, [key]: value };
+    setDimensions(nextDimensions);
+
+    if (!error) {
+      handleCalculate(quantity, nextDimensions, thickness);
+    }
   };
 
   const handleAddToCartClick = () => {
-    if (!selectedTemplate) return;
-
-    // Final validation
-    let hasErrors = false;
-    const newErrors: { [key: string]: string } = {};
-    selectedTemplate.dimensions.forEach((dim) => {
-      const val = dimensions[dim.key] || 0;
-      if (val < dim.minRange || val > dim.maxRange) {
-        newErrors[dim.key] =
-          `Value must be between ${dim.minRange} and ${dim.maxRange}`;
-        hasErrors = true;
-      }
-    });
-
-    if (hasErrors) {
-      setErrors(newErrors);
-      toast.error("Please correct the dimension errors");
+    if (!calculationResult) {
+      toast.error("Please calculate dimensions first");
       return;
     }
 
-    const data = {
-      serviceType: "cutting",
-      templateName: selectedTemplate.shapeName,
-      units: quantity,
-      price: calculatePrice(),
-      diameter: Number(thickness),
-      sizes: dimensions,
-      material: material || "RAWSEEL",
+    const payload = {
+      type: "service",
+      totalAmount: calculationResult.pricing.finalQuote,
+      serviceData: {
+        serviceType: "cutting",
+        ...calculationResult.summary,
+      },
+      pricing: calculationResult.pricing,
+      shippingStatus: calculationResult.shippingStatus,
     };
 
-    createService(data, {
-      onSuccess: (res) => {
-        addToCart({
-          serviceId: res?.data?._id,
-          type: "service",
-          quantity: quantity,
-        });
+    addToCart(payload, {
+      onSuccess: () => {
         toast.success("Successfully added to cart");
       },
       onError: () => {
@@ -301,7 +332,13 @@ const CuttingPage = () => {
                               setMaterial(mObj.material);
                               // Reset thickness to first available for this material
                               if (mObj.thickness?.length > 0) {
-                                setThickness(String(mObj.thickness[0]));
+                                const newThickness = String(mObj.thickness[0]);
+                                setThickness(newThickness);
+                                handleCalculate(
+                                  quantity,
+                                  dimensions,
+                                  newThickness,
+                                );
                               }
                             }}
                             className={`py-3.5 rounded-xl border-2 font-bold transition-all duration-300 uppercase tracking-wider text-sm ${
@@ -328,7 +365,14 @@ const CuttingPage = () => {
                           ?.thickness.map((t) => (
                             <button
                               key={t}
-                              onClick={() => setThickness(String(t))}
+                              onClick={() => {
+                                setThickness(String(t));
+                                handleCalculate(
+                                  quantity,
+                                  dimensions,
+                                  String(t),
+                                );
+                              }}
                               className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 text-sm ${
                                 thickness === String(t)
                                   ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
@@ -387,6 +431,16 @@ const CuttingPage = () => {
                         ))}
                       </div>
                     </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2 mb-2">
+                        <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                        CUTS
+                      </label>
+                      <span className="text-[18px] font-bold text-slate-600 ml-2">
+                        {" "}
+                        {selectedTemplate?.cuts}
+                      </span>
+                    </div>
                   </>
                 )}
 
@@ -394,16 +448,40 @@ const CuttingPage = () => {
                 <div className="pt-8 border-t-2 border-slate-100">
                   <div className="flex items-center justify-between mb-8">
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                        Estimated Price
+                      <p className="text-sm font-semibold text-slate-600 mb-1">
+                        Total Price
                       </p>
                       <div className="text-4xl font-bold text-[#7E1800]">
-                        €{calculatePrice()}
+                        €{calculationResult?.pricing?.finalQuote || 0}
                       </div>
+                      {calculationResult && (
+                        <div className="mt-2 space-y-1 text-xs text-slate-500 font-medium">
+                          <div className="">
+                            <span>Price Per Unit:</span>
+                            <span>
+                              € {calculationResult.pricing.pricePerUnit || 0}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>
+                              Shipping Method (
+                              {calculationResult.shippingStatus.method}):
+                            </span>
+                            <span>
+                              {" "}
+                              € {calculationResult.pricing.shippingPrice || 0}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-100">
                       <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        onClick={() => {
+                          const newQty = Math.max(1, quantity - 1);
+                          setQuantity(newQty);
+                          handleCalculate(newQty, dimensions, thickness);
+                        }}
                         className="w-12 h-12 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 active:scale-90 transition-all duration-200 flex items-center justify-center font-black text-[#7E1800] text-2xl shadow-sm"
                       >
                         −
@@ -411,15 +489,22 @@ const CuttingPage = () => {
                       <input
                         type="number"
                         value={quantity}
-                        onChange={(e) =>
-                          setQuantity(
-                            Math.max(1, parseInt(e.target.value) || 1),
-                          )
-                        }
+                        onChange={(e) => {
+                          const newQty = Math.max(
+                            1,
+                            parseInt(e.target.value) || 1,
+                          );
+                          setQuantity(newQty);
+                          handleCalculate(newQty, dimensions, thickness);
+                        }}
                         className="w-16 h-12 border-2 border-slate-200 rounded-xl text-center font-bold text-lg text-slate-700 focus:border-[#7E1800] outline-none"
                       />
                       <button
-                        onClick={() => setQuantity(quantity + 1)}
+                        onClick={() => {
+                          const newQty = quantity + 1;
+                          setQuantity(newQty);
+                          handleCalculate(newQty, dimensions, thickness);
+                        }}
                         className="w-12 h-12 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 active:scale-90 transition-all duration-200 flex items-center justify-center font-black text-[#7E1800] text-2xl shadow-sm"
                       >
                         +
