@@ -608,10 +608,16 @@ const CartProducts = () => {
                     <Label htmlFor="country">Country</Label>
                     <Input
                       id="country"
+                      placeholder="Spain"
                       value={shippingDetails.country}
-                      readOnly
-                      className="bg-gray-50"
+                      onChange={(e) =>
+                        setShippingDetails({
+                          ...shippingDetails,
+                          country: e.target.value,
+                        })
+                      }
                     />
+
                   </div>
                 </div>
               </div>
