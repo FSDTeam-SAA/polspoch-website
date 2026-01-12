@@ -6,11 +6,15 @@ import { ProductFeature } from "@/lib/types/product";
 interface SelectedConfigurationProps {
   selectedFeature: ProductFeature;
   measureUnit?: string;
+  unitSize?: number;
+  range?: number;
 }
 
 const SelectedConfiguration: React.FC<SelectedConfigurationProps> = ({
   selectedFeature,
   measureUnit = "Mt",
+  unitSize,
+  range,
 }) => {
   const unitLabel = measureUnit === "Mt" ? "meter" : measureUnit || "meter";
   const shortUnitLabel = measureUnit === "Mt" ? "m" : measureUnit || "m";
@@ -63,6 +67,22 @@ const SelectedConfiguration: React.FC<SelectedConfigurationProps> = ({
             €{selectedFeature.miterPerUnitPrice}
           </div>
         </div>
+        {(unitSize !== undefined && unitSize !== null) && (
+          <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+            <div className="text-gray-500 text-xs mb-1">Length</div>
+            <div className="font-semibold text-gray-900">
+              {unitSize} {measureUnit}
+            </div>
+          </div>
+        )}
+        {(range !== undefined && range !== null) && (
+          <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+            <div className="text-gray-500 text-xs mb-1">Custom Range</div>
+            <div className="font-semibold text-gray-900">
+              {range} {measureUnit}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
