@@ -1,4 +1,5 @@
 // src/components/website/PageSections/CartPage/CartProducts.tsx
+
 "use client";
 import { Trash2, Loader2 } from "lucide-react";
 import { useDeleteCart, useGetCart } from "@/lib/hooks/useAddToCart";
@@ -19,6 +20,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import { CartItem } from "@/lib/types/cart";
 import { Eye } from "lucide-react";
@@ -34,6 +37,17 @@ const CartProducts = () => {
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [shippingDetails, setShippingDetails] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    street: "",
+    apartment: "",
+    postalCode: "",
+    city: "",
+    province: "",
+    country: "Spain",
+  });
   const { data: session } = useSession();
   const token = session?.accessToken || "";
 
@@ -166,6 +180,8 @@ const CartProducts = () => {
   // Handle Proceed to Checkout (Payment)
   const handleProceedToCheckout = () => {
     if (!orderId) return;
+
+    console.log("Shipping Details:", shippingDetails);
 
     setIsProcessingPayment(true);
 
@@ -419,7 +435,7 @@ const CartProducts = () => {
             </button>
           </AlertDialogTrigger>
 
-          <AlertDialogContent className="max-w-md rounded-2xl p-6">
+          <AlertDialogContent className="max-w-2xl rounded-2xl p-6">
             <AlertDialogHeader className="space-y-3 text-center">
               {/* Optional icon */}
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
@@ -431,10 +447,149 @@ const CartProducts = () => {
               </AlertDialogTitle>
 
               <AlertDialogDescription className="text-sm text-muted-foreground text-center w-3/4 mx-auto">
-                Please confirm that you want to place this order. Once
-                confirmed, you’ll be redirected to the payment page.
+                Please provide your shipping details to proceed with the
+                payment.
               </AlertDialogDescription>
             </AlertDialogHeader>
+
+            <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto px-1 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  placeholder="John Doe"
+                  value={shippingDetails.fullName}
+                  onChange={(e) =>
+                    setShippingDetails({
+                      ...shippingDetails,
+                      fullName: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="john@example.com"
+                    value={shippingDetails.email}
+                    onChange={(e) =>
+                      setShippingDetails({
+                        ...shippingDetails,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    placeholder="+34 ..."
+                    value={shippingDetails.phone}
+                    onChange={(e) =>
+                      setShippingDetails({
+                        ...shippingDetails,
+                        phone: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="street">Street Name & Number</Label>
+                <Input
+                  id="street"
+                  placeholder="Calle ..."
+                  value={shippingDetails.street}
+                  onChange={(e) =>
+                    setShippingDetails({
+                      ...shippingDetails,
+                      street: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="apartment">
+                  Apartment / Floor / Stairwell (optional)
+                </Label>
+                <Input
+                  id="apartment"
+                  placeholder="Apt 4B"
+                  value={shippingDetails.apartment}
+                  onChange={(e) =>
+                    setShippingDetails({
+                      ...shippingDetails,
+                      apartment: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Postal Code (5 digits)</Label>
+                  <Input
+                    id="postalCode"
+                    placeholder="28001"
+                    maxLength={5}
+                    value={shippingDetails.postalCode}
+                    onChange={(e) =>
+                      setShippingDetails({
+                        ...shippingDetails,
+                        postalCode: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City / Town</Label>
+                  <Input
+                    id="city"
+                    placeholder="Madrid"
+                    value={shippingDetails.city}
+                    onChange={(e) =>
+                      setShippingDetails({
+                        ...shippingDetails,
+                        city: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="province">Province (optional)</Label>
+                  <Input
+                    id="province"
+                    placeholder="Madrid"
+                    value={shippingDetails.province}
+                    onChange={(e) =>
+                      setShippingDetails({
+                        ...shippingDetails,
+                        province: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Input
+                    id="country"
+                    value={shippingDetails.country}
+                    readOnly
+                    className="bg-gray-50"
+                  />
+                </div>
+              </div>
+            </div>
 
             <AlertDialogFooter className="mt-4 flex gap-3">
               <AlertDialogCancel

@@ -26,6 +26,7 @@ const ProductDetailsContent = ({ item }: { item: CartItem }) => {
     const selectedFeature = product.selectedFeature;
     const imageUrl = product.productId.productImage?.[0]?.url;
 
+    console.log(product);
     if (!selectedFeature) {
         return (
             <p className="text-center text-red-500">
@@ -33,6 +34,7 @@ const ProductDetailsContent = ({ item }: { item: CartItem }) => {
             </p>
         );
     }
+
 
     return (
         <div className="space-y-4">
@@ -61,6 +63,8 @@ const ProductDetailsContent = ({ item }: { item: CartItem }) => {
             <SelectedConfiguration
                 selectedFeature={selectedFeature}
                 measureUnit={product.productId.measureUnit}
+                unitSize={product.unitSize}
+                range={product.range}
             />
         </div>
     );
@@ -104,6 +108,7 @@ const ServiceDetailsContent = ({ item }: { item: CartItem }) => {
                         <div className="text-gray-500 text-xs mb-1">Units</div>
                         <div className="font-semibold text-gray-900">{serviceData.units}</div>
                     </div>
+
 
                     {(serviceData.sizeA !== undefined || serviceData.sizeB !== undefined) && (
                         <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
@@ -176,6 +181,10 @@ const ServiceDetailsContent = ({ item }: { item: CartItem }) => {
                 <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
                     <div className="text-gray-500 text-xs mb-1">Units</div>
                     <div className="font-semibold text-gray-900">{service.units}</div>
+                </div>
+                <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
+                    <div className="text-gray-500 text-xs mb-1">Total Length</div>
+                    <div className="font-semibold text-gray-900"> </div>
                 </div>
 
                 {service.sizes &&
