@@ -3,6 +3,7 @@
 import axios from "axios";
 import { UserProfilePayload } from "./types/profile";
 import { ServicePayload } from "./services/createservice";
+import { ShippingAddressPayload } from "./types/shipping";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -348,5 +349,24 @@ export async function getAllFamily() {
   } catch (err) {
     console.error("Error fetching all family:", err);
     throw new Error("Failed to fetch all family");
+  }
+}
+
+
+//shipping post api
+export async function shippingPostApi(
+  payload: ShippingAddressPayload,
+  token: string,
+) {
+  try {
+    const res = await api.post("/shipping-address/create", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching shipping:", err);
+    throw new Error("Failed to fetch shipping");
   }
 }

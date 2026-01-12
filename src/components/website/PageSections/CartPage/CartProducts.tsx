@@ -8,10 +8,10 @@ import {
   useCheckoutCart,
   useCheckoutCartInModal,
 } from "@/lib/hooks/checkoutCart";
+import { useShippingAdd } from "@/lib/hooks/useShippingAdd";
 import { useState } from "react";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -42,7 +42,7 @@ const CartProducts = () => {
     email: "",
     phone: "",
     street: "",
-    apartment: "",
+    // apartment: "",
     postalCode: "",
     city: "",
     province: "",
@@ -56,6 +56,9 @@ const CartProducts = () => {
 
   // 2. Payment Modal Mutation
   const { mutate: checkoutInModal } = useCheckoutCartInModal({ token });
+
+  // 3. Shipping Address Mutation
+  const { mutate: addShippingAddress } = useShippingAdd({ token });
 
   const { data: cart } = (useGetCart({ token }) as {
     data: { data: CartItem[] } | undefined;
@@ -94,7 +97,6 @@ const CartProducts = () => {
         const lengthMm = lengthMeters * 1000;
         if (lengthMm > maxL) maxL = lengthMm;
         if (lengthMm > 2500) truckReq = true;
-        if (lengthMm > 2500) truckReq = true;
       } else if (item.serviceId) {
         // Length calculation for Services (Old structure)
         const serviceSizes = Object.values(item.serviceId.sizes || {});
@@ -109,12 +111,7 @@ const CartProducts = () => {
         }
 
         const length = item.serviceData.totalLength || 0;
-        if (length > maxL) maxL = length; // assuming totalLength is in mm based on JSON (90, 10 etc.) - wait, JSON says sizeA: 90. If it's mm, 90mm is small. Let's assume consistent units. If previous code multiplied by 1000 for products (meters to mm), and service sizes were in mm. 
-        // Logic check: "lengthMeters * 1000". Produc unitSize is meters.
-        // Service JSON: "totalLength": 90. Is this mm, cm, or m? 
-        // "sizeA": 90. "totalWeight": 1.91. 
-        // 90 meters would be huge. 90mm is tiny. 90cm?
-        // Let's assume it matches the "maxL" unit which is mm. 
+        if (length > maxL) maxL = length;
         if (length > 2500) truckReq = true;
       }
     });
@@ -178,31 +175,51 @@ const CartProducts = () => {
   };
 
   // Handle Proceed to Checkout (Payment)
-  const handleProceedToCheckout = () => {
+  const handleProceedToCheckout = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!orderId) return;
 
-    console.log("Shipping Details:", shippingDetails);
+    if (!session) {
+      console.error("User not logged in");
+      return;
+    }
 
     setIsProcessingPayment(true);
 
-    checkoutInModal(
-      {
-        orderId: orderId,
-        totalAmount: total,
+    const shippingPayload = {
+      ...shippingDetails,
+      orderId: orderId,
+    };
+
+    console.log("Saving Shipping Address:", shippingPayload);
+
+    addShippingAddress(shippingPayload, {
+      onSuccess: () => {
+        console.log("Shipping address saved. Proceeding to payment...");
+        checkoutInModal(
+          {
+            orderId: orderId,
+            totalAmount: total,
+          },
+          {
+            onSuccess: (data: { data?: { url?: string } }) => {
+              if (data?.data?.url) {
+                window.location.href = data.data.url;
+              } else {
+                setIsProcessingPayment(false);
+              }
+            },
+            onError: () => {
+              setIsProcessingPayment(false);
+            },
+          },
+        );
       },
-      {
-        onSuccess: (data: { data?: { url?: string } }) => {
-          if (data?.data?.url) {
-            window.location.href = data.data.url;
-          } else {
-            setIsProcessingPayment(false);
-          }
-        },
-        onError: () => {
-          setIsProcessingPayment(false);
-        },
+      onError: (error: unknown) => {
+        console.error("Failed to save shipping address:", error);
+        setIsProcessingPayment(false);
       },
-    );
+    });
   };
 
   return (
@@ -452,173 +469,183 @@ const CartProducts = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
 
-            <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto px-1 py-2">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  placeholder="John Doe"
-                  value={shippingDetails.fullName}
-                  onChange={(e) =>
-                    setShippingDetails({
-                      ...shippingDetails,
-                      fullName: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleProceedToCheckout}>
+              <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto px-1 py-2">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="fullName">Full Name</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    value={shippingDetails.email}
+                    id="fullName"
+                    required
+                    placeholder="John Doe"
+                    value={shippingDetails.fullName}
                     onChange={(e) =>
                       setShippingDetails({
                         ...shippingDetails,
-                        email: e.target.value,
+                        fullName: e.target.value,
                       })
                     }
                   />
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      placeholder="john@example.com"
+                      value={shippingDetails.email}
+                      onChange={(e) =>
+                        setShippingDetails({
+                          ...shippingDetails,
+                          email: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      required
+                      placeholder="+34 ..."
+                      value={shippingDetails.phone}
+                      onChange={(e) =>
+                        setShippingDetails({
+                          ...shippingDetails,
+                          phone: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="street">Street Name & Number</Label>
                   <Input
-                    id="phone"
-                    placeholder="+34 ..."
-                    value={shippingDetails.phone}
+                    id="street"
+                    required
+                    placeholder="Calle ..."
+                    value={shippingDetails.street}
                     onChange={(e) =>
                       setShippingDetails({
                         ...shippingDetails,
-                        phone: e.target.value,
+                        street: e.target.value,
                       })
                     }
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="street">Street Name & Number</Label>
-                <Input
-                  id="street"
-                  placeholder="Calle ..."
-                  value={shippingDetails.street}
-                  onChange={(e) =>
-                    setShippingDetails({
-                      ...shippingDetails,
-                      street: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="apartment">
-                  Apartment / Floor / Stairwell (optional)
-                </Label>
-                <Input
-                  id="apartment"
-                  placeholder="Apt 4B"
-                  value={shippingDetails.apartment}
-                  onChange={(e) =>
-                    setShippingDetails({
-                      ...shippingDetails,
-                      apartment: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Postal Code (5 digits)</Label>
+                {/* <div className="space-y-2">
+                  <Label htmlFor="apartment">
+                    Apartment / Floor / Stairwell (optional)
+                  </Label>
                   <Input
-                    id="postalCode"
-                    placeholder="28001"
-                    maxLength={5}
-                    value={shippingDetails.postalCode}
+                    id="apartment"
+                    placeholder="Apt 4B"
+                    value={shippingDetails.apartment}
                     onChange={(e) =>
                       setShippingDetails({
                         ...shippingDetails,
-                        postalCode: e.target.value,
+                        apartment: e.target.value,
                       })
                     }
                   />
+                </div> */}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">Postal Code (5 digits)</Label>
+                    <Input
+                      id="postalCode"
+                      required
+                      placeholder="28001"
+                      maxLength={5}
+                      value={shippingDetails.postalCode}
+                      onChange={(e) =>
+                        setShippingDetails({
+                          ...shippingDetails,
+                          postalCode: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City / Town</Label>
+                    <Input
+                      id="city"
+                      required
+                      placeholder="Madrid"
+                      value={shippingDetails.city}
+                      onChange={(e) =>
+                        setShippingDetails({
+                          ...shippingDetails,
+                          city: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="city">City / Town</Label>
-                  <Input
-                    id="city"
-                    placeholder="Madrid"
-                    value={shippingDetails.city}
-                    onChange={(e) =>
-                      setShippingDetails({
-                        ...shippingDetails,
-                        city: e.target.value,
-                      })
-                    }
-                  />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="province">Province</Label>
+                    <Input
+                      id="province"
+                      required
+                      placeholder="Madrid"
+                      value={shippingDetails.province}
+                      onChange={(e) =>
+                        setShippingDetails({
+                          ...shippingDetails,
+                          province: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country">Country</Label>
+                    <Input
+                      id="country"
+                      value={shippingDetails.country}
+                      readOnly
+                      className="bg-gray-50"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="province">Province (optional)</Label>
-                  <Input
-                    id="province"
-                    placeholder="Madrid"
-                    value={shippingDetails.province}
-                    onChange={(e) =>
-                      setShippingDetails({
-                        ...shippingDetails,
-                        province: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
-                  <Input
-                    id="country"
-                    value={shippingDetails.country}
-                    readOnly
-                    className="bg-gray-50"
-                  />
-                </div>
-              </div>
-            </div>
+              <AlertDialogFooter className="mt-4 flex gap-3">
+                <AlertDialogCancel
+                  type="button"
+                  className="flex-1 rounded-xl border border-gray-300 
+                     text-gray-700 transition
+                     hover:bg-gray-100 cursor-pointer"
+                >
+                  Cancel
+                </AlertDialogCancel>
 
-            <AlertDialogFooter className="mt-4 flex gap-3">
-              <AlertDialogCancel
-                className="flex-1 rounded-xl border border-gray-300 
-                   text-gray-700 transition
-                   hover:bg-gray-100 cursor-pointer"
-              >
-                Cancel
-              </AlertDialogCancel>
-
-              <AlertDialogAction
-                onClick={handleProceedToCheckout}
-                disabled={isProcessingPayment}
-                className="flex-1 rounded-xl bg-red-700 
-                   text-white font-semibold transition
-                   hover:bg-red-800 active:scale-[0.98]
-                   cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
-                   flex items-center justify-center gap-2"
-              >
-                {isProcessingPayment ? (
-                  <>
-                    <Loader2 className="animate-spin" size={18} />
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  "Proceed to Payment"
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
+                <button
+                  type="submit"
+                  disabled={isProcessingPayment}
+                  className="flex-1 rounded-xl bg-red-700 
+                     text-white font-semibold transition
+                     hover:bg-red-800 active:scale-[0.98]
+                     cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
+                     flex items-center justify-center gap-2 py-2"
+                >
+                  {isProcessingPayment ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    "Proceed to Payment"
+                  )}
+                </button>
+              </AlertDialogFooter>
+            </form>
           </AlertDialogContent>
         </AlertDialog>
       </div>
