@@ -398,7 +398,7 @@ const CuttingPage = () => {
                               <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
                                 {`Size ${dim.label || dim.key}`}
                               </label>
-                              <span className="text-[9px] text-slate-400 font-mono">
+                              <span className="text-[12px] text-slate-400 font-mono">
                                 {dim.minRange}-{dim.maxRange}mm
                               </span>
                             </div>
@@ -518,7 +518,7 @@ const CuttingPage = () => {
                     className="w-full py-4 bg-[#7E1800] hover:bg-[#961D00] text-white rounded-xl font-bold text-lg shadow-xl shadow-[#7E1800]/20 hover:shadow-2xl hover:shadow-[#7E1800]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
                   >
                     <ShoppingCart className="w-7 h-7 group-hover:scale-110 transition-transform" />
-                    ADD TO CART
+                    Add to Cart
                   </button>
                 </div>
               </div>
