@@ -67,7 +67,7 @@ const SelectedConfiguration: React.FC<SelectedConfigurationProps> = ({
             €{selectedFeature.miterPerUnitPrice}
           </div>
         </div>
-        {(unitSize !== undefined && unitSize !== null) && (
+        {unitSize !== undefined && unitSize !== null && (
           <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
             <div className="text-gray-500 text-xs mb-1">Length</div>
             <div className="font-semibold text-gray-900">
@@ -75,7 +75,7 @@ const SelectedConfiguration: React.FC<SelectedConfigurationProps> = ({
             </div>
           </div>
         )}
-        {(range !== undefined && range !== null) && (
+        {range !== undefined && range !== null && (
           <div className="bg-white p-3 rounded-lg border-2 border-[#7E1800]/10">
             <div className="text-gray-500 text-xs mb-1">Custom Range</div>
             <div className="font-semibold text-gray-900">
