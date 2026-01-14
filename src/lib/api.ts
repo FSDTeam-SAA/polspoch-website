@@ -3,6 +3,7 @@
 import axios from "axios";
 import { UserProfilePayload } from "./types/profile";
 import { ServicePayload } from "./services/createservice";
+import { ShippingAddressPayload } from "./types/shipping";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -191,10 +192,7 @@ export interface AddToCartPayload {
   [key: string]: any; // Allow other properties if necessary
 }
 
-export async function addToCart(
-  data: AddToCartPayload,
-  token: string,
-) {
+export async function addToCart(data: AddToCartPayload, token: string) {
   try {
     const res = await api.post("/cart/add-cart", data, {
       headers: {
@@ -285,11 +283,7 @@ export async function checkoutCartInModal(
   }
 }
 // get my orders
-export async function getMyOrders(
-  token: string,
-  page = 1,
-  limit = 10,
-) {
+export async function getMyOrders(token: string, page = 1, limit = 10) {
   try {
     const res = await api.get(`/order/my-orders?page=${page}&limit=${limit}`, {
       headers: {
@@ -314,7 +308,6 @@ export async function getRebarTemplates() {
   }
 }
 
-
 //Get Bending Templates
 export async function getBendingTemplates() {
   try {
@@ -325,7 +318,6 @@ export async function getBendingTemplates() {
     throw new Error("Failed to fetch bending templates");
   }
 }
-
 
 //Get Cutting Templates
 export async function getCuttingTemplates() {
@@ -338,8 +330,6 @@ export async function getCuttingTemplates() {
   }
 }
 
-
-
 //Get all family
 export async function getAllFamily() {
   try {
@@ -348,5 +338,23 @@ export async function getAllFamily() {
   } catch (err) {
     console.error("Error fetching all family:", err);
     throw new Error("Failed to fetch all family");
+  }
+}
+
+//shipping post api
+export async function shippingPostApi(
+  payload: ShippingAddressPayload,
+  token: string,
+) {
+  try {
+    const res = await api.post("/shipping-address/create", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching shipping:", err);
+    throw new Error("Failed to fetch shipping");
   }
 }
