@@ -39,12 +39,28 @@ const CartProducts = () => {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [shippingDetails, setShippingDetails] = useState({
     fullName: "",
+    company: "",
     email: "",
     phone: "",
     street: "",
     // apartment: "",
     postalCode: "",
     city: "",
+    province: "",
+    country: "Spain",
+  });
+  const [shippingComments, setShippingComments] = useState("");
+  const [sameAsInvoice, setSameAsInvoice] = useState(true);
+  const [step, setStep] = useState<"shipping" | "invoice">("shipping");
+  const [invoiceDetails, setInvoiceDetails] = useState({
+    name: "",
+    company: "",
+    vat: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    postalCode: "",
     province: "",
     country: "Spain",
   });
@@ -177,18 +193,31 @@ const CartProducts = () => {
   // Handle Proceed to Checkout (Payment)
   const handleProceedToCheckout = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!orderId) return;
+    if (!orderId) {
+      console.error("Order ID is missing");
+      return;
+    }
 
     if (!session) {
       console.error("User not logged in");
       return;
     }
 
+    if (step === "shipping") {
+      if (!sameAsInvoice) {
+        setStep("invoice");
+        return;
+      }
+    }
+
     setIsProcessingPayment(true);
 
     const shippingPayload = {
       ...shippingDetails,
+      deliveryInstructions: shippingComments,
       orderId: orderId,
+      // If sameAsInvoice is false, we might want to include invoice info if the backend supports it
+      ...(sameAsInvoice ? {} : { invoiceDetails }),
     };
 
     console.log("Saving Shipping Address:", shippingPayload);
@@ -209,7 +238,8 @@ const CartProducts = () => {
                 setIsProcessingPayment(false);
               }
             },
-            onError: () => {
+            onError: (error) => {
+              console.error("Payment checkout failed:", error);
               setIsProcessingPayment(false);
             },
           },
@@ -264,7 +294,7 @@ const CartProducts = () => {
 
               <div className="w-[140px] h-[80px] bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border border-slate-100">
                 {item?.product?.productId?.productImage &&
-                  item.product.productId.productImage.length > 0 ? (
+                item.product.productId.productImage.length > 0 ? (
                   <Image
                     src={item.product.productId.productImage[0].url}
                     alt={item.product.productId.productName}
@@ -282,7 +312,11 @@ const CartProducts = () => {
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-[10px] text-slate-400 font-medium px-2 text-center uppercase">
-                    <span>{item?.serviceId?.templateName || item?.serviceData?.serviceType || "Product"}</span>
+                    <span>
+                      {item?.serviceId?.templateName ||
+                        item?.serviceData?.serviceType ||
+                        "Product"}
+                    </span>
                     <span>{item?.product?.productId?.productName}</span>
                   </div>
                 )}
@@ -322,7 +356,7 @@ const CartProducts = () => {
                   </motion.div>
                   {/* Sophisticated Shimmer */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent -skew-x-12"
+                    className="absolute inset-0 bg-linear-to-r from-transparent via-white/60 to-transparent -skew-x-12"
                     variants={{
                       hover: { x: ["-150%", "150%"] },
                     }}
@@ -346,7 +380,10 @@ const CartProducts = () => {
                   (item?.serviceId?.price || item?.price || 0) * item?.quantity
                 ).toFixed(2)}
                 <div className="text-[10px] text-gray-500 font-normal">
-                  {item?.serviceId?.units || item?.serviceData?.units || item?.quantity} unit(s)
+                  {item?.serviceId?.units ||
+                    item?.serviceData?.units ||
+                    item?.quantity}{" "}
+                  unit(s)
                 </div>
               </div>
 
@@ -459,178 +496,383 @@ const CartProducts = () => {
                 <span className="text-xl">🛒</span>
               </div>
 
-              <AlertDialogTitle className="text-xl font-bold text-center">
-                Confirm Your Order
+              <AlertDialogTitle className="text-xl font-bold text-center uppercase">
+                {step === "shipping"
+                  ? "INTRODUCE YOUR SHIPPING ADRESS"
+                  : "INTRODUCE YOUR INOIVE INFORMATION"}
               </AlertDialogTitle>
 
               <AlertDialogDescription className="text-sm text-muted-foreground text-center w-3/4 mx-auto">
-                Please provide your shipping details to proceed with the
-                payment.
+                {step === "shipping"
+                  ? "Please provide your shipping details to proceed."
+                  : "Please provide your invoice information."}
               </AlertDialogDescription>
             </AlertDialogHeader>
 
             <form onSubmit={handleProceedToCheckout}>
               <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto px-1 py-2">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    required
-                    placeholder="John Doe"
-                    value={shippingDetails.fullName}
-                    onChange={(e) =>
-                      setShippingDetails({
-                        ...shippingDetails,
-                        fullName: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                {step === "shipping" ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="fullName">Name</Label>
+                        <Input
+                          id="fullName"
+                          required
+                          placeholder="John Doe"
+                          value={shippingDetails.fullName}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              fullName: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="company">Company</Label>
+                        <Input
+                          id="company"
+                          placeholder="Polspoch SL"
+                          value={shippingDetails.company}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              company: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      required
-                      placeholder="john@example.com"
-                      value={shippingDetails.email}
-                      onChange={(e) =>
-                        setShippingDetails({
-                          ...shippingDetails,
-                          email: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      required
-                      placeholder="+34 ..."
-                      value={shippingDetails.phone}
-                      onChange={(e) =>
-                        setShippingDetails({
-                          ...shippingDetails,
-                          phone: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          required
+                          placeholder="john@example.com"
+                          value={shippingDetails.email}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              email: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone</Label>
+                        <Input
+                          id="phone"
+                          required
+                          placeholder="+34 ..."
+                          value={shippingDetails.phone}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              phone: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="street">Street Name & Number</Label>
-                  <Input
-                    id="street"
-                    required
-                    placeholder="Calle ..."
-                    value={shippingDetails.street}
-                    onChange={(e) =>
-                      setShippingDetails({
-                        ...shippingDetails,
-                        street: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="street">Street Name & Number</Label>
+                      <Input
+                        id="street"
+                        required
+                        placeholder="Calle ..."
+                        value={shippingDetails.street}
+                        onChange={(e) =>
+                          setShippingDetails({
+                            ...shippingDetails,
+                            street: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
 
-                {/* <div className="space-y-2">
-                  <Label htmlFor="apartment">
-                    Apartment / Floor / Stairwell (optional)
-                  </Label>
-                  <Input
-                    id="apartment"
-                    placeholder="Apt 4B"
-                    value={shippingDetails.apartment}
-                    onChange={(e) =>
-                      setShippingDetails({
-                        ...shippingDetails,
-                        apartment: e.target.value,
-                      })
-                    }
-                  />
-                </div> */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="postalCode">
+                          Postal Code (5 digits)
+                        </Label>
+                        <Input
+                          id="postalCode"
+                          required
+                          placeholder="28001"
+                          maxLength={5}
+                          value={shippingDetails.postalCode}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              postalCode: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="city">City / Town</Label>
+                        <Input
+                          id="city"
+                          required
+                          placeholder="Madrid"
+                          value={shippingDetails.city}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              city: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="postalCode">Postal Code (5 digits)</Label>
-                    <Input
-                      id="postalCode"
-                      required
-                      placeholder="28001"
-                      maxLength={5}
-                      value={shippingDetails.postalCode}
-                      onChange={(e) =>
-                        setShippingDetails({
-                          ...shippingDetails,
-                          postalCode: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City / Town</Label>
-                    <Input
-                      id="city"
-                      required
-                      placeholder="Madrid"
-                      value={shippingDetails.city}
-                      onChange={(e) =>
-                        setShippingDetails({
-                          ...shippingDetails,
-                          city: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="province">Province</Label>
+                        <Input
+                          id="province"
+                          required
+                          placeholder="Madrid"
+                          value={shippingDetails.province}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              province: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="country">Country</Label>
+                        <Input
+                          id="country"
+                          placeholder="Spain"
+                          value={shippingDetails.country}
+                          onChange={(e) =>
+                            setShippingDetails({
+                              ...shippingDetails,
+                              country: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="province">Province</Label>
-                    <Input
-                      id="province"
-                      required
-                      placeholder="Madrid"
-                      value={shippingDetails.province}
-                      onChange={(e) =>
-                        setShippingDetails({
-                          ...shippingDetails,
-                          province: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
-                    <Input
-                      id="country"
-                      placeholder="Spain"
-                      value={shippingDetails.country}
-                      onChange={(e) =>
-                        setShippingDetails({
-                          ...shippingDetails,
-                          country: e.target.value,
-                        })
-                      }
-                    />
+                    <div className="space-y-2">
+                      <Label htmlFor="shippingComments">
+                        Shipping Comments
+                      </Label>
+                      <textarea
+                        id="shippingComments"
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="Any special instructions for delivery..."
+                        value={shippingComments}
+                        onChange={(e) => setShippingComments(e.target.value)}
+                      />
+                    </div>
 
-                  </div>
-                </div>
+                    <div className="flex items-center space-x-2 py-2">
+                      <input
+                        type="checkbox"
+                        id="sameAsInvoice"
+                        checked={sameAsInvoice}
+                        onChange={(e) => setSameAsInvoice(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-600 cursor-pointer"
+                      />
+                      <Label htmlFor="sameAsInvoice" className="cursor-pointer">
+                        Same address for invoice
+                      </Label>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="invoiceName">Name</Label>
+                      <Input
+                        id="invoiceName"
+                        required
+                        placeholder="John Doe"
+                        value={invoiceDetails.name}
+                        onChange={(e) =>
+                          setInvoiceDetails({
+                            ...invoiceDetails,
+                            name: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="invoiceCompany">Company</Label>
+                        <Input
+                          id="invoiceCompany"
+                          placeholder="Company Name"
+                          value={invoiceDetails.company}
+                          onChange={(e) =>
+                            setInvoiceDetails({
+                              ...invoiceDetails,
+                              company: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="invoiceVAT">VAT</Label>
+                        <Input
+                          id="invoiceVAT"
+                          required
+                          placeholder="VAT Number"
+                          value={invoiceDetails.vat}
+                          onChange={(e) =>
+                            setInvoiceDetails({
+                              ...invoiceDetails,
+                              vat: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="invoiceEmail">Email</Label>
+                        <Input
+                          id="invoiceEmail"
+                          type="email"
+                          required
+                          placeholder="john@example.com"
+                          value={invoiceDetails.email}
+                          onChange={(e) =>
+                            setInvoiceDetails({
+                              ...invoiceDetails,
+                              email: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="invoicePhone">Phone</Label>
+                        <Input
+                          id="invoicePhone"
+                          required
+                          placeholder="+34 ..."
+                          value={invoiceDetails.phone}
+                          onChange={(e) =>
+                            setInvoiceDetails({
+                              ...invoiceDetails,
+                              phone: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invoiceAddress">Address</Label>
+                      <Input
+                        id="invoiceAddress"
+                        required
+                        placeholder="Calle ..."
+                        value={invoiceDetails.address}
+                        onChange={(e) =>
+                          setInvoiceDetails({
+                            ...invoiceDetails,
+                            address: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="invoiceCity">City</Label>
+                        <Input
+                          id="invoiceCity"
+                          required
+                          placeholder="Madrid"
+                          value={invoiceDetails.city}
+                          onChange={(e) =>
+                            setInvoiceDetails({
+                              ...invoiceDetails,
+                              city: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="invoicePostalCode">Postal Code</Label>
+                        <Input
+                          id="invoicePostalCode"
+                          required
+                          placeholder="28001"
+                          value={invoiceDetails.postalCode}
+                          onChange={(e) =>
+                            setInvoiceDetails({
+                              ...invoiceDetails,
+                              postalCode: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="invoiceProvince">Province</Label>
+                        <Input
+                          id="invoiceProvince"
+                          required
+                          placeholder="Madrid"
+                          value={invoiceDetails.province}
+                          onChange={(e) =>
+                            setInvoiceDetails({
+                              ...invoiceDetails,
+                              province: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="invoiceCountry">Country</Label>
+                        <Input
+                          id="invoiceCountry"
+                          placeholder="Spain"
+                          value={invoiceDetails.country}
+                          onChange={(e) =>
+                            setInvoiceDetails({
+                              ...invoiceDetails,
+                              country: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <AlertDialogFooter className="mt-4 flex gap-3">
-                <AlertDialogCancel
-                  type="button"
-                  className="flex-1 rounded-xl border border-gray-300 
-                     text-gray-700 transition
-                     hover:bg-gray-100 cursor-pointer"
-                >
-                  Cancel
-                </AlertDialogCancel>
+                {step === "invoice" ? (
+                  <button
+                    type="button"
+                    onClick={() => setStep("shipping")}
+                    className="flex-1 rounded-xl border border-gray-300 
+                       text-gray-700 transition
+                       hover:bg-gray-100 cursor-pointer py-2"
+                  >
+                    Back
+                  </button>
+                ) : (
+                  <AlertDialogCancel
+                    type="button"
+                    className="flex-1 rounded-xl border border-gray-300 
+                       text-gray-700 transition
+                       hover:bg-gray-100 cursor-pointer"
+                  >
+                    Cancel
+                  </AlertDialogCancel>
+                )}
 
                 <button
                   type="submit"
@@ -646,6 +888,8 @@ const CartProducts = () => {
                       <Loader2 className="animate-spin" size={18} />
                       <span>Processing...</span>
                     </>
+                  ) : step === "shipping" && !sameAsInvoice ? (
+                    "Next"
                   ) : (
                     "Proceed to Payment"
                   )}

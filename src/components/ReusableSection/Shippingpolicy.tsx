@@ -47,10 +47,10 @@ export default function ShippingPolicy() {
     >
       <div className="max-w-[1200px] mx-auto px-6">
         <header className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-semibold text-gray-800">
+          <h2 className="text-4xl font-semibold text-gray-900">
             Our Shipping Policy
           </h2>
-          <p className=" mx-auto text-sm text-gray-700 mt-3">
+          <p className=" mx-auto text-gray-500 mt-3 max-w-[700px]">
             We use a dynamic shipping system that automatically calculates rates
             based on your order&apos;s size, weight, and delivery location. This
             ensures you always receive the most accurate and cost-effective
@@ -64,7 +64,7 @@ export default function ShippingPolicy() {
             <h3 className="text-lg font-semibold">
               Shipping Methods Comparison
             </h3>
-            <p className="text-sm text-orange-100/80 mt-1">
+            <p className=" text-orange-100/80 mt-1">
               Choose the shipping option that best fits your timeline and budget
             </p>
           </div>

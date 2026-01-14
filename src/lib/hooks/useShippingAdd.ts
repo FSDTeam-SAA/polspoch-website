@@ -3,25 +3,25 @@ import { shippingPostApi } from "../api";
 import { ShippingAddressPayload } from "../types/shipping";
 
 interface UseShippingAddOptions {
-    token: string;
+  token: string;
 }
 
 // shipping post
 export const useShippingAdd = ({ token }: UseShippingAddOptions) => {
-    return useMutation({
-        mutationFn: (payload: ShippingAddressPayload) => {
-            if (!token) {
-                throw new Error("User is not authenticated");
-            }
-            return shippingPostApi(payload, token);
-        },
+  return useMutation({
+    mutationFn: (payload: ShippingAddressPayload) => {
+      if (!token) {
+        throw new Error("User is not authenticated");
+      }
+      return shippingPostApi(payload, token);
+    },
 
-        onSuccess: (data) => {
-            console.log("Shipping added successfully:", data);
-        },
+    onSuccess: (data) => {
+      console.log("Shipping added successfully:", data);
+    },
 
-        onError: (error) => {
-            console.error("Failed to add shipping:", error);
-        },
-    });
+    onError: (error) => {
+      console.error("Failed to add shipping:", error);
+    },
+  });
 };
