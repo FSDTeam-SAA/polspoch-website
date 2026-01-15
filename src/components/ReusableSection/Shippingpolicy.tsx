@@ -16,26 +16,25 @@ const SHIPPING_METHODS = [
   {
     id: "courier",
     type: "courier",
-    label: "Courier (Standard)",
-    price: "15.00€",
-    baseWeight: "Up to 30 kg",
-    baseSize: "Up to 2000 mm",
-    extraWeight: "+0.50€ per kg (over 30kg)",
-    extraSize: "+20.00€ (if ≥ 2000 mm)",
-    maxCapacity: "2500 mm / 150.00€ Cap",
-    eta: "3 - 5 Business Days",
+    label: "Courier",
+    eta: "2-4 business days",
+    sizeLimit: "Length < 2500 mm",
+    price: "15 €",
+    extras: [
+      "Weight: +0.50€ per kg (over 30kg)",
+      "Oversize: +20€ (if ≥ 2000 mm)",
+    ],
+    priceCap: "150 €",
   },
   {
     id: "truck",
     type: "truck",
-    label: "Truck (Heavy/Industrial)",
-    price: "60.00€",
-    baseWeight: "Up to 1000 kg",
-    baseSize: "Industrial Scale",
-    extraWeight: "+10.00€ per 500kg (over 1000kg)",
-    extraSize: " ",
-    maxCapacity: "No explicit limit",
-    eta: "15 - 30 Business Days",
+    label: "Truck",
+    eta: "3-6 business days",
+    sizeLimit: "No Limit",
+    price: "60 €",
+    extras: ["Weight: +10€ per 500kg (over 1000kg)"],
+    priceCap: "150 €",
   },
 ];
 
@@ -48,13 +47,10 @@ export default function ShippingPolicy() {
       <div className="max-w-[1200px] mx-auto px-6">
         <header className="text-center mb-8">
           <h2 className="text-4xl font-semibold text-gray-900">
-            Our Shipping Policy
+            Clear Shipping Rates with No Surprises
           </h2>
           <p className=" mx-auto text-gray-500 mt-3 max-w-[700px]">
-            We use a dynamic shipping system that automatically calculates rates
-            based on your order&apos;s size, weight, and delivery location. This
-            ensures you always receive the most accurate and cost-effective
-            shipping option without hidden charges or manual adjustments.
+            Iron is not an easy material to transport, which is why we use different shipping methods depending on the product you select. Below, we detail how our transport policy works in a transparent and visual way.
           </p>
         </header>
 
@@ -65,7 +61,7 @@ export default function ShippingPolicy() {
               Shipping Methods Comparison
             </h3>
             <p className=" text-orange-100/80 mt-1">
-              Choose the shipping option that best fits your timeline and budget
+              Shipment rate without surprises
             </p>
           </div>
 
@@ -77,11 +73,11 @@ export default function ShippingPolicy() {
                     <TableHead className="pl-6 w-[250px]">
                       Shipping Method
                     </TableHead>
-                    <TableHead className="text-center">Base Capacity</TableHead>
-                    <TableHead className="text-center">Surcharges</TableHead>
-                    <TableHead className="text-center">Weight Limit</TableHead>
+                    <TableHead className="text-center">Size Limit</TableHead>
+                    <TableHead className="text-center">Starting Price (Min)</TableHead>
+                    <TableHead className="text-center">Extras</TableHead>
                     <TableHead className="text-right pr-6">
-                      Starting Price
+                      Price Cap (Max)
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -94,11 +90,10 @@ export default function ShippingPolicy() {
                       <TableCell className="pl-6 py-4">
                         <div className="flex items-center gap-4">
                           <div
-                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${
-                              m.type === "truck"
+                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${m.type === "truck"
                                 ? "bg-blue-50 border-blue-100 text-blue-600"
                                 : "bg-rose-50 border-rose-100 text-rose-600"
-                            }`}
+                              }`}
                           >
                             {m.type === "truck" ? (
                               <Truck className="w-6 h-6" />
@@ -118,53 +113,30 @@ export default function ShippingPolicy() {
                         </div>
                       </TableCell>
 
-                      <TableCell className="text-center">
-                        <div className="text-xs space-y-1">
-                          <p className="text-slate-500">
-                            Size:{" "}
-                            <span className="text-slate-700 font-medium">
-                              {m.baseSize}
-                            </span>
-                          </p>
-                          <p className="text-slate-500">
-                            Weight:{" "}
-                            <span className="text-slate-700 font-medium">
-                              {m.baseWeight}
-                            </span>
-                          </p>
-                        </div>
+                      <TableCell className="text-center text-slate-700 font-medium">
+                        {m.sizeLimit}
+                      </TableCell>
+
+                      <TableCell className="text-center text-lg font-bold text-slate-900">
+                        {m.price}
                       </TableCell>
 
                       <TableCell className="text-center">
-                        <div className="text-xs space-y-1">
-                          <p className="text-slate-500">
-                            Weight:{" "}
-                            <span className="text-red-700 font-medium">
-                              {m.extraWeight}
-                            </span>
-                          </p>
-                          <p className="text-slate-500">
-                            Oversize:{" "}
-                            <span className="text-red-700 font-medium">
-                              {m.extraSize}
-                            </span>
-                          </p>
+                        <div className="text-sm text-slate-500 space-y-1">
+                          {m.extras.map((extra, i) => (
+                            <p key={i}>{extra}</p>
+                          ))}
                         </div>
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                          {m.maxCapacity}
-                        </span>
                       </TableCell>
 
                       <TableCell className="text-right pr-6">
-                        <div className="text-lg font-bold text-slate-900">
-                          {m.price}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
-                          Base Rate
-                        </div>
+                        {m.priceCap ? (
+                          <span className="text-lg font-bold text-slate-900">
+                            {m.priceCap}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -235,10 +207,10 @@ export default function ShippingPolicy() {
               </div>
             </div>
             <h4 className="font-semibold text-slate-900 dark:text-white">
-              Free Shipping
+              Parcel Shipping Delivered to your doorstep
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              Orders over $500 qualify for free standard ground shipping.
+              If you are an individual, it is best to adapt the measurements to receive it without any issues.
             </p>
           </Card>
 
@@ -249,11 +221,10 @@ export default function ShippingPolicy() {
               </div>
             </div>
             <h4 className="font-semibold text-slate-900 dark:text-white">
-              Same Day Dispatch
+              Truck Shipping
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              Orders placed before 2 PM EST are processed and shipped the same
-              day.
+              Depending on your order&apos;s dimensions, it is important to ensure that a truck can access the delivery address without problems.
             </p>
           </Card>
 
@@ -264,11 +235,10 @@ export default function ShippingPolicy() {
               </div>
             </div>
             <h4 className="font-semibold text-slate-900 dark:text-white">
-              Protected Delivery
+              No Surprises
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              Signature required on delivery for orders over $1,000 to ensure
-              security.
+              When you select a product, we will indicate the delivery type and cost at all times.
             </p>
           </Card>
         </div>

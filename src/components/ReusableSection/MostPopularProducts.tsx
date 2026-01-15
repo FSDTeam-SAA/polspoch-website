@@ -70,7 +70,7 @@ export default function MostPopularProducts() {
                       src={p.productImage[0].url}
                       alt={p.productName}
                       fill
-                      className="object-cover transition-transform duration-500 group-hover/card:scale-105"
+                      className="object-contain transition-transform duration-500 group-hover/card:scale-105"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (

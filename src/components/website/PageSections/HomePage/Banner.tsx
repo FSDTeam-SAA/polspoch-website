@@ -29,14 +29,17 @@ export default function Banner() {
       <div className="relative z-10 mx-auto w-screen max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-4xl font-bold text-white sm:text-5xl">
-            Strength Meets Precision in Every Steel Solution for Your Projects
+            {/* Strength Meets Precision in Every Steel Solution for Your Projects */}
+            Spain&apos;s Premier Online Iron & Steel Warehouse: Custom Cut & Home Delivery with No Surprises
           </h1>
 
           <p className="mt-4 text-base text-pretty text-gray-200 sm:text-lg/relaxed">
-            Explore our premium iron and steel products with custom cutting,
+            {/* Explore our premium iron and steel products with custom cutting,
             bending, and rebar services built for maximum performance, delivered
             with industrial precision, and tailored to your exact
-            specifications.
+            specifications. */}
+            Looking for iron for your DIY or renovation projects? It&apos;s simple: Choose the product, select the exact measurements, and receive it at your doorstep. 
+            
           </p>
 
           <div className="mt-6 flex justify-center gap-4">
