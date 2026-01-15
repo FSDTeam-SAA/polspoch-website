@@ -7,24 +7,24 @@ import Link from "next/link";
 export default function OurServices() {
   const services = [
     {
-      title: "Cut-to-Size",
-      subtitle: "Upload DWG or choose from templates",
+      title: "Plasma Sheet Cutting ",
+      subtitle: "High-precision CNC cutting for custom steel sheets from 1.5 to 100 mm in an intuitive way",
       btn: "Create & Calculate Price",
       img: "/images/cutting-image.jpg",
       icon: Ruler,
       href: "/services/cutting",
     },
     {
-      title: "Bending",
-      subtitle: "Configure bend types and dimensions",
+      title: "Sheet Metal Bending ",
+      subtitle: "Custom sheet bending; select templates, angles, and dimensions to create your finishings",
       btn: "Create & Calculate Price",
       img: "/images/bending-image.jpg",
       icon: Settings,
       href: "/services/bending",
     },
     {
-      title: "Rebar Fabrication",
-      subtitle: "Fast and accurate reinforcement",
+      title: "Rebar Fabrication ",
+      subtitle: "Receive corrugated steel cut and bent, ready to assemble; stirrups, bent bars, starter bars, all ready for on-site installation.",
       btn: "Create & Calculate Price",
       img: "/images/rebar-image.jpg",
       icon: Box,
@@ -36,10 +36,9 @@ export default function OurServices() {
     <div id="service-card" className="w-full py-20 bg-white">
       {/* Heading */}
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-semibold mb-2">Our Services</h2>
+        <h2 className="text-4xl font-semibold mb-2">Take your project to the next level with our services!</h2>
         <p className="text-gray-500">
-          Customize your steel products with our advanced processing and
-          fabrication options.
+          Take advantage of all our metal processing services quickly and easily. Select the service, choose the template, enter the measurements, and receive it at home.
         </p>
       </div>
 
