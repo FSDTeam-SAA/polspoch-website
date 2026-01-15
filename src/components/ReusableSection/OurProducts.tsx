@@ -16,12 +16,11 @@ export default function OurProducts() {
       <div className="container mx-auto px-4 text-center">
         {/* Heading */}
         <h2 className="text-3xl md:text-4xl font-semibold text-gray-900">
-          Our Products
+          Discover our Iron and Steel Catalog 
         </h2>
 
         <p className="max-w-2xl mx-auto mt-2 text-gray-500 text-sm">
-          Explore a complete range of premium iron and steel materials built for
-          strength, precision, and performance.
+          Your Online Iron Warehouse: Find the widest variety of tubes, beams, sheets, or profiles, all with custom cutting.
         </p>
 
         {/* Grid */}
