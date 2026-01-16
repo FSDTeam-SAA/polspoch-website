@@ -287,7 +287,7 @@ const CuttingPage = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
                             selectedShapeId === shape._id
                               ? "border-[#7E1800] bg-white shadow-lg ring-4 ring-[#7E1800]/5"
                               : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
@@ -341,7 +341,7 @@ const CuttingPage = () => {
                                 );
                               }
                             }}
-                            className={`py-3.5 rounded-xl border-2 font-bold transition-all duration-300 uppercase tracking-wider text-sm ${
+                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${
                               material === mObj.material
                                 ? "border-[#7E1800] bg-[#7E1800] text-white shadow-xl transform scale-[1.02]"
                                 : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
@@ -373,7 +373,7 @@ const CuttingPage = () => {
                                   String(t),
                                 );
                               }}
-                              className={`py-3 rounded-lg border-2 font-bold transition-all duration-300 text-sm ${
+                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${
                                 thickness === String(t)
                                   ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
                                   : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
@@ -482,7 +482,7 @@ const CuttingPage = () => {
                           setQuantity(newQty);
                           handleCalculate(newQty, dimensions, thickness);
                         }}
-                        className="w-12 h-12 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 active:scale-90 transition-all duration-200 flex items-center justify-center font-black text-[#7E1800] text-2xl shadow-sm"
+                        className="w-12 h-12 rounded-xl bg-white cursor-pointer border border-slate-200 hover:bg-slate-50 active:scale-90 transition-all duration-200 flex items-center justify-center font-black text-[#7E1800] text-2xl shadow-sm"
                       >
                         −
                       </button>
@@ -497,7 +497,7 @@ const CuttingPage = () => {
                           setQuantity(newQty);
                           handleCalculate(newQty, dimensions, thickness);
                         }}
-                        className="w-16 h-12 border-2 border-slate-200 rounded-xl text-center font-bold text-lg text-slate-700 focus:border-[#7E1800] outline-none"
+                        className="w-16 h-12 border-2 border-slate-200  rounded-xl text-center font-bold text-lg text-slate-700 focus:border-[#7E1800] outline-none"
                       />
                       <button
                         onClick={() => {
@@ -505,7 +505,7 @@ const CuttingPage = () => {
                           setQuantity(newQty);
                           handleCalculate(newQty, dimensions, thickness);
                         }}
-                        className="w-12 h-12 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 active:scale-90 transition-all duration-200 flex items-center justify-center font-black text-[#7E1800] text-2xl shadow-sm"
+                        className="w-12 h-12 rounded-xl bg-white cursor-pointer border border-slate-200 hover:bg-slate-50 active:scale-90 transition-all duration-200 flex items-center justify-center font-black text-[#7E1800] text-2xl shadow-sm"
                       >
                         +
                       </button>
@@ -515,7 +515,7 @@ const CuttingPage = () => {
                   <button
                     onClick={handleAddToCartClick}
                     disabled={!selectedTemplate}
-                    className="w-full py-4 bg-[#7E1800] hover:bg-[#961D00] text-white rounded-xl font-bold text-lg shadow-xl shadow-[#7E1800]/20 hover:shadow-2xl hover:shadow-[#7E1800]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
+                    className="w-full py-4 bg-[#7E1800] hover:bg-[#961D00] cursor-pointer text-white rounded-xl font-bold text-lg shadow-xl shadow-[#7E1800]/20 hover:shadow-2xl hover:shadow-[#7E1800]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
                   >
                     <ShoppingCart className="w-7 h-7 group-hover:scale-110 transition-transform" />
                     Add to Cart
