@@ -160,6 +160,8 @@ const CartProducts = () => {
       totalAmount: total,
     };
 
+    console.log(payload);
+
     checkoutCart(payload, {
       onSuccess: (data: { data?: { _id: string }; _id?: string }) => {
         const createdOrderId = data?.data?._id || data?._id;
