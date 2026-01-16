@@ -92,9 +92,9 @@ export default function Navbar() {
   ];
 
   const servicesSubItems = [
-    { href: "/services/rebar", label: "rebar" },
-    { href: "/services/cutting", label: "cutting" },
-    { href: "/services/bending", label: "bending" },
+    { href: "/services/rebar", label: "Rebar" },
+    { href: "/services/cutting", label: "Cutting" },
+    { href: "/services/bending", label: "Bending" },
   ];
 
   // Check if current path is any services page
