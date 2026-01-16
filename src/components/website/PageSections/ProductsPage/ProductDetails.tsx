@@ -405,8 +405,8 @@ export default function ProductDetails() {
     // Calculate shipping cost for a single unit
     const singleUnitShippingCost = calculateShippingCost(singleUnitWeight, lengthMm, isCourier);
 
-    // Multiply by quantity to get total shipping cost
-    const totalShippingCost = singleUnitShippingCost * quantity;
+    // Shipping cost independent of quantity
+    const totalShippingCost = singleUnitShippingCost;
 
     return {
       shippingCost: totalShippingCost,
@@ -633,8 +633,8 @@ export default function ProductDetails() {
                     key={idx}
                     onClick={() => setSelectedThumbnail(idx)}
                     className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${selectedThumbnail === idx
-                        ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                        : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
+                      ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                      : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
                       }`}
                   >
                     <Image
@@ -712,10 +712,10 @@ export default function ProductDetails() {
                           }
                           disabled={!isAvailable && !isSelected}
                           className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                            : isAvailable
+                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
                             }`}
                         >
                           {size}
@@ -759,10 +759,10 @@ export default function ProductDetails() {
                             }
                             disabled={!isAvailable && !isSelected}
                             className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                : isAvailable
-                                  ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
                               }`}
                           >
                             {size}
@@ -808,10 +808,10 @@ export default function ProductDetails() {
                             }
                             disabled={!isAvailable && !isSelected}
                             className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                : isAvailable
-                                  ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
                               }`}
                           >
                             {thickness}
@@ -853,10 +853,10 @@ export default function ProductDetails() {
                           }
                           disabled={!isAvailable && !isSelected}
                           className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                            : isAvailable
+                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
                             }`}
                         >
                           {quality}
@@ -910,8 +910,8 @@ export default function ProductDetails() {
                                     key={size}
                                     onClick={() => handleUnitSizeSelect(size)}
                                     className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
-                                        ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                        : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                      ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                      : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
                                       }`}
                                   >
                                     {size}mm
@@ -1039,8 +1039,8 @@ export default function ProductDetails() {
                   </div>
                   <div
                     className={`p-4 rounded-lg border-2 flex items-center justify-between ${shippingMethod === "courier"
-                        ? "bg-green-50 border-green-300"
-                        : "bg-blue-50 border-blue-300"
+                      ? "bg-green-50 border-green-300"
+                      : "bg-blue-50 border-blue-300"
                       }`}
                   >
                     <div>
@@ -1131,8 +1131,8 @@ export default function ProductDetails() {
                     onClick={handleAddToCart}
                     disabled={!canCheckout || isPending}
                     className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${canCheckout && !isPending
-                        ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
                       }`}
                   >
                     {isPending ? (
