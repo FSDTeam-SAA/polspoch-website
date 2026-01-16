@@ -42,13 +42,26 @@ const CuttingPage = () => {
       currentQuantity: number = quantity,
       currentDimensions: { [key: string]: number } = dimensions,
       currentThickness: string = thickness,
+      currentMaterial: string = material,
     ) => {
+      const thicknessNum = Number(currentThickness);
+
+      console.log("handleCalculate invoked", {
+        shape: selectedTemplate?.shapeName,
+        id: selectedTemplate?._id,
+        currentQuantity,
+        currentDimensions,
+        currentThickness: thicknessNum,
+        currentMaterial,
+        thicknessType: typeof thicknessNum,
+      });
+
       if (!selectedTemplate) return;
 
       const payload: CalculateCuttingPayload = {
         shapeName: selectedTemplate.shapeName,
-        material: material,
-        thickness: Number(currentThickness),
+        material: currentMaterial,
+        thickness: thicknessNum,
         units: currentQuantity,
         internalCuts: selectedTemplate.cuts || 0,
       };
@@ -98,8 +111,9 @@ const CuttingPage = () => {
 
         const firstThickness =
           firstTemplate.materials?.[0]?.thickness?.[0] || "";
+        const initialMaterial = firstTemplate.materials?.[0]?.material || "";
 
-        handleCalculate(quantity, initialDims, String(firstThickness));
+        handleCalculate(quantity, initialDims, String(firstThickness), initialMaterial);
       });
     }
   }, [templates, selectedShapeId, handleCalculate, quantity]);
@@ -120,16 +134,18 @@ const CuttingPage = () => {
 
     // Reset material and thickness based on new template
     let newThickness = thickness;
+    let newMaterial = material;
     const firstMaterialObj = template.materials?.[0];
     if (firstMaterialObj) {
-      setMaterial(firstMaterialObj.material);
+      newMaterial = firstMaterialObj.material;
+      setMaterial(newMaterial);
       if (firstMaterialObj.thickness?.length > 0) {
         newThickness = String(firstMaterialObj.thickness[0]);
         setThickness(newThickness);
       }
     }
 
-    handleCalculate(quantity, newDims, newThickness);
+    handleCalculate(quantity, newDims, newThickness, newMaterial);
   };
 
   const handleDimensionChange = (key: string, valueStr: string) => {
@@ -287,11 +303,10 @@ const CuttingPage = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
-                            selectedShapeId === shape._id
-                              ? "border-[#7E1800] bg-white shadow-lg ring-4 ring-[#7E1800]/5"
-                              : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                          }`}
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
+                            ? "border-[#7E1800] bg-white shadow-lg ring-4 ring-[#7E1800]/5"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                            }`}
                         >
                           <Image
                             src={shape.imageUrl}
@@ -338,14 +353,14 @@ const CuttingPage = () => {
                                   quantity,
                                   dimensions,
                                   newThickness,
+                                  mObj.material,
                                 );
                               }
                             }}
-                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${
-                              material === mObj.material
-                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-xl transform scale-[1.02]"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                            }`}
+                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${material === mObj.material
+                              ? "border-[#7E1800] bg-[#7E1800] text-white shadow-xl transform scale-[1.02]"
+                              : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                              }`}
                           >
                             {mObj.material}
                           </button>
@@ -373,11 +388,10 @@ const CuttingPage = () => {
                                   String(t),
                                 );
                               }}
-                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${
-                                thickness === String(t)
-                                  ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                  : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                              }`}
+                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${thickness === String(t)
+                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                                }`}
                             >
                               {t}mm
                             </button>
@@ -411,11 +425,10 @@ const CuttingPage = () => {
                                 onChange={(e) =>
                                   handleDimensionChange(dim.key, e.target.value)
                                 }
-                                className={`${BASE_BOX} pr-12 outline-none font-bold text-slate-900 ${
-                                  errors[dim.key]
-                                    ? "border-red-500 focus:border-red-600 ring-4 ring-red-100"
-                                    : "border-slate-200 focus:border-[#7E1800] ring-4 ring-[#7E1800]/5"
-                                }`}
+                                className={`${BASE_BOX} pr-12 outline-none font-bold text-slate-900 ${errors[dim.key]
+                                  ? "border-red-500 focus:border-red-600 ring-4 ring-red-100"
+                                  : "border-slate-200 focus:border-[#7E1800] ring-4 ring-[#7E1800]/5"
+                                  }`}
                                 placeholder={`${dim.minRange}`}
                               />
                               <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs font-bold text-slate-400 group-hover:text-[#7E1800] transition-colors">
