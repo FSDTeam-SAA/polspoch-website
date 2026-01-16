@@ -289,7 +289,7 @@ const Rebar = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
                             selectedShapeId === shape._id
                               ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
                               : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
@@ -333,7 +333,7 @@ const Rebar = () => {
                           setThickness(String(t));
                           handleCalculate(quantity, dimensions, String(t));
                         }}
-                        className={`py-3 px-2 rounded-lg border-2 font-semibold transition-all duration-300 ${
+                        className={`py-3 px-2 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${
                           thickness === String(t)
                             ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
                             : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
@@ -431,7 +431,7 @@ const Rebar = () => {
                           <div className="">
                             <span>Price Per Unit:</span>
                             <span>
-                              € {calculationResult.pricing.pricePerUnit || 0}
+                              € {calculationResult.pricing.pricePerUnit.toFixed(2) || 0}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -486,7 +486,7 @@ const Rebar = () => {
 
                   <button
                     onClick={handleAddToCart}
-                    className="w-full py-4 bg-[#7E1800] hover:bg-[#961D00] text-white rounded-xl font-bold text-lg shadow-xl shadow-[#7E1800]/20 hover:shadow-2xl hover:shadow-[#7E1800]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
+                    className="w-full py-4 bg-[#7E1800] hover:bg-[#961D00] cursor-pointer text-white rounded-xl font-bold text-lg shadow-xl shadow-[#7E1800]/20 hover:shadow-2xl hover:shadow-[#7E1800]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
                   >
                     <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
                     Add to Cart
