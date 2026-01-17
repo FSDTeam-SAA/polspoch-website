@@ -138,7 +138,7 @@ export default function ProductDetails() {
   const [selectedUnitSizeMm, setSelectedUnitSizeMm] = useState<number | null>(
     null,
   );
-  const [rangeLengthMm, setRangeLengthMm] = useState<number>(1000);
+  const [rangeLengthMm, setRangeLengthMm] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedThumbnail, setSelectedThumbnail] = useState<number>(0);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
@@ -148,9 +148,8 @@ export default function ProductDetails() {
   // Adjust state during render to avoid cascading renders in useEffect
   if (product && product._id !== prevProductId) {
     setPrevProductId(product._id);
-    const initialMinRange =
-      product.features?.[0]?.minRange ?? product.minRange ?? 0;
-    setRangeLengthMm(initialMinRange);
+    // Reset range to 0 (unselected) when product changes
+    setRangeLengthMm(0);
     setSelectedThumbnail(0);
     setSelectedThickness(null);
     setSelectedSize1(null);
@@ -373,6 +372,27 @@ export default function ProductDetails() {
     );
   }, [hasRange, featureList]);
 
+  // Priority: Selected Unit > Custom Range > Fallback (1000mm or minRange)
+  const effectiveLengthMm = useMemo(() => {
+    // 1. User selected a standard unit
+    if (selectedUnitSizeMm !== null) return selectedUnitSizeMm;
+
+    // 2. User selected a custom range
+    if (rangeLengthMm > 0) return rangeLengthMm;
+
+    // 3. Fallback logic
+    const min = selectedFeature?.minRange ?? product?.minRange ?? 0;
+    // If min > 1000, use min. Otherwise 1000.
+    return min > 1000 ? min : 1000;
+  }, [selectedUnitSizeMm, rangeLengthMm, selectedFeature, product]);
+
+  const isUsingFallbackLength = useMemo(() => {
+    return selectedUnitSizeMm === null && rangeLengthMm === 0;
+  }, [selectedUnitSizeMm, rangeLengthMm]);
+
+  // Is length effectively selected? (used for checkout validation)
+  const isLengthSelected = selectedUnitSizeMm !== null || (hasRange && rangeLengthMm > 0);
+
   const availableUnitSizes = useMemo(
     () => selectedFeature?.unitSizes || [],
     [selectedFeature],
@@ -381,20 +401,14 @@ export default function ProductDetails() {
   const totalWeight = useMemo(() => {
     if (!selectedFeature) return 0;
     const kgsPerUnit = selectedFeature.kgsPerUnit ?? 0;
-    if (selectedUnitSizeMm !== null) {
-      const meters = selectedUnitSizeMm / 1000;
-      return kgsPerUnit * meters * quantity;
-    }
-    if (hasRange && rangeLengthMm > 0) {
-      const meters = rangeLengthMm / 1000;
-      return kgsPerUnit * meters * quantity;
-    }
-    return 0;
-  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity, hasRange]);
+    const meters = effectiveLengthMm / 1000;
+    return kgsPerUnit * meters * quantity;
+  }, [selectedFeature, effectiveLengthMm, quantity]);
 
   const { shippingCost, shippingMethod } = useMemo(() => {
     if (!selectedFeature) return { shippingCost: 0, shippingMethod: "courier" };
-    const lengthMm = selectedUnitSizeMm ?? rangeLengthMm;
+    // Use effective length for calculation
+    const lengthMm = effectiveLengthMm;
     const isCourier = lengthMm <= 2500;
 
     // Calculate weight for a single unit
@@ -412,21 +426,14 @@ export default function ProductDetails() {
       shippingCost: totalShippingCost,
       shippingMethod: isCourier ? "courier" : "truck",
     };
-  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity]);
+  }, [selectedFeature, effectiveLengthMm]);
 
   const productPrice = useMemo(() => {
     if (!selectedFeature) return 0;
     const pricePerMeter = selectedFeature.miterPerUnitPrice ?? 0;
-    if (selectedUnitSizeMm !== null) {
-      const meters = selectedUnitSizeMm / 1000;
-      return pricePerMeter * meters * quantity;
-    }
-    if (hasRange && rangeLengthMm > 0) {
-      const meters = rangeLengthMm / 1000;
-      return pricePerMeter * meters * quantity;
-    }
-    return 0;
-  }, [selectedFeature, selectedUnitSizeMm, rangeLengthMm, quantity, hasRange]);
+    const meters = effectiveLengthMm / 1000;
+    return pricePerMeter * meters * quantity;
+  }, [selectedFeature, effectiveLengthMm, quantity]);
 
   const totalPrice = useMemo(
     () => productPrice + shippingCost,
@@ -460,8 +467,8 @@ export default function ProductDetails() {
 
   const canCheckout =
     !!selectedFeature &&
-    (selectedUnitSizeMm !== null || (hasRange && rangeLengthMm > 0)) &&
-    quantity > 0;
+    quantity > 0 &&
+    (hasAnyLengthOption ? isLengthSelected : true);
 
   const hasAnySelection =
     selectedThickness ||
@@ -479,9 +486,8 @@ export default function ProductDetails() {
 
     // Calculate unit price (price for 1 item)
     const pricePerMeter = selectedFeature?.miterPerUnitPrice ?? 0;
-    const lengthMeters = selectedUnitSizeMm
-      ? selectedUnitSizeMm / 1000
-      : rangeLengthMm / 1000;
+    // Use effectiveLengthMm which handles the fallback logic correctly
+    const lengthMeters = effectiveLengthMm / 1000;
     const unitPrice = pricePerMeter * lengthMeters;
 
     const payload = {
@@ -492,8 +498,14 @@ export default function ProductDetails() {
         productId: product._id,
         featuredId: selectedFeature?._id,
         size: selectedFeature?.size1,
+        // Send unitSize if explicitly selected, otherwise undefined
         unitSize: selectedUnitSizeMm ? selectedUnitSizeMm / 1000 : undefined,
-        range: selectedUnitSizeMm ? undefined : rangeLengthMm / 1000,
+        // Send range if explicitly selected OR if falling back (when no options exist)
+        // If hasAnyLengthOption is true, we only send range if rangeLengthMm > 0 (checked by canCheckout/logic)
+        // If hasAnyLengthOption is false, we send the effective fallback
+        range: selectedUnitSizeMm
+          ? undefined
+          : (rangeLengthMm > 0 ? rangeLengthMm : effectiveLengthMm) / 1000,
       },
       totalAmount: Number(totalPrice.toFixed(2)),
     };
@@ -1101,6 +1113,14 @@ export default function ProductDetails() {
                   {/* Price Breakdown */}
                   {selectedFeature && (
                     <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
+
+                      {/* Hint for fallback pricing */}
+                      {isUsingFallbackLength && hasAnyLengthOption && (
+                        <div className="mb-2 p-2 bg-yellow-50 text-yellow-700 text-xs rounded border border-yellow-200">
+                          Price shown for {effectiveLengthMm}mm length until a length is selected
+                        </div>
+                      )}
+
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-gray-600">Product Price:</span>
                         <span className="font-semibold text-gray-900">
