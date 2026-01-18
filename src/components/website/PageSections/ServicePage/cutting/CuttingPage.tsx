@@ -42,13 +42,26 @@ const CuttingPage = () => {
       currentQuantity: number = quantity,
       currentDimensions: { [key: string]: number } = dimensions,
       currentThickness: string = thickness,
+      currentMaterial: string = material,
     ) => {
+      const thicknessNum = Number(currentThickness);
+
+      console.log("handleCalculate invoked", {
+        shape: selectedTemplate?.shapeName,
+        id: selectedTemplate?._id,
+        currentQuantity,
+        currentDimensions,
+        currentThickness: thicknessNum,
+        currentMaterial,
+        thicknessType: typeof thicknessNum,
+      });
+
       if (!selectedTemplate) return;
 
       const payload: CalculateCuttingPayload = {
         shapeName: selectedTemplate.shapeName,
-        material: material,
-        thickness: Number(currentThickness),
+        material: currentMaterial,
+        thickness: thicknessNum,
         units: currentQuantity,
         internalCuts: selectedTemplate.cuts || 0,
       };
@@ -98,8 +111,9 @@ const CuttingPage = () => {
 
         const firstThickness =
           firstTemplate.materials?.[0]?.thickness?.[0] || "";
+        const initialMaterial = firstTemplate.materials?.[0]?.material || "";
 
-        handleCalculate(quantity, initialDims, String(firstThickness));
+        handleCalculate(quantity, initialDims, String(firstThickness), initialMaterial);
       });
     }
   }, [templates, selectedShapeId, handleCalculate, quantity]);
@@ -120,16 +134,18 @@ const CuttingPage = () => {
 
     // Reset material and thickness based on new template
     let newThickness = thickness;
+    let newMaterial = material;
     const firstMaterialObj = template.materials?.[0];
     if (firstMaterialObj) {
-      setMaterial(firstMaterialObj.material);
+      newMaterial = firstMaterialObj.material;
+      setMaterial(newMaterial);
       if (firstMaterialObj.thickness?.length > 0) {
         newThickness = String(firstMaterialObj.thickness[0]);
         setThickness(newThickness);
       }
     }
 
-    handleCalculate(quantity, newDims, newThickness);
+    handleCalculate(quantity, newDims, newThickness, newMaterial);
   };
 
   const handleDimensionChange = (key: string, valueStr: string) => {
@@ -287,11 +303,10 @@ const CuttingPage = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
-                            selectedShapeId === shape._id
-                              ? "border-[#7E1800] bg-white shadow-lg ring-4 ring-[#7E1800]/5"
-                              : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                          }`}
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
+                            ? "border-[#7E1800] bg-white shadow-lg ring-4 ring-[#7E1800]/5"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                            }`}
                         >
                           <Image
                             src={shape.imageUrl}
@@ -338,14 +353,14 @@ const CuttingPage = () => {
                                   quantity,
                                   dimensions,
                                   newThickness,
+                                  mObj.material,
                                 );
                               }
                             }}
-                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${
-                              material === mObj.material
-                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-xl transform scale-[1.02]"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                            }`}
+                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${material === mObj.material
+                              ? "border-[#7E1800] bg-[#7E1800] text-white shadow-xl transform scale-[1.02]"
+                              : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                              }`}
                           >
                             {mObj.material}
                           </button>
@@ -373,11 +388,10 @@ const CuttingPage = () => {
                                   String(t),
                                 );
                               }}
-                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${
-                                thickness === String(t)
-                                  ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                  : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                              }`}
+                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${thickness === String(t)
+                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                                }`}
                             >
                               {t}mm
                             </button>
@@ -395,11 +409,11 @@ const CuttingPage = () => {
                         {selectedTemplate.dimensions?.map((dim) => (
                           <div key={dim.key} className="space-y-2">
                             <div className="flex justify-between items-end">
-                              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                                {`Size ${dim.label || dim.key}`}
+                              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                {dim.label || `Size ${dim.key}`}
                               </label>
                               <span className="text-[12px] text-slate-400 font-mono">
-                                {dim.minRange}-{dim.maxRange}mm
+                                {dim.minRange}mm-{dim.maxRange}mm
                               </span>
                             </div>
                             <div className="relative group">
@@ -411,11 +425,10 @@ const CuttingPage = () => {
                                 onChange={(e) =>
                                   handleDimensionChange(dim.key, e.target.value)
                                 }
-                                className={`${BASE_BOX} pr-12 outline-none font-bold text-slate-900 ${
-                                  errors[dim.key]
-                                    ? "border-red-500 focus:border-red-600 ring-4 ring-red-100"
-                                    : "border-slate-200 focus:border-[#7E1800] ring-4 ring-[#7E1800]/5"
-                                }`}
+                                className={`${BASE_BOX} pr-12 outline-none font-bold text-slate-900 ${errors[dim.key]
+                                  ? "border-red-500 focus:border-red-600 ring-4 ring-red-100"
+                                  : "border-slate-200 focus:border-[#7E1800] ring-4 ring-[#7E1800]/5"
+                                  }`}
                                 placeholder={`${dim.minRange}`}
                               />
                               <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs font-bold text-slate-400 group-hover:text-[#7E1800] transition-colors">
@@ -431,7 +444,7 @@ const CuttingPage = () => {
                         ))}
                       </div>
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2 mb-2">
                         <div className="w-1.5 h-6 bg-[#7E1800]"></div>
                         CUTS
@@ -440,86 +453,92 @@ const CuttingPage = () => {
                         {" "}
                         {selectedTemplate?.cuts}
                       </span>
-                    </div>
+                    </div> */}
                   </>
                 )}
 
                 {/* Quantity & Price Section */}
-                <div className="pt-8 border-t-2 border-slate-100">
-                  <div className="flex items-center justify-between mb-8">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-600 mb-1">
-                        Total Price
-                      </p>
-                      <div className="text-4xl font-bold text-[#7E1800]">
-                        €{calculationResult?.pricing?.finalQuote || 0}
+                <div className="border-t-2 border-[#7E1800]/20 pt-6">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+                    {/* Quantity */}
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-700 mb-2">
+                        Quantity
+                      </span>
+                      <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
+                        <button
+                          onClick={() => {
+                            const newQty = Math.max(1, quantity - 1);
+                            setQuantity(newQty);
+                            handleCalculate(newQty, dimensions, thickness);
+                          }}
+                          className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
+                        >
+                          <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">−</div>
+                        </button>
+                        <input
+                          type="number"
+                          value={quantity}
+                          onChange={(e) => {
+                            const newQty = Math.max(
+                              1,
+                              parseInt(e.target.value) || 1,
+                            );
+                            setQuantity(newQty);
+                            handleCalculate(newQty, dimensions, thickness);
+                          }}
+                          className="w-16 py-3 text-lg font-bold text-center outline-none"
+                        />
+                        <button
+                          onClick={() => {
+                            const newQty = quantity + 1;
+                            setQuantity(newQty);
+                            handleCalculate(newQty, dimensions, thickness);
+                          }}
+                          className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
+                        >
+                          <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">+</div>
+                        </button>
                       </div>
-                      {calculationResult && (
-                        <div className="mt-2 space-y-1 text-xs text-slate-500 font-medium">
-                          <div className="">
-                            <span>Price Per Unit:</span>
-                            <span>
-                              € {calculationResult.pricing.pricePerUnit || 0}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>
-                              Shipping Method (
-                              {calculationResult.shippingStatus.method}):
-                            </span>
-                            <span>
-                              {" "}
-                              € {calculationResult.pricing.shippingPrice || 0}
-                            </span>
-                          </div>
+                    </div>
+
+                    {/* Price Breakdown */}
+                    {calculationResult && (
+                      <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">Service Price:</span>
+                          <span className="font-semibold text-gray-900">
+                            €{calculationResult.pricing.finalQuote.toFixed(2)}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                      <button
-                        onClick={() => {
-                          const newQty = Math.max(1, quantity - 1);
-                          setQuantity(newQty);
-                          handleCalculate(newQty, dimensions, thickness);
-                        }}
-                        className="w-12 h-12 rounded-xl bg-white cursor-pointer border border-slate-200 hover:bg-slate-50 active:scale-90 transition-all duration-200 flex items-center justify-center font-black text-[#7E1800] text-2xl shadow-sm"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="number"
-                        value={quantity}
-                        onChange={(e) => {
-                          const newQty = Math.max(
-                            1,
-                            parseInt(e.target.value) || 1,
-                          );
-                          setQuantity(newQty);
-                          handleCalculate(newQty, dimensions, thickness);
-                        }}
-                        className="w-16 h-12 border-2 border-slate-200  rounded-xl text-center font-bold text-lg text-slate-700 focus:border-[#7E1800] outline-none"
-                      />
-                      <button
-                        onClick={() => {
-                          const newQty = quantity + 1;
-                          setQuantity(newQty);
-                          handleCalculate(newQty, dimensions, thickness);
-                        }}
-                        className="w-12 h-12 rounded-xl bg-white cursor-pointer border border-slate-200 hover:bg-slate-50 active:scale-90 transition-all duration-200 flex items-center justify-center font-black text-[#7E1800] text-2xl shadow-sm"
-                      >
-                        +
-                      </button>
-                    </div>
+                        <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
+                          <span className="text-gray-600">Shipping Cost:</span>
+                          <span className="font-semibold text-gray-900">
+                            €{calculationResult.pricing.shippingPrice.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-bold text-gray-900">
+                            Total Amount:
+                          </span>
+                          <span className="text-2xl font-bold text-[#7E1800]">
+                            €{calculationResult.pricing.finalQuote.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  <button
-                    onClick={handleAddToCartClick}
-                    disabled={!selectedTemplate}
-                    className="w-full py-4 bg-[#7E1800] hover:bg-[#961D00] cursor-pointer text-white rounded-xl font-bold text-lg shadow-xl shadow-[#7E1800]/20 hover:shadow-2xl hover:shadow-[#7E1800]/30 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
-                  >
-                    <ShoppingCart className="w-7 h-7 group-hover:scale-110 transition-transform" />
-                    Add to Cart
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={handleAddToCartClick}
+                      disabled={!selectedTemplate}
+                      className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                    >
+                      <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                      Add to Cart
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
