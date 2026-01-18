@@ -1,666 +1,19 @@
-// // src/components/website/PageSections/ServicePage/BendingPage.tsx
-// "use client";
-// import React, { useState, useEffect } from "react";
-// import { Sparkles, ShoppingCart, Zap } from "lucide-react";
-// import Image from "next/image";
-// import { useSession } from "next-auth/react";
-// import { useAddToCart } from "@/lib/hooks/useAddToCart";
-// import {
-//   useBendingTemplates,
-//   BendingDimension,
-// } from "@/lib/hooks/useBendingTemplates";
-// import { useCalculateBending } from "@/lib/hooks/useCalculation";
-// import {
-//   CalculateBendingResponse,
-//   CalculateBendingPayload,
-// } from "@/lib/services/calculationService";
-// import { toast } from "sonner";
-
-// const BendingPage = () => {
-//   const { data: templates = [], isLoading } = useBendingTemplates();
-//   const [selectedShapeId, setSelectedShapeId] = useState<string>("");
-//   const selectedTemplate = templates.find((t) => t._id === selectedShapeId);
-//   const [thickness, setThickness] = useState("");
-//   const [material, setMaterial] = useState("");
-//   const [dimensions, setDimensions] = useState<{ [key: string]: number }>({});
-//   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-//   const [quantity, setQuantity] = useState(1);
-//   const { data: session } = useSession();
-//   const token = session?.accessToken || "";
-
-//   const [calculationResult, setCalculationResult] =
-//     useState<CalculateBendingResponse | null>(null);
-//   const { mutate: calculateBending } = useCalculateBending();
-
-//   const { mutate: addToCart } = useAddToCart({ token });
-
-//   const handleCalculate = React.useCallback(
-//     (
-//       currentQuantity: number = quantity,
-//       currentDimensions: { [key: string]: number } = dimensions,
-//       currentThickness: string = thickness,
-//       currentMaterial: string = material,
-//     ) => {
-//       if (!selectedTemplate) return;
-
-//       const payload: CalculateBendingPayload = {
-//         shapeName: selectedTemplate.shapeName,
-//         material: currentMaterial,
-//         thickness: Number(currentThickness),
-//         units: currentQuantity,
-//         length: 1000, // Default as per example
-//         numBends:
-//           selectedTemplate.dimensions.filter((d) =>
-//             d.key.toLowerCase().includes("degree"),
-//           ).length || 1,
-//       };
-
-//       // Map dimensions and degrees sequentially based on key
-//       let sizeIdx = 1;
-//       let degreeIdx = 1;
-
-//       const alphabeticalKeys = ["A", "B", "C", "D", "E", "F"];
-
-//       selectedTemplate.dimensions.forEach((dim) => {
-//         if (dim.key.toLowerCase().includes("degree")) {
-//           payload[`degree${degreeIdx}`] = currentDimensions[dim.key] || 0;
-//           degreeIdx++;
-//         } else {
-//           const char =
-//             alphabeticalKeys[sizeIdx - 1] || String.fromCharCode(64 + sizeIdx);
-//           payload[`size${char}`] = currentDimensions[dim.key] || 0;
-//           sizeIdx++;
-//         }
-//       });
-
-//       // Fill remaining with 0 if needed (api example showed up to 6)
-//       for (let i = sizeIdx; i <= 6; i++) {
-//         const char = alphabeticalKeys[i - 1] || String.fromCharCode(64 + i);
-//         if (!payload[`size${char}`]) payload[`size${char}`] = 0;
-//       }
-//       for (let i = degreeIdx; i <= 6; i++) {
-//         if (!payload[`degree${i}`]) payload[`degree${i}`] = 0;
-//       }
-
-//       calculateBending(payload, {
-//         onSuccess: (data) => setCalculationResult(data),
-//       });
-//     },
-//     [
-//       selectedTemplate,
-//       calculateBending,
-//       quantity,
-//       dimensions,
-//       thickness,
-//       material,
-//     ],
-//   );
-
-//   useEffect(() => {
-//     if (templates.length > 0 && !selectedShapeId) {
-//       const firstTemplate = templates[0];
-//       void Promise.resolve().then(() => {
-//         setSelectedShapeId(firstTemplate._id);
-
-//         // Find first material and its thicknesses
-//         const firstMaterialObj = firstTemplate.materials?.[0];
-//         if (firstMaterialObj) {
-//           setMaterial(firstMaterialObj.material);
-//           if (firstMaterialObj.thickness?.length > 0) {
-//             setThickness(String(firstMaterialObj.thickness[0]));
-//           }
-//         }
-
-//         const initialDims: { [key: string]: number } = {};
-//         firstTemplate.dimensions?.forEach((dim: BendingDimension) => {
-//           initialDims[dim.key] = dim.minRange;
-//         });
-//         setDimensions(initialDims);
-
-//         const firstThickness =
-//           firstTemplate.materials?.[0]?.thickness?.[0] || "";
-//         const firstMaterial = firstTemplate.materials?.[0]?.material || "";
-//         handleCalculate(
-//           quantity,
-//           initialDims,
-//           String(firstThickness),
-//           firstMaterial,
-//         );
-//       });
-//     }
-//   }, [templates, selectedShapeId, handleCalculate, quantity]);
-
-//   const handleShapeSelect = (templateId: string) => {
-//     const template = templates.find((t) => t._id === templateId);
-//     if (!template) return;
-
-//     setSelectedShapeId(templateId);
-//     const newDims: { [key: string]: number } = {};
-//     template.dimensions?.forEach((dim) => {
-//       newDims[dim.key] = dim.minRange;
-//     });
-//     setDimensions(newDims);
-//     setErrors({});
-
-//     // Reset material and thickness based on new template
-//     let nextMaterial = material;
-//     let nextThickness = thickness;
-//     const firstMaterialObj = template.materials?.[0];
-//     if (firstMaterialObj) {
-//       nextMaterial = firstMaterialObj.material;
-//       setMaterial(nextMaterial);
-//       if (firstMaterialObj.thickness?.length > 0) {
-//         nextThickness = String(firstMaterialObj.thickness[0]);
-//         setThickness(nextThickness);
-//       }
-//     }
-
-//     handleCalculate(quantity, newDims, nextThickness, nextMaterial);
-//   };
-
-//   const handleDimensionChange = (key: string, valueStr: string) => {
-//     const value = parseInt(valueStr) || 0;
-//     const dimensionConfig = selectedTemplate?.dimensions.find(
-//       (d) => d.key === key,
-//     );
-//     if (!dimensionConfig) return;
-
-//     const min = dimensionConfig.minRange;
-//     const max = dimensionConfig.maxRange;
-
-//     let error = "";
-//     if (value < min) error = `Min: ${min}mm`;
-//     else if (value > max) error = `Max: ${max}mm`;
-
-//     setErrors((prev) => ({ ...prev, [key]: error }));
-//     const nextDims = { ...dimensions, [key]: value };
-//     setDimensions(nextDims);
-
-//     if (!error) {
-//       handleCalculate(quantity, nextDims, thickness, material);
-//     }
-//   };
-
-//   const handleAddToCart = () => {
-//     if (!calculationResult) {
-//       toast.error("Please calculate dimensions first");
-//       return;
-//     }
-
-//     const payload = {
-//       type: "service",
-//       totalAmount: calculationResult.pricing.finalQuote,
-//       serviceData: {
-//         serviceType: "bending",
-//         ...calculationResult.summary,
-//       },
-//       pricing: calculationResult.pricing,
-//       shippingStatus: calculationResult.shippingStatus,
-//     };
-
-//     addToCart(payload, {
-//       onSuccess: () => {
-//         toast.success("Successfully added to cart");
-//       },
-//       onError: () => {
-//         toast.error("Please login to add items to cart");
-//       },
-//     });
-//   };
-
-//   const BASE_BOX =
-//     "w-full h-12 px-3 box-border rounded-xl border-2 flex items-center transition-all duration-300";
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-//       <div className="container mx-auto px-4 py-12">
-//         <div className="text-center mb-12">
-//           <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#7E1800]/10 rounded-full mb-4">
-//             <Sparkles className="w-4 h-4 text-[#7E1800]" />
-//             <span className="text-sm font-semibold text-[#7E1800]">
-//               Premium Bending Service
-//             </span>
-//           </div>
-//           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
-//             Custom Metal Bending
-//           </h1>
-//           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-//             Professional precision bending for your metal profiles. Select a
-//             shape and configure your dimensions.
-//           </p>
-//         </div>
-
-//         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-//           {/* LEFT: Visualization */}
-//           <div className="lg:col-span-6">
-//             <div className="sticky top-28 ">
-//               <div className="relative group">
-//                 <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col min-h-[500px]">
-//                   <div className="relative flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-//                     <svg className="absolute inset-0">
-//                       <defs>
-//                         <pattern
-//                           id="grid"
-//                           width="20"
-//                           height="20"
-//                           patternUnits="userSpaceOnUse"
-//                         >
-//                           <path
-//                             d="M 20 0 L 0 0 0 20"
-//                             fill="none"
-//                             stroke="#e2e8f0"
-//                             strokeWidth="0.5"
-//                           />
-//                         </pattern>
-//                       </defs>
-//                       <rect width="100%" height="100%" fill="url(#grid)" />
-//                     </svg>
-
-//                     <div className="relative z-10 w-4/5 h-4/5 flex items-center justify-center transition-all duration-500">
-//                       {selectedTemplate?.imageUrl ? (
-//                         <Image
-//                           src={selectedTemplate.imageUrl}
-//                           alt={selectedTemplate.shapeName}
-//                           width={400}
-//                           height={400}
-//                           className="max-w-full max-h-full object-contain drop-shadow-2xl"
-//                           priority
-//                         />
-//                       ) : (
-//                         <div className="text-slate-400 font-medium text-center">
-//                           <div className="text-6xl mb-4">⚒️</div>
-//                           Select a shape to visualize
-//                         </div>
-//                       )}
-//                     </div>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* RIGHT: Configuration */}
-//           <div className="lg:col-span-6">
-//             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 h-full">
-//               <div className="space-y-6">
-//                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-//                   <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-//                     <Zap className="w-5 h-5 text-[#7E1800]" />
-//                     Select Shape
-//                   </h3>
-//                   {isLoading ? (
-//                     <div className="text-center py-4 text-slate-500">
-//                       Loading shapes...
-//                     </div>
-//                   ) : (
-//                     <div className="grid grid-cols-3 gap-3">
-//                       {templates.map((shape) => (
-//                         <button
-//                           key={shape._id}
-//                           onClick={() => handleShapeSelect(shape._id)}
-//                           className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
-//                             ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
-//                             : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-//                             }`}
-//                         >
-//                           <Image
-//                             src={shape.imageUrl}
-//                             alt={shape.shapeName}
-//                             width={40}
-//                             height={40}
-//                             className="w-10 h-10 object-contain mb-1 opacity-80 group-hover:opacity-100 transition-opacity"
-//                           />
-//                           <span className="text-[10px] font-bold text-slate-600 text-center leading-tight line-clamp-2 uppercase">
-//                             {shape.shapeName}
-//                           </span>
-//                           {selectedShapeId === shape._id && (
-//                             <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center shadow">
-//                               <span className="text-white text-[10px] font-bold">
-//                                 ✓
-//                               </span>
-//                             </div>
-//                           )}
-//                         </button>
-//                       ))}
-//                     </div>
-//                   )}
-//                 </div>
-
-//                 {selectedTemplate && (
-//                   <>
-//                     <div className="space-y-3">
-//                       <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-//                         <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-//                         MATERIAL
-//                       </label>
-//                       <div className="grid grid-cols-2 gap-2">
-//                         {selectedTemplate.materials?.map((mObj) => (
-//                           <button
-//                             key={mObj._id}
-//                             onClick={() => {
-//                               setMaterial(mObj.material);
-//                               const newThickness =
-//                                 mObj.thickness?.length > 0
-//                                   ? String(mObj.thickness[0])
-//                                   : thickness;
-//                               setThickness(newThickness);
-//                               handleCalculate(
-//                                 quantity,
-//                                 dimensions,
-//                                 newThickness,
-//                                 mObj.material,
-//                               );
-//                             }}
-//                             className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 uppercase ${material === mObj.material
-//                               ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-//                               : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-//                               }`}
-//                           >
-//                             {mObj.material}
-//                           </button>
-//                         ))}
-//                       </div>
-//                     </div>
-
-//                     <div className="space-y-3">
-//                       <label className="block text-sm font-bold text-slate-900  uppercase tracking-wide flex items-center gap-2">
-//                         <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-//                         THICKNESS (MM)
-//                       </label>
-//                       <div className="grid grid-cols-5 gap-2">
-//                         {selectedTemplate.materials
-//                           ?.find((m) => m.material === material)
-//                           ?.thickness.map((t) => (
-//                             <button
-//                               key={t}
-//                               onClick={() => {
-//                                 setThickness(String(t));
-//                                 handleCalculate(
-//                                   quantity,
-//                                   dimensions,
-//                                   String(t),
-//                                   material,
-//                                 );
-//                               }}
-//                               className={`py-3 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${thickness === String(t)
-//                                 ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-//                                 : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-//                                 }`}
-//                             >
-//                               {t}mm
-//                             </button>
-//                           ))}
-//                       </div>
-//                     </div>
-
-//                     {/* SIZES Section */}
-//                     <div className="space-y-3">
-//                       <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-//                         <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-//                         SIZES (MM)
-//                       </label>
-//                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-//                         {selectedTemplate.dimensions
-//                           .filter(
-//                             (dim) =>
-//                               !dim.key.toLowerCase().includes("degree") &&
-//                               !dim.key.toLowerCase().includes("angle") &&
-//                               !dim.key.toLowerCase().includes("length"),
-//                           )
-//                           .map((dim) => (
-//                             <div key={dim.key} className="space-y-2">
-//                               <div className="flex justify-between items-end">
-//                                 <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
-//                                   {dim.label || `Size ${dim.key}`}
-//                                 </label>
-//                                 <span className="text-[12px] text-slate-400 font-mono">
-//                                   {dim.minRange}mm-{dim.maxRange}mm
-//                                 </span>
-//                               </div>
-//                               <div className="relative group">
-//                                 <input
-//                                   type="number"
-//                                   min={dim.minRange}
-//                                   max={dim.maxRange}
-//                                   value={dimensions[dim.key] || ""}
-//                                   onChange={(e) =>
-//                                     handleDimensionChange(dim.key, e.target.value)
-//                                   }
-//                                   className={`${BASE_BOX} ${errors[dim.key]
-//                                       ? "border-red-500 focus:border-red-600"
-//                                       : "border-slate-200 focus:border-[#7E1800]"
-//                                     } outline-none font-semibold text-slate-900`}
-//                                   placeholder={`${dim.minRange}`}
-//                                 />
-//                               </div>
-//                               <p className="text-[10px] text-slate-500 font-medium">
-//                                 Unit: {dim.unit || "MM"}
-//                               </p>
-//                               {errors[dim.key] && (
-//                                 <p className="text-[10px] text-red-500 font-medium">
-//                                   {errors[dim.key]}
-//                                 </p>
-//                               )}
-//                             </div>
-//                           ))}
-//                       </div>
-//                     </div>
-
-//                     {/* ANGLES Section */}
-//                     {selectedTemplate.dimensions.filter(
-//                       (dim) =>
-//                         dim.key.toLowerCase().includes("degree") ||
-//                         dim.key.toLowerCase().includes("angle"),
-//                     ).length > 0 && (
-//                         <div className="space-y-3 bg-[#7E1800]/5 p-4 rounded-xl border border-[#7E1800]/20">
-//                           <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
-//                             <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-//                             ANGLES (°)
-//                           </label>
-//                           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-//                             {selectedTemplate.dimensions
-//                               .filter(
-//                                 (dim) =>
-//                                   dim.key.toLowerCase().includes("degree") ||
-//                                   dim.key.toLowerCase().includes("angle"),
-//                               )
-//                               .map((dim) => (
-//                                 <div key={dim.key} className="space-y-2">
-//                                   <div className="flex justify-between items-end">
-//                                     <label className="block text-xs font-semibold text-[#7E1800] uppercase tracking-wider">
-//                                       {dim.label || dim.key}
-//                                     </label>
-//                                     <span className="text-[12px] text-[#7E1800]/60 font-mono">
-//                                       {dim.minRange}°-{dim.maxRange}°
-//                                     </span>
-//                                   </div>
-//                                   <div className="relative group">
-//                                     <input
-//                                       type="number"
-//                                       min={dim.minRange}
-//                                       max={dim.maxRange}
-//                                       value={dimensions[dim.key] || ""}
-//                                       onChange={(e) =>
-//                                         handleDimensionChange(dim.key, e.target.value)
-//                                       }
-//                                       className={`${BASE_BOX} ${errors[dim.key]
-//                                           ? "border-red-500 focus:border-red-600"
-//                                           : "border-[#7E1800]/30 focus:border-[#7E1800] bg-white"
-//                                         } outline-none font-semibold text-slate-900`}
-//                                       placeholder={`${dim.minRange}`}
-//                                     />
-//                                   </div>
-//                                   <p className="text-[10px] text-[#7E1800]/70 font-medium">
-//                                     Unit: {dim.unit || "°"}
-//                                   </p>
-//                                   {errors[dim.key] && (
-//                                     <p className="text-[10px] text-red-500 font-medium">
-//                                       {errors[dim.key]}
-//                                     </p>
-//                                   )}
-//                                 </div>
-//                               ))}
-//                           </div>
-//                         </div>
-//                       )}
-
-//                     {/* LENGTH Section */}
-//                     {selectedTemplate.dimensions.filter((dim) =>
-//                       dim.key.toLowerCase().includes("length"),
-//                     ).length > 0 && (
-//                         <div className="space-y-3">
-//                           <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-//                             <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-//                             LENGTH (MM)
-//                           </label>
-//                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//                             {selectedTemplate.dimensions
-//                               .filter((dim) =>
-//                                 dim.key.toLowerCase().includes("length"),
-//                               )
-//                               .map((dim) => (
-//                                 <div key={dim.key} className="space-y-2">
-//                                   <div className="flex justify-between items-end">
-//                                     <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
-//                                       {dim.label || "Length"}
-//                                     </label>
-//                                     <span className="text-[12px] text-slate-400 font-mono">
-//                                       {dim.minRange}mm-{dim.maxRange}mm
-//                                     </span>
-//                                   </div>
-//                                   <div className="relative group">
-//                                     <input
-//                                       type="number"
-//                                       min={dim.minRange}
-//                                       max={dim.maxRange}
-//                                       value={dimensions[dim.key] || ""}
-//                                       onChange={(e) =>
-//                                         handleDimensionChange(dim.key, e.target.value)
-//                                       }
-//                                       className={`${BASE_BOX} ${errors[dim.key]
-//                                           ? "border-red-500 focus:border-red-600"
-//                                           : "border-slate-200 focus:border-[#7E1800]"
-//                                         } outline-none font-semibold text-slate-900`}
-//                                       placeholder={`${dim.minRange}`}
-//                                     />
-//                                   </div>
-//                                   <p className="text-[10px] text-slate-500 font-medium">
-//                                     Unit: {dim.unit || "MM"}
-//                                   </p>
-//                                   {errors[dim.key] && (
-//                                     <p className="text-[10px] text-red-500 font-medium">
-//                                       {errors[dim.key]}
-//                                     </p>
-//                                   )}
-//                                 </div>
-//                               ))}
-//                           </div>
-//                         </div>
-//                       )}
-
-//                     <div className="border-t-2 border-[#7E1800]/20 pt-6">
-//                       <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
-//                         {/* Quantity */}
-//                         <div className="flex flex-col">
-//                           <span className="text-sm font-medium text-gray-700 mb-2">
-//                             Quantity
-//                           </span>
-//                           <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
-//                             <button
-//                               onClick={() => {
-//                                 const newQty = Math.max(1, quantity - 1);
-//                                 setQuantity(newQty);
-//                                 handleCalculate(newQty, dimensions, thickness, material);
-//                               }}
-//                               className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
-//                             >
-//                               <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">−</div>
-//                             </button>
-//                             <input
-//                               type="number"
-//                               value={quantity}
-//                               onChange={(e) => {
-//                                 const newQty = Math.max(
-//                                   1,
-//                                   parseInt(e.target.value) || 1,
-//                                 );
-//                                 setQuantity(newQty);
-//                                 handleCalculate(newQty, dimensions, thickness, material);
-//                               }}
-//                               className="w-16 py-3 text-lg font-bold text-center outline-none"
-//                             />
-//                             <button
-//                               onClick={() => {
-//                                 const newQty = quantity + 1;
-//                                 setQuantity(newQty);
-//                                 handleCalculate(newQty, dimensions, thickness, material);
-//                               }}
-//                               className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
-//                             >
-//                               <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">+</div>
-//                             </button>
-//                           </div>
-//                         </div>
-
-//                         {/* Price Breakdown */}
-//                         {calculationResult && (
-//                           <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
-//                             <div className="flex justify-between text-sm mb-2">
-//                               <span className="text-gray-600">Service Price:</span>
-//                               <span className="font-semibold text-gray-900">
-//                                 €{calculationResult.pricing.finalQuote.toFixed(2)}
-//                               </span>
-//                             </div>
-//                             <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
-//                               <span className="text-gray-600">Shipping Cost:</span>
-//                               <span className="font-semibold text-gray-900">
-//                                 €{calculationResult.pricing.shippingPrice.toFixed(2)}
-//                               </span>
-//                             </div>
-//                             <div className="flex justify-between items-center">
-//                               <span className="text-lg font-bold text-gray-900">
-//                                 Total Amount:
-//                               </span>
-//                               <span className="text-2xl font-bold text-[#7E1800]">
-//                                 €{calculationResult.pricing.finalQuote.toFixed(2)}
-//                               </span>
-//                             </div>
-//                           </div>
-//                         )}
-//                       </div>
-
-//                       <div className="flex flex-col gap-2">
-//                         <button
-//                           onClick={handleAddToCart}
-//                           className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-//                         >
-//                           <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
-//                           Add to Cart
-//                         </button>
-//                       </div>
-//                     </div>
-//                   </>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default BendingPage;
-
+// src/components/website/PageSections/ServicePage/BendingPage.tsx
 "use client";
 import React, { useState, useEffect } from "react";
-import { Sparkles, ShoppingCart, Zap, MoveHorizontal, CornerDownRight, Ruler, Layers } from "lucide-react";
+import { Sparkles, ShoppingCart, Zap } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useAddToCart } from "@/lib/hooks/useAddToCart";
-import { useBendingTemplates, BendingDimension } from "@/lib/hooks/useBendingTemplates";
+import {
+  useBendingTemplates,
+  BendingDimension,
+} from "@/lib/hooks/useBendingTemplates";
 import { useCalculateBending } from "@/lib/hooks/useCalculation";
-import { CalculateBendingResponse, CalculateBendingPayload } from "@/lib/services/calculationService";
+import {
+  CalculateBendingResponse,
+  CalculateBendingPayload,
+} from "@/lib/services/calculationService";
 import { toast } from "sonner";
 
 const BendingPage = () => {
@@ -675,8 +28,10 @@ const BendingPage = () => {
   const { data: session } = useSession();
   const token = session?.accessToken || "";
 
-  const [calculationResult, setCalculationResult] = useState<CalculateBendingResponse | null>(null);
+  const [calculationResult, setCalculationResult] =
+    useState<CalculateBendingResponse | null>(null);
   const { mutate: calculateBending } = useCalculateBending();
+
   const { mutate: addToCart } = useAddToCart({ token });
 
   const handleCalculate = React.useCallback(
@@ -688,253 +43,684 @@ const BendingPage = () => {
     ) => {
       if (!selectedTemplate) return;
 
-      const lengthKey = selectedTemplate.dimensions.find(d => d.key.toLowerCase().includes("length"))?.key || "";
-      const currentLength = currentDimensions[lengthKey] || 1000;
-
       const payload: CalculateBendingPayload = {
         shapeName: selectedTemplate.shapeName,
         material: currentMaterial,
         thickness: Number(currentThickness),
         units: currentQuantity,
-        length: currentLength,
-        numBends: selectedTemplate.dimensions.filter((d) =>
-            d.key.toLowerCase().includes("degree") || d.key.toLowerCase().includes("angle"),
+        length: 1000, // Default as per example
+        numBends:
+          selectedTemplate.dimensions.filter((d) =>
+            d.key.toLowerCase().includes("degree"),
           ).length || 1,
       };
 
+      // Map dimensions and degrees sequentially based on key
       let sizeIdx = 1;
       let degreeIdx = 1;
+
       const alphabeticalKeys = ["A", "B", "C", "D", "E", "F"];
 
       selectedTemplate.dimensions.forEach((dim) => {
-        if (dim.key.toLowerCase().includes("degree") || dim.key.toLowerCase().includes("angle")) {
+        if (dim.key.toLowerCase().includes("degree")) {
           payload[`degree${degreeIdx}`] = currentDimensions[dim.key] || 0;
           degreeIdx++;
-        } else if (!dim.key.toLowerCase().includes("length")) {
-          const char = alphabeticalKeys[sizeIdx - 1] || String.fromCharCode(64 + sizeIdx);
+        } else {
+          const char =
+            alphabeticalKeys[sizeIdx - 1] || String.fromCharCode(64 + sizeIdx);
           payload[`size${char}`] = currentDimensions[dim.key] || 0;
           sizeIdx++;
         }
       });
 
-      calculateBending(payload, { onSuccess: (data) => setCalculationResult(data) });
+      // Fill remaining with 0 if needed (api example showed up to 6)
+      for (let i = sizeIdx; i <= 6; i++) {
+        const char = alphabeticalKeys[i - 1] || String.fromCharCode(64 + i);
+        if (!payload[`size${char}`]) payload[`size${char}`] = 0;
+      }
+      for (let i = degreeIdx; i <= 6; i++) {
+        if (!payload[`degree${i}`]) payload[`degree${i}`] = 0;
+      }
+
+      calculateBending(payload, {
+        onSuccess: (data) => setCalculationResult(data),
+      });
     },
-    [selectedTemplate, calculateBending, quantity, dimensions, thickness, material],
+    [
+      selectedTemplate,
+      calculateBending,
+      quantity,
+      dimensions,
+      thickness,
+      material,
+    ],
   );
 
   useEffect(() => {
     if (templates.length > 0 && !selectedShapeId) {
-      const first = templates[0];
-      setSelectedShapeId(first._id);
-      const firstMat = first.materials?.[0];
-      if (firstMat) {
-        setMaterial(firstMat.material);
-        setThickness(String(firstMat.thickness[0]));
-      }
-      const initialDims: { [key: string]: number } = {};
-      first.dimensions?.forEach((d) => initialDims[d.key] = d.minRange);
-      setDimensions(initialDims);
-      handleCalculate(quantity, initialDims, String(firstMat?.thickness?.[0] || ""), firstMat?.material || "");
+      const firstTemplate = templates[0];
+      void Promise.resolve().then(() => {
+        setSelectedShapeId(firstTemplate._id);
+
+        // Find first material and its thicknesses
+        const firstMaterialObj = firstTemplate.materials?.[0];
+        if (firstMaterialObj) {
+          setMaterial(firstMaterialObj.material);
+          if (firstMaterialObj.thickness?.length > 0) {
+            setThickness(String(firstMaterialObj.thickness[0]));
+          }
+        }
+
+        const initialDims: { [key: string]: number } = {};
+        firstTemplate.dimensions?.forEach((dim: BendingDimension) => {
+          initialDims[dim.key] = dim.minRange;
+        });
+        setDimensions(initialDims);
+
+        const firstThickness =
+          firstTemplate.materials?.[0]?.thickness?.[0] || "";
+        const firstMaterial = firstTemplate.materials?.[0]?.material || "";
+        handleCalculate(
+          quantity,
+          initialDims,
+          String(firstThickness),
+          firstMaterial,
+        );
+      });
     }
   }, [templates, selectedShapeId, handleCalculate, quantity]);
 
+  const handleShapeSelect = (templateId: string) => {
+    const template = templates.find((t) => t._id === templateId);
+    if (!template) return;
+
+    setSelectedShapeId(templateId);
+    const newDims: { [key: string]: number } = {};
+    template.dimensions?.forEach((dim) => {
+      newDims[dim.key] = dim.minRange;
+    });
+    setDimensions(newDims);
+    setErrors({});
+
+    // Reset material and thickness based on new template
+    let nextMaterial = material;
+    let nextThickness = thickness;
+    const firstMaterialObj = template.materials?.[0];
+    if (firstMaterialObj) {
+      nextMaterial = firstMaterialObj.material;
+      setMaterial(nextMaterial);
+      if (firstMaterialObj.thickness?.length > 0) {
+        nextThickness = String(firstMaterialObj.thickness[0]);
+        setThickness(nextThickness);
+      }
+    }
+
+    handleCalculate(quantity, newDims, nextThickness, nextMaterial);
+  };
+
   const handleDimensionChange = (key: string, valueStr: string) => {
     const value = parseInt(valueStr) || 0;
-    const config = selectedTemplate?.dimensions.find((d) => d.key === key);
-    if (!config) return;
+    const dimensionConfig = selectedTemplate?.dimensions.find(
+      (d) => d.key === key,
+    );
+    if (!dimensionConfig) return;
 
-    let error = value < config.minRange ? `Min: ${config.minRange}` : value > config.maxRange ? `Max: ${config.maxRange}` : "";
+    const min = dimensionConfig.minRange;
+    const max = dimensionConfig.maxRange;
+
+    let error = "";
+    if (value < min) error = `Min: ${min}mm`;
+    else if (value > max) error = `Max: ${max}mm`;
+
     setErrors((prev) => ({ ...prev, [key]: error }));
     const nextDims = { ...dimensions, [key]: value };
     setDimensions(nextDims);
-    if (!error) handleCalculate(quantity, nextDims, thickness, material);
+
+    if (!error) {
+      handleCalculate(quantity, nextDims, thickness, material);
+    }
   };
 
-  const INPUT_STYLE = "w-full h-11 px-3 rounded-lg border-2 bg-slate-50 font-bold transition-all outline-none focus:ring-2 focus:ring-offset-1";
+  const handleAddToCart = () => {
+    if (!calculationResult) {
+      toast.error("Please calculate dimensions first");
+      return;
+    }
+
+    const payload = {
+      type: "service",
+      totalAmount: calculationResult.pricing.finalQuote,
+      serviceData: {
+        serviceType: "bending",
+        ...calculationResult.summary,
+      },
+      pricing: calculationResult.pricing,
+      shippingStatus: calculationResult.shippingStatus,
+    };
+
+    addToCart(payload, {
+      onSuccess: () => {
+        toast.success("Successfully added to cart");
+      },
+      onError: () => {
+        toast.error("Please login to add items to cart");
+      },
+    });
+  };
+
+  const BASE_BOX =
+    "w-full h-12 px-3 box-border rounded-xl border-2 flex items-center transition-all duration-300";
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      {/* HEADER SECTION */}
-      <div className="bg-white border-b border-slate-200 py-8 mb-8">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">BENDING CONFIGURATOR</h1>
-            <p className="text-slate-500 font-medium">Select shape and define precise dimensions</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#7E1800]/10 rounded-full mb-4">
+            <Sparkles className="w-4 h-4 text-[#7E1800]" />
+            <span className="text-sm font-semibold text-[#7E1800]">
+              Premium Bending Service
+            </span>
           </div>
-          <div className="flex gap-2 bg-slate-100 p-1.5 rounded-xl overflow-x-auto max-w-full">
-            {templates.map((shape) => (
-              <button
-                key={shape._id}
-                onClick={() => setSelectedShapeId(shape._id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                  selectedShapeId === shape._id ? "bg-white shadow-sm text-[#7E1800]" : "text-slate-400 hover:text-slate-600"
-                }`}
-              >
-                {shape.shapeName}
-              </button>
-            ))}
-          </div>
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
+            Custom Metal Bending
+          </h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Professional precision bending for your metal profiles. Select a
+            shape and configure your dimensions.
+          </p>
         </div>
-      </div>
 
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-          
-          {/* VISUALIZATION PANEL */}
-          <div className="xl:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col items-center justify-center min-h-[400px]">
-            <div className="bg-slate-50 w-full rounded-xl p-8 flex items-center justify-center relative">
-              <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-slate-600 uppercase">Live Preview</span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* LEFT: Visualization */}
+          <div className="lg:col-span-6">
+            <div className="sticky top-28 ">
+              <div className="relative group">
+                <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col min-h-[500px]">
+                  <div className="relative flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                    <svg className="absolute inset-0">
+                      <defs>
+                        <pattern
+                          id="grid"
+                          width="20"
+                          height="20"
+                          patternUnits="userSpaceOnUse"
+                        >
+                          <path
+                            d="M 20 0 L 0 0 0 20"
+                            fill="none"
+                            stroke="#e2e8f0"
+                            strokeWidth="0.5"
+                          />
+                        </pattern>
+                      </defs>
+                      <rect width="100%" height="100%" fill="url(#grid)" />
+                    </svg>
+
+                    <div className="relative z-10 w-4/5 h-4/5 flex items-center justify-center transition-all duration-500">
+                      {selectedTemplate?.imageUrl ? (
+                        <Image
+                          src={selectedTemplate.imageUrl}
+                          alt={selectedTemplate.shapeName}
+                          width={400}
+                          height={400}
+                          className="max-w-full max-h-full object-contain drop-shadow-2xl"
+                          priority
+                        />
+                      ) : (
+                        <div className="text-slate-400 font-medium text-center">
+                          <div className="text-6xl mb-4">⚒️</div>
+                          Select a shape to visualize
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              {selectedTemplate?.imageUrl && (
-                <Image src={selectedTemplate.imageUrl} alt="Shape" width={320} height={320} className="object-contain" />
-              )}
             </div>
           </div>
 
-          {/* THREE-COLUMN INPUT GRID */}
-          <div className="xl:col-span-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* COLUMN 1: MATERIAL & SPEC */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                <div className="flex items-center gap-2 text-slate-800 border-b border-slate-100 pb-3">
-                  <Layers className="w-4 h-4" />
-                  <h3 className="text-xs font-black uppercase tracking-wider">Specifications</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Material</label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {selectedTemplate?.materials?.map((m) => (
+          {/* RIGHT: Configuration */}
+          <div className="lg:col-span-6">
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 h-full">
+              <div className="space-y-6">
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-[#7E1800]" />
+                    Select Shape
+                  </h3>
+                  {isLoading ? (
+                    <div className="text-center py-4 text-slate-500">
+                      Loading shapes...
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {templates.map((shape) => (
                         <button
-                          key={m._id}
-                          onClick={() => setMaterial(m.material)}
-                          className={`py-2 rounded-lg border-2 text-xs font-bold transition-all ${
-                            material === m.material ? "border-[#7E1800] bg-[#7E1800]/5 text-[#7E1800]" : "border-slate-100 text-slate-500"
-                          }`}
+                          key={shape._id}
+                          onClick={() => handleShapeSelect(shape._id)}
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
+                            ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                            }`}
                         >
-                          {m.material}
+                          <Image
+                            src={shape.imageUrl}
+                            alt={shape.shapeName}
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 object-contain mb-1 opacity-80 group-hover:opacity-100 transition-opacity"
+                          />
+                          <span className="text-[10px] font-bold text-slate-600 text-center leading-tight line-clamp-2 uppercase">
+                            {shape.shapeName}
+                          </span>
+                          {selectedShapeId === shape._id && (
+                            <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center shadow">
+                              <span className="text-white text-[10px] font-bold">
+                                ✓
+                              </span>
+                            </div>
+                          )}
                         </button>
                       ))}
                     </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Thickness (mm)</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {selectedTemplate?.materials?.find(m => m.material === material)?.thickness.map(t => (
+                  )}
+                </div>
+
+                {selectedTemplate && (
+                  <>
+                    <div className="space-y-3">
+                      <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                        <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                        MATERIAL
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {selectedTemplate.materials?.map((mObj) => (
+                          <button
+                            key={mObj._id}
+                            onClick={() => {
+                              setMaterial(mObj.material);
+                              const newThickness =
+                                mObj.thickness?.length > 0
+                                  ? String(mObj.thickness[0])
+                                  : thickness;
+                              setThickness(newThickness);
+                              handleCalculate(
+                                quantity,
+                                dimensions,
+                                newThickness,
+                                mObj.material,
+                              );
+                            }}
+                            className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 uppercase ${material === mObj.material
+                              ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                              : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                              }`}
+                          >
+                            {mObj.material}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="block text-sm font-bold text-slate-900  uppercase tracking-wide flex items-center gap-2">
+                        <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                        THICKNESS (MM)
+                      </label>
+                      <div className="grid grid-cols-5 gap-2">
+                        {selectedTemplate.materials
+                          ?.find((m) => m.material === material)
+                          ?.thickness.map((t) => (
+                            <button
+                              key={t}
+                              onClick={() => {
+                                setThickness(String(t));
+                                handleCalculate(
+                                  quantity,
+                                  dimensions,
+                                  String(t),
+                                  material,
+                                );
+                              }}
+                              className={`py-3 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${thickness === String(t)
+                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                                }`}
+                            >
+                              {t}mm
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+
+                    {/* SIZES Section */}
+                    {/* <div className="space-y-3">
+                      <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                        <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                        SIZES (MM)
+                      </label>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        {selectedTemplate.dimensions
+                          .filter(
+                            (dim) =>
+                              !dim.key.toLowerCase().includes("degree") &&
+                              !dim.key.toLowerCase().includes("angle") &&
+                              !dim.key.toLowerCase().includes("length"),
+                          )
+                          .map((dim) => (
+                            <div key={dim.key} className="space-y-2">
+                              <div className="flex justify-between items-end">
+                                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                  {dim.label || `Size ${dim.key}`}
+                                </label>
+                                <span className="text-[12px] text-slate-400 font-mono">
+                                  {dim.minRange}mm-{dim.maxRange}mm
+                                </span>
+                              </div>
+                              <div className="relative group">
+                                <input
+                                  type="number"
+                                  min={dim.minRange}
+                                  max={dim.maxRange}
+                                  value={dimensions[dim.key] || ""}
+                                  onChange={(e) =>
+                                    handleDimensionChange(dim.key, e.target.value)
+                                  }
+                                  className={`${BASE_BOX} ${errors[dim.key]
+                                    ? "border-red-500 focus:border-red-600"
+                                    : "border-slate-200 focus:border-[#7E1800]"
+                                    } outline-none font-semibold text-slate-900`}
+                                  placeholder={`${dim.minRange}`}
+                                />
+                              </div>
+                              <p className="text-[10px] text-slate-500 font-medium">
+                                Unit: {dim.unit || "MM"}
+                              </p>
+                              {errors[dim.key] && (
+                                <p className="text-[10px] text-red-500 font-medium">
+                                  {errors[dim.key]}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    </div> */}
+                    {/* MAIN CONTAINER */}
+                    <div className="space-y-8">
+
+                      {/* 1. SIZES SECTION (MM) - Standard Brand Color */}
+                      <div className="space-y-3">
+                        <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                          <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                          SIZES (MM)
+                        </label>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                          {selectedTemplate.dimensions
+                            .filter((dim) => dim.unit === "MM" && dim.key !== "L")
+                            .map((dim) => (
+                              <div key={dim.key} className="space-y-2">
+                                <label className="block text-xs font-semibold text-slate-600 uppercase">
+                                  {dim.label}
+                                </label>
+                                <input
+                                  type="number"
+                                  value={dimensions[dim.key] || ""}
+                                  onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
+                                  className={`${BASE_BOX} border-slate-200 focus:border-[#7E1800] outline-none font-semibold`}
+                                  placeholder={dim.minRange.toString()}
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+
+                      {/* 2. ANGLES SECTION (Angle A-B, B-C) - Blue Color */}
+                      <div className="space-y-3">
+                        <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
+                          <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                          ANGLES (°)
+                        </label>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                          {selectedTemplate.dimensions
+                            .filter((dim) => dim.unit === "º" || dim.key.startsWith("D"))
+                            .map((dim) => (
+                              <div key={dim.key} className="space-y-2">
+                                <label className="block text-xs font-semibold text-[#7E1800] uppercase">
+                                  {dim.label}
+                                </label>
+                                <input
+                                  type="number"
+                                  value={dimensions[dim.key] || ""}
+                                  onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
+                                  className={`${BASE_BOX} border-[#7E1800] focus:[#7E1800] bg-[#7E1800]/30 text-[#7E1800] outline-none font-semibold`}
+                                  placeholder={dim.minRange.toString()}
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+
+                      {/* 3. LENGTH SECTION - Green Color */}
+                      <div className="space-y-3">
+                        <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
+                          <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                          TOTAL LENGTH
+                        </label>
+                        {selectedTemplate.dimensions
+                          .filter((dim) => dim.key === "L")
+                          .map((dim) => (
+                            <div key={dim.key} className="relative group">
+                              <input
+                                type="number"
+                                value={dimensions[dim.key] || ""}
+                                onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
+                                className={`${BASE_BOX} border-[#7E1800] focus:border-[#7E1800] bg-gray/30 text-[#7E1800] outline-none font-bold text-lg`}
+                                placeholder={dim.minRange.toString()}
+                              />
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#7E1800] font-bold text-xs">
+                                {dim.unit}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+
+                    </div>
+
+                    {/* ANGLES Section */}
+                    {selectedTemplate.dimensions.filter(
+                      (dim) =>
+                        dim.key.toLowerCase().includes("degree") ||
+                        dim.key.toLowerCase().includes("angle"),
+                    ).length > 0 && (
+                        <div className="space-y-3 bg-[#7E1800]/5 p-4 rounded-xl border border-[#7E1800]/20">
+                          <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
+                            <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                            ANGLES (°)
+                          </label>
+                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                            {selectedTemplate.dimensions
+                              .filter(
+                                (dim) =>
+                                  dim.key.toLowerCase().includes("degree") ||
+                                  dim.key.toLowerCase().includes("angle"),
+                              )
+                              .map((dim) => (
+                                <div key={dim.key} className="space-y-2">
+                                  <div className="flex justify-between items-end">
+                                    <label className="block text-xs font-semibold text-[#7E1800] uppercase tracking-wider">
+                                      {dim.label || dim.key}
+                                    </label>
+                                    <span className="text-[12px] text-gray/60 font-mono">
+                                      {dim.minRange}°-{dim.maxRange}°
+                                    </span>
+                                  </div>
+                                  <div className="relative group">
+                                    <input
+                                      type="number"
+                                      min={dim.minRange}
+                                      max={dim.maxRange}
+                                      value={dimensions[dim.key] || ""}
+                                      onChange={(e) =>
+                                        handleDimensionChange(dim.key, e.target.value)
+                                      }
+                                      className={`${BASE_BOX} ${errors[dim.key]
+                                        ? "border-red-500 focus:border-red-600"
+                                        : "border-[#7E1800]/30 focus:border-[#7E1800]  text-[#7E1800] outline-none font-bold text-lg"
+                                        } outline-none font-semibold text-slate-900`}
+                                      placeholder={`${dim.minRange}`}
+                                    />
+                                  </div>
+                                  <p className="text-[10px] text-gray/70 font-medium">
+                                    Unit: {dim.unit || "°"}
+                                  </p>
+                                  {errors[dim.key] && (
+                                    <p className="text-[10px] text-red-500 font-medium">
+                                      {errors[dim.key]}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* LENGTH Section */}
+                    {selectedTemplate.dimensions.filter((dim) =>
+                      dim.key.toLowerCase().includes("length"),
+                    ).length > 0 && (
+                        <div className="space-y-3">
+                          <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                            <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                            LENGTH (MM)
+                          </label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {selectedTemplate.dimensions
+                              .filter((dim) =>
+                                dim.key.toLowerCase().includes("length"),
+                              )
+                              .map((dim) => (
+                                <div key={dim.key} className="space-y-2">
+                                  <div className="flex justify-between items-end">
+                                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                      {dim.label || "Length"}
+                                    </label>
+                                    <span className="text-[12px] text-slate-400 font-mono">
+                                      {dim.minRange}mm-{dim.maxRange}mm
+                                    </span>
+                                  </div>
+                                  <div className="relative group">
+                                    <input
+                                      type="number"
+                                      min={dim.minRange}
+                                      max={dim.maxRange}
+                                      value={dimensions[dim.key] || ""}
+                                      onChange={(e) =>
+                                        handleDimensionChange(dim.key, e.target.value)
+                                      }
+                                      className={`${BASE_BOX} ${errors[dim.key]
+                                        ? "border-red-500 focus:border-red-600"
+                                        : "border-slate-200 focus:border-[#7E1800]"
+                                        } outline-none font-semibold text-slate-900`}
+                                      placeholder={`${dim.minRange}`}
+                                    />
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 font-medium">
+                                    Unit: {dim.unit || "MM"}
+                                  </p>
+                                  {errors[dim.key] && (
+                                    <p className="text-[10px] text-red-500 font-medium">
+                                      {errors[dim.key]}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+
+                    <div className="border-t-2 border-[#7E1800]/20 pt-6">
+                      <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+                        {/* Quantity */}
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-700 mb-2">
+                            Quantity
+                          </span>
+                          <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
+                            <button
+                              onClick={() => {
+                                const newQty = Math.max(1, quantity - 1);
+                                setQuantity(newQty);
+                                handleCalculate(newQty, dimensions, thickness, material);
+                              }}
+                              className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
+                            >
+                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">−</div>
+                            </button>
+                            <input
+                              type="number"
+                              value={quantity}
+                              onChange={(e) => {
+                                const newQty = Math.max(
+                                  1,
+                                  parseInt(e.target.value) || 1,
+                                );
+                                setQuantity(newQty);
+                                handleCalculate(newQty, dimensions, thickness, material);
+                              }}
+                              className="w-16 py-3 text-lg font-bold text-center outline-none"
+                            />
+                            <button
+                              onClick={() => {
+                                const newQty = quantity + 1;
+                                setQuantity(newQty);
+                                handleCalculate(newQty, dimensions, thickness, material);
+                              }}
+                              className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
+                            >
+                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">+</div>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Price Breakdown */}
+                        {calculationResult && (
+                          <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-gray-600">Service Price:</span>
+                              <span className="font-semibold text-gray-900">
+                                €{calculationResult.pricing.finalQuote.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
+                              <span className="text-gray-600">Shipping Cost:</span>
+                              <span className="font-semibold text-gray-900">
+                                €{calculationResult.pricing.shippingPrice.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-lg font-bold text-gray-900">
+                                Total Amount:
+                              </span>
+                              <span className="text-2xl font-bold text-[#7E1800]">
+                                €{calculationResult.pricing.finalQuote.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
                         <button
-                          key={t}
-                          onClick={() => setThickness(String(t))}
-                          className={`py-2 rounded-lg border-2 text-xs font-bold transition-all ${
-                            thickness === String(t) ? "border-slate-800 bg-slate-800 text-white" : "border-slate-100 text-slate-400"
-                          }`}
+                          onClick={handleAddToCart}
+                          className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
                         >
-                          {t}
+                          <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                          Add to Cart
                         </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* COLUMN 2: SIZES */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                <div className="flex items-center gap-2 text-slate-800 border-b border-slate-100 pb-3">
-                  <MoveHorizontal className="w-4 h-4" />
-                  <h3 className="text-xs font-black uppercase tracking-wider">Flanges (mm)</h3>
-                </div>
-                <div className="space-y-4">
-                  {selectedTemplate?.dimensions
-                    .filter(d => !d.key.toLowerCase().match(/degree|angle|length/))
-                    .map((dim) => (
-                      <div key={dim.key}>
-                        <div className="flex justify-between mb-1">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase">{dim.label || dim.key}</label>
-                          <span className="text-[9px] text-slate-400 font-mono">{dim.minRange}-{dim.maxRange}</span>
-                        </div>
-                        <input
-                          type="number"
-                          value={dimensions[dim.key] || ""}
-                          onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
-                          className={`${INPUT_STYLE} ${errors[dim.key] ? "border-red-500" : "border-slate-100 focus:border-slate-400 text-slate-800"}`}
-                        />
                       </div>
-                    ))}
-                </div>
-              </div>
-
-              {/* COLUMN 3: ANGLES */}
-              <div className="bg-[#7E1800]/5 p-6 rounded-2xl border border-[#7E1800]/10 shadow-sm space-y-6">
-                <div className="flex items-center gap-2 text-[#7E1800] border-b border-[#7E1800]/10 pb-3">
-                  <CornerDownRight className="w-4 h-4" />
-                  <h3 className="text-xs font-black uppercase tracking-wider">Angles (°)</h3>
-                </div>
-                <div className="space-y-4">
-                  {selectedTemplate?.dimensions
-                    .filter(d => d.key.toLowerCase().match(/degree|angle/))
-                    .map((dim) => (
-                      <div key={dim.key}>
-                        <div className="flex justify-between mb-1">
-                          <label className="text-[10px] font-bold text-[#7E1800]/60 uppercase">{dim.label || dim.key}</label>
-                          <span className="text-[9px] text-[#7E1800]/40 font-mono">{dim.minRange}°-{dim.maxRange}°</span>
-                        </div>
-                        <input
-                          type="number"
-                          value={dimensions[dim.key] || ""}
-                          onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
-                          className={`${INPUT_STYLE} border-[#7E1800]/20 text-[#7E1800] focus:border-[#7E1800] bg-white`}
-                        />
-                      </div>
-                    ))}
-                </div>
-              </div>
-            </div>
-
-            {/* BOTTOM SUMMARY BAR */}
-            <div className="mt-8 bg-slate-900 rounded-2xl p-6 text-white grid grid-cols-1 md:grid-cols-4 gap-6 items-center shadow-xl">
-              <div className="md:col-span-1 border-r border-slate-800">
-                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Total Profile Length</label>
-                {selectedTemplate?.dimensions
-                  .filter(d => d.key.toLowerCase().includes("length"))
-                  .map(dim => (
-                    <div key={dim.key} className="flex items-center gap-2">
-                      <input 
-                        type="number" 
-                        value={dimensions[dim.key] || ""}
-                        onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
-                        className="bg-transparent text-2xl font-black text-white w-24 outline-none border-b border-[#7E1800]"
-                      />
-                      <span className="text-[#7E1800] font-black">MM</span>
                     </div>
-                  ))}
-              </div>
-
-              <div className="md:col-span-1 border-r border-slate-800">
-                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Quantity</label>
-                <div className="flex items-center gap-4">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-slate-400 hover:text-white">－</button>
-                  <span className="text-2xl font-black">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="text-slate-400 hover:text-white">＋</button>
-                </div>
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Estimated Quote</label>
-                <p className="text-2xl font-black text-white">
-                  {calculationResult ? `€${calculationResult.pricing.finalQuote.toFixed(2)}` : "---"}
-                </p>
-              </div>
-
-              <div className="md:col-span-1">
-                <button
-                  onClick={() => {}}
-                  className="w-full bg-[#7E1800] py-3 rounded-xl font-black text-sm hover:bg-[#5a1100] transition-all flex items-center justify-center gap-2"
-                >
-                  <ShoppingCart className="w-4 h-4" /> ADD TO CART
-                </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
