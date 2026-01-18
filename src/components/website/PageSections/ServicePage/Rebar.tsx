@@ -289,10 +289,11 @@ const Rebar = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
-                            ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                            }`}
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
+                            selectedShapeId === shape._id
+                              ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
+                              : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                          }`}
                           title={shape.shapeName}
                         >
                           <Image
@@ -332,10 +333,11 @@ const Rebar = () => {
                           setThickness(String(t));
                           handleCalculate(quantity, dimensions, String(t));
                         }}
-                        className={`py-3 px-2 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${thickness === String(t)
-                          ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
-                          : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
-                          }`}
+                        className={`py-3 px-2 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${
+                          thickness === String(t)
+                            ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
+                        }`}
                       >
                         {t}mm
                       </button>
@@ -394,7 +396,7 @@ const Rebar = () => {
                                     className="flex-1 px-3 py-2 text-center text-sm font-medium focus:outline-none"
                                     placeholder={`${dim.minRange}`}
                                   />
-                                  <span className="px-3 text-xs text-gray-600 font-medium bg-[#7E1800]/5 h-full flex items-center border-l border-[#7E1800]/20">
+                                  <span className="px-3 text-xs text-gray-600 font-medium  h-full flex items-center border-l border-[#7E1800]/20">
                                     {dim.unit || "mm"}
                                   </span>
                                 </div>
@@ -432,7 +434,9 @@ const Rebar = () => {
                           }}
                           className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
                         >
-                          <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">−</div>
+                          <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
+                            −
+                          </div>
                         </button>
                         <input
                           type="number"
@@ -455,7 +459,9 @@ const Rebar = () => {
                           }}
                           className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
                         >
-                          <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">+</div>
+                          <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
+                            +
+                          </div>
                         </button>
                       </div>
                     </div>
@@ -472,7 +478,8 @@ const Rebar = () => {
                         <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
                           <span className="text-gray-600">Shipping Cost:</span>
                           <span className="font-semibold text-gray-900">
-                            €{calculationResult.pricing.shippingPrice.toFixed(2)}
+                            €
+                            {calculationResult.pricing.shippingPrice.toFixed(2)}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -485,7 +492,6 @@ const Rebar = () => {
                         </div>
                       </div>
                     )}
-
                   </div>
 
                   <div className="flex flex-col gap-2">

@@ -49,8 +49,11 @@ export default function ShippingPolicy() {
           <h2 className="text-4xl font-semibold text-gray-900">
             Clear Shipping Rates with No Surprises
           </h2>
-          <p className=" mx-auto text-gray-500 mt-3 max-w-[700px]">
-            Iron is not an easy material to transport, which is why we use different shipping methods depending on the product you select. Below, we detail how our transport policy works in a transparent and visual way.
+          <p className=" text-gray-500 mt-3 w-[900px] mx-auto">
+            Iron is not an easy material to transport, which is why we use
+            different shipping methods depending on the product you select.
+            Below, we detail how our transport policy works in a transparent and
+            visual way.
           </p>
         </header>
 
@@ -74,7 +77,9 @@ export default function ShippingPolicy() {
                       Shipping Method
                     </TableHead>
                     <TableHead className="text-center">Size Limit</TableHead>
-                    <TableHead className="text-center">Starting Price (Min)</TableHead>
+                    <TableHead className="text-center">
+                      Starting Price (Min)
+                    </TableHead>
                     <TableHead className="text-center">Extras</TableHead>
                     <TableHead className="text-right pr-6">
                       Price Cap (Max)
@@ -90,10 +95,11 @@ export default function ShippingPolicy() {
                       <TableCell className="pl-6 py-4">
                         <div className="flex items-center gap-4">
                           <div
-                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${m.type === "truck"
+                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${
+                              m.type === "truck"
                                 ? "bg-blue-50 border-blue-100 text-blue-600"
                                 : "bg-rose-50 border-rose-100 text-rose-600"
-                              }`}
+                            }`}
                           >
                             {m.type === "truck" ? (
                               <Truck className="w-6 h-6" />
@@ -210,7 +216,8 @@ export default function ShippingPolicy() {
               Parcel Shipping Delivered to your doorstep
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              If you are an individual, it is best to adapt the measurements to receive it without any issues.
+              If you are an individual, it is best to adapt the measurements to
+              receive it without any issues.
             </p>
           </Card>
 
@@ -224,7 +231,9 @@ export default function ShippingPolicy() {
               Truck Shipping
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              Depending on your order&apos;s dimensions, it is important to ensure that a truck can access the delivery address without problems.
+              Depending on your order&apos;s dimensions, it is important to
+              ensure that a truck can access the delivery address without
+              problems.
             </p>
           </Card>
 
@@ -238,7 +247,8 @@ export default function ShippingPolicy() {
               No Surprises
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              When you select a product, we will indicate the delivery type and cost at all times.
+              When you select a product, we will indicate the delivery type and
+              cost at all times.
             </p>
           </Card>
         </div>
