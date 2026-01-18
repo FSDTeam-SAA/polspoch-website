@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 
 export default function MostPopularProducts() {
-  const { data, isLoading, isError } = useProducts({ limit: 6 }, true);
+  const { data, isLoading, isError } = useProducts({ limit: 8 }, true);
   const products = data?.data || [];
 
   return (
@@ -22,9 +22,7 @@ export default function MostPopularProducts() {
       <div className="container mx-auto px-4 text-center">
         {/* Title */}
         <div className="mb-12">
-          <h2 className="text-4xl font-semibold text-gray-900">
-            Most Popular Products
-          </h2>
+          <h2 className="text-4xl font-semibold ">Most Popular Products</h2>
           <p className="text-gray-600 mt-2">
             Customize your steel products with our advanced processing and
             fabrication options.
@@ -52,7 +50,7 @@ export default function MostPopularProducts() {
 
         {/* Product Grid */}
         {!isLoading && !isError && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {products.map((p) => (
               <Card
                 key={p._id}

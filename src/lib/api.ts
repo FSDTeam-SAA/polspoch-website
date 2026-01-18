@@ -124,7 +124,7 @@ export type GetProductsParams = {
 };
 
 export async function getProducts(params: GetProductsParams = {}) {
-  const { family, search, page = 1, limit = 10 } = params;
+  const { family, search, page = 1, limit = 8 } = params;
   const query = new URLSearchParams();
   if (page) query.append("page", String(page));
   if (limit) query.append("limit", String(limit));
@@ -133,7 +133,7 @@ export async function getProducts(params: GetProductsParams = {}) {
 
   try {
     const res = await api.get(`/product?${query.toString()}`);
-    console.log("response", res);
+    // console.log("response", res);
     // API returns { success: true, data: [...], total, page, limit }
     return res?.data;
   } catch (err) {
