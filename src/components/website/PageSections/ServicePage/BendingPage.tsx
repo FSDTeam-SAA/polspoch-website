@@ -298,10 +298,11 @@ const BendingPage = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
-                            ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
-                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                            }`}
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
+                            selectedShapeId === shape._id
+                              ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
+                              : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                          }`}
                         >
                           <Image
                             src={shape.imageUrl}
@@ -351,10 +352,11 @@ const BendingPage = () => {
                                 mObj.material,
                               );
                             }}
-                            className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 uppercase ${material === mObj.material
-                              ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                              : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                              }`}
+                            className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 uppercase ${
+                              material === mObj.material
+                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                            }`}
                           >
                             {mObj.material}
                           </button>
@@ -382,10 +384,11 @@ const BendingPage = () => {
                                   material,
                                 );
                               }}
-                              className={`py-3 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${thickness === String(t)
-                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                                }`}
+                              className={`py-3 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${
+                                thickness === String(t)
+                                  ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                  : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                              }`}
                             >
                               {t}mm
                             </button>
@@ -447,7 +450,6 @@ const BendingPage = () => {
                     </div> */}
                     {/* MAIN CONTAINER */}
                     <div className="space-y-8">
-
                       {/* 1. SIZES SECTION (MM) - Standard Brand Color */}
                       <div className="space-y-3">
                         <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
@@ -456,7 +458,9 @@ const BendingPage = () => {
                         </label>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                           {selectedTemplate.dimensions
-                            .filter((dim) => dim.unit === "MM" && dim.key !== "L")
+                            .filter(
+                              (dim) => dim.unit === "MM" && dim.key !== "L",
+                            )
                             .map((dim) => (
                               <div key={dim.key} className="space-y-2">
                                 <label className="block text-xs font-semibold text-slate-600 uppercase">
@@ -465,7 +469,12 @@ const BendingPage = () => {
                                 <input
                                   type="number"
                                   value={dimensions[dim.key] || ""}
-                                  onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
+                                  onChange={(e) =>
+                                    handleDimensionChange(
+                                      dim.key,
+                                      e.target.value,
+                                    )
+                                  }
                                   className={`${BASE_BOX} border-slate-200 focus:border-[#7E1800] outline-none font-semibold`}
                                   placeholder={dim.minRange.toString()}
                                 />
@@ -476,23 +485,36 @@ const BendingPage = () => {
 
                       {/* 2. ANGLES SECTION (Angle A-B, B-C) - Blue Color */}
                       <div className="space-y-3">
-                        <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
+                        <label className="block text-sm font-bold uppercase tracking-wide flex items-center gap-2">
                           <div className="w-1.5 h-6 bg-[#7E1800]"></div>
                           ANGLES (°)
                         </label>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                           {selectedTemplate.dimensions
-                            .filter((dim) => dim.unit === "º" || dim.key.startsWith("D"))
+                            .filter(
+                              (dim) =>
+                                dim.unit === "º" || dim.key.startsWith("D"),
+                            )
                             .map((dim) => (
                               <div key={dim.key} className="space-y-2">
-                                <label className="block text-xs font-semibold text-[#7E1800] uppercase">
-                                  {dim.label}
-                                </label>
+                                <div className="flex justify-between items-end">
+                                  <label className="block text-xs font-semibold  uppercase">
+                                    {dim.label}
+                                  </label>
+                                  <span className="text-[12px] text-slate-400 font-mono">
+                                    {dim.minRange}mm-{dim.maxRange}mm
+                                  </span>
+                                </div>
                                 <input
                                   type="number"
                                   value={dimensions[dim.key] || ""}
-                                  onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
-                                  className={`${BASE_BOX} border-[#7E1800] focus:[#7E1800] bg-[#7E1800]/30 text-[#7E1800] outline-none font-semibold`}
+                                  onChange={(e) =>
+                                    handleDimensionChange(
+                                      dim.key,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className={`${BASE_BOX}  outline-none font-semibold`}
                                   placeholder={dim.minRange.toString()}
                                 />
                               </div>
@@ -502,28 +524,43 @@ const BendingPage = () => {
 
                       {/* 3. LENGTH SECTION - Green Color */}
                       <div className="space-y-3">
-                        <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
+                        <label className="block text-sm font-bold  uppercase tracking-wide flex items-center gap-2">
                           <div className="w-1.5 h-6 bg-[#7E1800]"></div>
                           TOTAL LENGTH
                         </label>
-                        {selectedTemplate.dimensions
-                          .filter((dim) => dim.key === "L")
-                          .map((dim) => (
-                            <div key={dim.key} className="relative group">
-                              <input
-                                type="number"
-                                value={dimensions[dim.key] || ""}
-                                onChange={(e) => handleDimensionChange(dim.key, e.target.value)}
-                                className={`${BASE_BOX} border-[#7E1800] focus:border-[#7E1800] bg-gray/30 text-[#7E1800] outline-none font-bold text-lg`}
-                                placeholder={dim.minRange.toString()}
-                              />
-                              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[#7E1800] font-bold text-xs">
-                                {dim.unit}
-                              </div>
-                            </div>
-                          ))}
-                      </div>
 
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                          {selectedTemplate.dimensions
+                            .filter((dim) => dim.key === "L")
+                            .map((dim) => (
+                              <div key={dim.key} className="relative group">
+                                <div className="flex justify-between items-end mb-2">
+                                  <label className="block text-xs font-semibold  uppercase">
+                                    {dim.label}
+                                  </label>
+                                  <span className="text-[12px] text-slate-400 font-mono">
+                                    {dim.minRange}mm-{dim.maxRange}mm
+                                  </span>
+                                </div>
+                                <input
+                                  type="number"
+                                  value={dimensions[dim.key] || ""}
+                                  onChange={(e) =>
+                                    handleDimensionChange(
+                                      dim.key,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className={`${BASE_BOX}  bg-gray/30  outline-none font-bold text-lg`}
+                                  placeholder={dim.minRange.toString()}
+                                />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2  font-bold text-xs">
+                                  {dim.unit}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
                     </div>
 
                     {/* ANGLES Section */}
@@ -532,111 +569,119 @@ const BendingPage = () => {
                         dim.key.toLowerCase().includes("degree") ||
                         dim.key.toLowerCase().includes("angle"),
                     ).length > 0 && (
-                        <div className="space-y-3 bg-[#7E1800]/5 p-4 rounded-xl border border-[#7E1800]/20">
-                          <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
-                            <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                            ANGLES (°)
-                          </label>
-                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                            {selectedTemplate.dimensions
-                              .filter(
-                                (dim) =>
-                                  dim.key.toLowerCase().includes("degree") ||
-                                  dim.key.toLowerCase().includes("angle"),
-                              )
-                              .map((dim) => (
-                                <div key={dim.key} className="space-y-2">
-                                  <div className="flex justify-between items-end">
-                                    <label className="block text-xs font-semibold text-[#7E1800] uppercase tracking-wider">
-                                      {dim.label || dim.key}
-                                    </label>
-                                    <span className="text-[12px] text-gray/60 font-mono">
-                                      {dim.minRange}°-{dim.maxRange}°
-                                    </span>
-                                  </div>
-                                  <div className="relative group">
-                                    <input
-                                      type="number"
-                                      min={dim.minRange}
-                                      max={dim.maxRange}
-                                      value={dimensions[dim.key] || ""}
-                                      onChange={(e) =>
-                                        handleDimensionChange(dim.key, e.target.value)
-                                      }
-                                      className={`${BASE_BOX} ${errors[dim.key]
+                      <div className="space-y-3 bg-[#7E1800]/5 p-4 rounded-xl border border-[#7E1800]/20">
+                        <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
+                          <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                          ANGLES (°)
+                        </label>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                          {selectedTemplate.dimensions
+                            .filter(
+                              (dim) =>
+                                dim.key.toLowerCase().includes("degree") ||
+                                dim.key.toLowerCase().includes("angle"),
+                            )
+                            .map((dim) => (
+                              <div key={dim.key} className="space-y-2">
+                                <div className="flex justify-between items-end">
+                                  <label className="block text-xs font-semibold text-[#7E1800] uppercase tracking-wider">
+                                    {dim.label || dim.key}
+                                  </label>
+                                  <span className="text-[12px] text-gray/60 font-mono">
+                                    {dim.minRange}°-{dim.maxRange}°
+                                  </span>
+                                </div>
+                                <div className="relative group">
+                                  <input
+                                    type="number"
+                                    min={dim.minRange}
+                                    max={dim.maxRange}
+                                    value={dimensions[dim.key] || ""}
+                                    onChange={(e) =>
+                                      handleDimensionChange(
+                                        dim.key,
+                                        e.target.value,
+                                      )
+                                    }
+                                    className={`${BASE_BOX} ${
+                                      errors[dim.key]
                                         ? "border-red-500 focus:border-red-600"
                                         : "border-[#7E1800]/30 focus:border-[#7E1800]  text-[#7E1800] outline-none font-bold text-lg"
-                                        } outline-none font-semibold text-slate-900`}
-                                      placeholder={`${dim.minRange}`}
-                                    />
-                                  </div>
-                                  <p className="text-[10px] text-gray/70 font-medium">
-                                    Unit: {dim.unit || "°"}
-                                  </p>
-                                  {errors[dim.key] && (
-                                    <p className="text-[10px] text-red-500 font-medium">
-                                      {errors[dim.key]}
-                                    </p>
-                                  )}
+                                    } outline-none font-semibold text-slate-900`}
+                                    placeholder={`${dim.minRange}`}
+                                  />
                                 </div>
-                              ))}
-                          </div>
+                                <p className="text-[10px] text-gray/70 font-medium">
+                                  Unit: {dim.unit || "°"}
+                                </p>
+                                {errors[dim.key] && (
+                                  <p className="text-[10px] text-red-500 font-medium">
+                                    {errors[dim.key]}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
                     {/* LENGTH Section */}
                     {selectedTemplate.dimensions.filter((dim) =>
                       dim.key.toLowerCase().includes("length"),
                     ).length > 0 && (
-                        <div className="space-y-3">
-                          <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                            <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                            LENGTH (MM)
-                          </label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {selectedTemplate.dimensions
-                              .filter((dim) =>
-                                dim.key.toLowerCase().includes("length"),
-                              )
-                              .map((dim) => (
-                                <div key={dim.key} className="space-y-2">
-                                  <div className="flex justify-between items-end">
-                                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                      {dim.label || "Length"}
-                                    </label>
-                                    <span className="text-[12px] text-slate-400 font-mono">
-                                      {dim.minRange}mm-{dim.maxRange}mm
-                                    </span>
-                                  </div>
-                                  <div className="relative group">
-                                    <input
-                                      type="number"
-                                      min={dim.minRange}
-                                      max={dim.maxRange}
-                                      value={dimensions[dim.key] || ""}
-                                      onChange={(e) =>
-                                        handleDimensionChange(dim.key, e.target.value)
-                                      }
-                                      className={`${BASE_BOX} ${errors[dim.key]
+                      <div className="space-y-3">
+                        <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                          <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                          LENGTH (MM)
+                        </label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {selectedTemplate.dimensions
+                            .filter((dim) =>
+                              dim.key.toLowerCase().includes("length"),
+                            )
+                            .map((dim) => (
+                              <div key={dim.key} className="space-y-2">
+                                <div className="flex justify-between items-end">
+                                  <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                    {dim.label || "Length"}
+                                  </label>
+                                  <span className="text-[12px] text-slate-400 font-mono">
+                                    {dim.minRange}mm-{dim.maxRange}mm
+                                  </span>
+                                </div>
+                                <div className="relative group">
+                                  <input
+                                    type="number"
+                                    min={dim.minRange}
+                                    max={dim.maxRange}
+                                    value={dimensions[dim.key] || ""}
+                                    onChange={(e) =>
+                                      handleDimensionChange(
+                                        dim.key,
+                                        e.target.value,
+                                      )
+                                    }
+                                    className={`${BASE_BOX} ${
+                                      errors[dim.key]
                                         ? "border-red-500 focus:border-red-600"
                                         : "border-slate-200 focus:border-[#7E1800]"
-                                        } outline-none font-semibold text-slate-900`}
-                                      placeholder={`${dim.minRange}`}
-                                    />
-                                  </div>
-                                  <p className="text-[10px] text-slate-500 font-medium">
-                                    Unit: {dim.unit || "MM"}
-                                  </p>
-                                  {errors[dim.key] && (
-                                    <p className="text-[10px] text-red-500 font-medium">
-                                      {errors[dim.key]}
-                                    </p>
-                                  )}
+                                    } outline-none font-semibold text-slate-900`}
+                                    placeholder={`${dim.minRange}`}
+                                  />
                                 </div>
-                              ))}
-                          </div>
+                                <p className="text-[10px] text-slate-500 font-medium">
+                                  Unit: {dim.unit || "MM"}
+                                </p>
+                                {errors[dim.key] && (
+                                  <p className="text-[10px] text-red-500 font-medium">
+                                    {errors[dim.key]}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
                     <div className="border-t-2 border-[#7E1800]/20 pt-6">
                       <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
@@ -650,11 +695,18 @@ const BendingPage = () => {
                               onClick={() => {
                                 const newQty = Math.max(1, quantity - 1);
                                 setQuantity(newQty);
-                                handleCalculate(newQty, dimensions, thickness, material);
+                                handleCalculate(
+                                  newQty,
+                                  dimensions,
+                                  thickness,
+                                  material,
+                                );
                               }}
                               className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
                             >
-                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">−</div>
+                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
+                                −
+                              </div>
                             </button>
                             <input
                               type="number"
@@ -665,7 +717,12 @@ const BendingPage = () => {
                                   parseInt(e.target.value) || 1,
                                 );
                                 setQuantity(newQty);
-                                handleCalculate(newQty, dimensions, thickness, material);
+                                handleCalculate(
+                                  newQty,
+                                  dimensions,
+                                  thickness,
+                                  material,
+                                );
                               }}
                               className="w-16 py-3 text-lg font-bold text-center outline-none"
                             />
@@ -673,11 +730,18 @@ const BendingPage = () => {
                               onClick={() => {
                                 const newQty = quantity + 1;
                                 setQuantity(newQty);
-                                handleCalculate(newQty, dimensions, thickness, material);
+                                handleCalculate(
+                                  newQty,
+                                  dimensions,
+                                  thickness,
+                                  material,
+                                );
                               }}
                               className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
                             >
-                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">+</div>
+                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
+                                +
+                              </div>
                             </button>
                           </div>
                         </div>
@@ -686,15 +750,25 @@ const BendingPage = () => {
                         {calculationResult && (
                           <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
                             <div className="flex justify-between text-sm mb-2">
-                              <span className="text-gray-600">Service Price:</span>
+                              <span className="text-gray-600">
+                                Service Price:
+                              </span>
                               <span className="font-semibold text-gray-900">
-                                €{calculationResult.pricing.finalQuote.toFixed(2)}
+                                €
+                                {calculationResult.pricing.finalQuote.toFixed(
+                                  2,
+                                )}
                               </span>
                             </div>
                             <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
-                              <span className="text-gray-600">Shipping Cost:</span>
+                              <span className="text-gray-600">
+                                Shipping Cost:
+                              </span>
                               <span className="font-semibold text-gray-900">
-                                €{calculationResult.pricing.shippingPrice.toFixed(2)}
+                                €
+                                {calculationResult.pricing.shippingPrice.toFixed(
+                                  2,
+                                )}
                               </span>
                             </div>
                             <div className="flex justify-between items-center">
@@ -702,7 +776,10 @@ const BendingPage = () => {
                                 Total Amount:
                               </span>
                               <span className="text-2xl font-bold text-[#7E1800]">
-                                €{calculationResult.pricing.finalQuote.toFixed(2)}
+                                €
+                                {calculationResult.pricing.finalQuote.toFixed(
+                                  2,
+                                )}
                               </span>
                             </div>
                           </div>
