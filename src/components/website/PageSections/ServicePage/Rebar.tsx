@@ -470,9 +470,21 @@ const Rebar = () => {
                     {calculationResult && (
                       <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
                         <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">Total Weight:</span>
+                          <span className="font-semibold text-gray-900">
+                            {calculationResult.summary.totalWeight.toFixed(2)} kg
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">Price Per Unit:</span>
+                          <span className="font-semibold text-gray-900">
+                            €{calculationResult.pricing.pricePerUnit.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm mb-2">
                           <span className="text-gray-600">Service Price:</span>
                           <span className="font-semibold text-gray-900">
-                            €{calculationResult.pricing.finalQuote.toFixed(2)}
+                            €{calculationResult.pricing.productPrice.toFixed(2)}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">

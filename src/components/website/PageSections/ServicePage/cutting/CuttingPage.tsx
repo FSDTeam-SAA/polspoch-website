@@ -308,11 +308,10 @@ const CuttingPage = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
-                            selectedShapeId === shape._id
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
                               ? "border-[#7E1800] bg-white shadow-lg ring-4 ring-[#7E1800]/5"
                               : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                          }`}
+                            }`}
                         >
                           <Image
                             src={shape.imageUrl}
@@ -363,11 +362,10 @@ const CuttingPage = () => {
                                 );
                               }
                             }}
-                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${
-                              material === mObj.material
+                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${material === mObj.material
                                 ? "border-[#7E1800] bg-[#7E1800] text-white shadow-xl transform scale-[1.02]"
                                 : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                            }`}
+                              }`}
                           >
                             {mObj.material}
                           </button>
@@ -395,11 +393,10 @@ const CuttingPage = () => {
                                   String(t),
                                 );
                               }}
-                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${
-                                thickness === String(t)
+                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${thickness === String(t)
                                   ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
                                   : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                              }`}
+                                }`}
                             >
                               {t}mm
                             </button>
@@ -433,11 +430,10 @@ const CuttingPage = () => {
                                 onChange={(e) =>
                                   handleDimensionChange(dim.key, e.target.value)
                                 }
-                                className={`${BASE_BOX} pr-12 outline-none font-bold text-slate-900 ${
-                                  errors[dim.key]
+                                className={`${BASE_BOX} pr-12 outline-none font-bold text-slate-900 ${errors[dim.key]
                                     ? "border-red-500 focus:border-red-600 ring-4 ring-red-100"
                                     : "border-slate-200 focus:border-[#7E1800] ring-4 ring-[#7E1800]/5"
-                                }`}
+                                  }`}
                                 placeholder={`${dim.minRange}`}
                               />
                               <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs font-bold text-slate-400 group-hover:text-[#7E1800] transition-colors">
@@ -519,9 +515,21 @@ const CuttingPage = () => {
                     {calculationResult && (
                       <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
                         <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">Total Weight:</span>
+                          <span className="font-semibold text-gray-900">
+                            {calculationResult.summary.totalWeight.toFixed(2)} kg
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">Price Per Unit:</span>
+                          <span className="font-semibold text-gray-900">
+                            €{calculationResult.pricing.pricePerUnit.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm mb-2">
                           <span className="text-gray-600">Service Price:</span>
                           <span className="font-semibold text-gray-900">
-                            €{calculationResult.pricing.finalQuote.toFixed(2)}
+                            €{calculationResult.pricing.productPrice.toFixed(2)}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
