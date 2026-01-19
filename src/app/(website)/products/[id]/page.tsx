@@ -1,4 +1,4 @@
-import Newsletter from "@/components/ReusableSection/Newsletter";
+// import Newsletter from "@/components/ReusableSection/Newsletter";
 import Review from "@/components/ReusableSection/Review";
 import WorkingProcess from "@/components/ReusableSection/WorkingProcess";
 import ProductDetails from "@/components/website/PageSections/ProductsPage/ProductDetails";
@@ -10,7 +10,7 @@ export default function page() {
       <ProductDetails />
       <WorkingProcess />
       <Review />
-      <Newsletter />
+      {/* <Newsletter /> */}
     </div>
   );
 }
