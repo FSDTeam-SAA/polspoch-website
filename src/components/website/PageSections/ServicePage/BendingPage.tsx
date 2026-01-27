@@ -48,24 +48,23 @@ const BendingPage = () => {
         material: currentMaterial,
         thickness: Number(currentThickness),
         units: currentQuantity,
-        length: 1000, // Default as per example
-        numBends:
-          selectedTemplate.dimensions.filter((d) =>
-            d.key.toLowerCase().includes("degree"),
-          ).length || 1,
+        length: currentDimensions['L'] || 1000,
+        numBends: selectedTemplate.bend || 1,
       };
 
-      // Map dimensions and degrees sequentially based on key
+      // Map dimensions and degrees sequentially based on unit
       let sizeIdx = 1;
       let degreeIdx = 1;
 
       const alphabeticalKeys = ["A", "B", "C", "D", "E", "F"];
 
       selectedTemplate.dimensions.forEach((dim) => {
-        if (dim.key.toLowerCase().includes("degree")) {
+        // Check unit instead of key name - angles have unit "º"
+        if (dim.unit === "º") {
           payload[`degree${degreeIdx}`] = currentDimensions[dim.key] || 0;
           degreeIdx++;
-        } else {
+        } else if (dim.key !== 'L') {
+          // Exclude length dimension - it's already in the length field
           const char =
             alphabeticalKeys[sizeIdx - 1] || String.fromCharCode(64 + sizeIdx);
           payload[`size${char}`] = currentDimensions[dim.key] || 0;
@@ -299,8 +298,8 @@ const BendingPage = () => {
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
                           className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
-                              ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
-                              : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                            ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
                             }`}
                         >
                           <Image
@@ -352,8 +351,8 @@ const BendingPage = () => {
                               );
                             }}
                             className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 uppercase ${material === mObj.material
-                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                              ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                              : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
                               }`}
                           >
                             {mObj.material}
@@ -383,8 +382,8 @@ const BendingPage = () => {
                                 );
                               }}
                               className={`py-3 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${thickness === String(t)
-                                  ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                  : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
                                 }`}
                             >
                               {t}mm
@@ -601,8 +600,8 @@ const BendingPage = () => {
                                         )
                                       }
                                       className={`${BASE_BOX} ${errors[dim.key]
-                                          ? "border-red-500 focus:border-red-600"
-                                          : "border-[#7E1800]/30 focus:border-[#7E1800]  text-[#7E1800] outline-none font-bold text-lg"
+                                        ? "border-red-500 focus:border-red-600"
+                                        : "border-[#7E1800]/30 focus:border-[#7E1800]  text-[#7E1800] outline-none font-bold text-lg"
                                         } outline-none font-semibold text-slate-900`}
                                       placeholder={`${dim.minRange}`}
                                     />
@@ -658,8 +657,8 @@ const BendingPage = () => {
                                         )
                                       }
                                       className={`${BASE_BOX} ${errors[dim.key]
-                                          ? "border-red-500 focus:border-red-600"
-                                          : "border-slate-200 focus:border-[#7E1800]"
+                                        ? "border-red-500 focus:border-red-600"
+                                        : "border-slate-200 focus:border-[#7E1800]"
                                         } outline-none font-semibold text-slate-900`}
                                       placeholder={`${dim.minRange}`}
                                     />
