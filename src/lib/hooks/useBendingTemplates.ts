@@ -23,6 +23,7 @@ export interface BendingTemplate {
   templateId: string;
   shapeName: string;
   imageUrl: string;
+  bend: number;
   materials: BendingMaterial[];
   dimensions: BendingDimension[];
 }
