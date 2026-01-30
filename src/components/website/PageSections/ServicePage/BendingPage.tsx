@@ -459,9 +459,14 @@ const BendingPage = () => {
                             )
                             .map((dim) => (
                               <div key={dim.key} className="space-y-2">
-                                <label className="block text-xs font-semibold text-slate-600 uppercase">
-                                  {dim.label}
-                                </label>
+                                <div className="flex justify-between items-end">
+                                  <label className="block text-xs font-semibold text-slate-600 uppercase">
+                                    {dim.label}
+                                  </label>
+                                  <span className="text-[12px] text-slate-400 font-mono">
+                                    {dim.minRange}mm-{dim.maxRange}mm
+                                  </span>
+                                </div>
                                 <input
                                   type="number"
                                   value={dimensions[dim.key] || ""}
@@ -471,9 +476,17 @@ const BendingPage = () => {
                                       e.target.value,
                                     )
                                   }
-                                  className={`${BASE_BOX} border-slate-200 focus:border-[#7E1800] outline-none font-semibold`}
+                                  className={`${BASE_BOX} ${errors[dim.key]
+                                      ? "border-red-500 focus:border-red-600"
+                                      : "border-slate-200 focus:border-[#7E1800]"
+                                    } outline-none font-semibold text-slate-900`}
                                   placeholder={dim.minRange.toString()}
                                 />
+                                {errors[dim.key] && (
+                                  <p className="text-[10px] text-red-500 font-medium">
+                                    {errors[dim.key]}
+                                  </p>
+                                )}
                               </div>
                             ))}
                         </div>
@@ -489,7 +502,7 @@ const BendingPage = () => {
                           {selectedTemplate.dimensions
                             .filter(
                               (dim) =>
-                                dim.unit === "º" || dim.key.startsWith("D"),
+                                dim.unit === "º",
                             )
                             .map((dim) => (
                               <div key={dim.key} className="space-y-2">
@@ -510,9 +523,17 @@ const BendingPage = () => {
                                       e.target.value,
                                     )
                                   }
-                                  className={`${BASE_BOX}  outline-none font-semibold`}
+                                  className={`${BASE_BOX} ${errors[dim.key]
+                                      ? "border-red-500 focus:border-red-600"
+                                      : "border-slate-200 focus:border-[#7E1800]"
+                                    } outline-none font-semibold text-slate-900`}
                                   placeholder={dim.minRange.toString()}
                                 />
+                                {errors[dim.key] && (
+                                  <p className="text-[10px] text-red-500 font-medium">
+                                    {errors[dim.key]}
+                                  </p>
+                                )}
                               </div>
                             ))}
                         </div>
@@ -547,10 +568,18 @@ const BendingPage = () => {
                                       e.target.value,
                                     )
                                   }
-                                  className={`${BASE_BOX}  bg-gray/30  outline-none font-bold text-lg`}
+                                  className={`${BASE_BOX} ${errors[dim.key]
+                                      ? "border-red-500 focus:border-red-600"
+                                      : "border-slate-200 focus:border-[#7E1800]"
+                                    } bg-gray/30 outline-none font-bold text-lg text-slate-900`}
                                   placeholder={dim.minRange.toString()}
                                 />
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2  font-bold text-xs">
+                                {errors[dim.key] && (
+                                  <p className="text-[10px] text-red-500 font-medium">
+                                    {errors[dim.key]}
+                                  </p>
+                                )}
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-xs">
                                   {dim.unit}
                                 </div>
                               </div>
@@ -558,124 +587,6 @@ const BendingPage = () => {
                         </div>
                       </div>
                     </div>
-
-                    {/* ANGLES Section */}
-                    {selectedTemplate.dimensions.filter(
-                      (dim) =>
-                        dim.key.toLowerCase().includes("degree") ||
-                        dim.key.toLowerCase().includes("angle"),
-                    ).length > 0 && (
-                        <div className="space-y-3 bg-[#7E1800]/5 p-4 rounded-xl border border-[#7E1800]/20">
-                          <label className="block text-sm font-bold text-[#7E1800] uppercase tracking-wide flex items-center gap-2">
-                            <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                            ANGLES (°)
-                          </label>
-                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                            {selectedTemplate.dimensions
-                              .filter(
-                                (dim) =>
-                                  dim.key.toLowerCase().includes("degree") ||
-                                  dim.key.toLowerCase().includes("angle"),
-                              )
-                              .map((dim) => (
-                                <div key={dim.key} className="space-y-2">
-                                  <div className="flex justify-between items-end">
-                                    <label className="block text-xs font-semibold text-[#7E1800] uppercase tracking-wider">
-                                      {dim.label || dim.key}
-                                    </label>
-                                    <span className="text-[12px] text-gray/60 font-mono">
-                                      {dim.minRange}°-{dim.maxRange}°
-                                    </span>
-                                  </div>
-                                  <div className="relative group">
-                                    <input
-                                      type="number"
-                                      min={dim.minRange}
-                                      max={dim.maxRange}
-                                      value={dimensions[dim.key] || ""}
-                                      onChange={(e) =>
-                                        handleDimensionChange(
-                                          dim.key,
-                                          e.target.value,
-                                        )
-                                      }
-                                      className={`${BASE_BOX} ${errors[dim.key]
-                                        ? "border-red-500 focus:border-red-600"
-                                        : "border-[#7E1800]/30 focus:border-[#7E1800]  text-[#7E1800] outline-none font-bold text-lg"
-                                        } outline-none font-semibold text-slate-900`}
-                                      placeholder={`${dim.minRange}`}
-                                    />
-                                  </div>
-                                  <p className="text-[10px] text-gray/70 font-medium">
-                                    Unit: {dim.unit || "°"}
-                                  </p>
-                                  {errors[dim.key] && (
-                                    <p className="text-[10px] text-red-500 font-medium">
-                                      {errors[dim.key]}
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      )}
-
-                    {/* LENGTH Section */}
-                    {selectedTemplate.dimensions.filter((dim) =>
-                      dim.key.toLowerCase().includes("length"),
-                    ).length > 0 && (
-                        <div className="space-y-3">
-                          <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                            <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                            LENGTH (MM)
-                          </label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {selectedTemplate.dimensions
-                              .filter((dim) =>
-                                dim.key.toLowerCase().includes("length"),
-                              )
-                              .map((dim) => (
-                                <div key={dim.key} className="space-y-2">
-                                  <div className="flex justify-between items-end">
-                                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                      {dim.label || "Length"}
-                                    </label>
-                                    <span className="text-[12px] text-slate-400 font-mono">
-                                      {dim.minRange}mm-{dim.maxRange}mm
-                                    </span>
-                                  </div>
-                                  <div className="relative group">
-                                    <input
-                                      type="number"
-                                      min={dim.minRange}
-                                      max={dim.maxRange}
-                                      value={dimensions[dim.key] || ""}
-                                      onChange={(e) =>
-                                        handleDimensionChange(
-                                          dim.key,
-                                          e.target.value,
-                                        )
-                                      }
-                                      className={`${BASE_BOX} ${errors[dim.key]
-                                        ? "border-red-500 focus:border-red-600"
-                                        : "border-slate-200 focus:border-[#7E1800]"
-                                        } outline-none font-semibold text-slate-900`}
-                                      placeholder={`${dim.minRange}`}
-                                    />
-                                  </div>
-                                  <p className="text-[10px] text-slate-500 font-medium">
-                                    Unit: {dim.unit || "MM"}
-                                  </p>
-                                  {errors[dim.key] && (
-                                    <p className="text-[10px] text-red-500 font-medium">
-                                      {errors[dim.key]}
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      )}
 
                     <div className="border-t-2 border-[#7E1800]/20 pt-6">
                       <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
