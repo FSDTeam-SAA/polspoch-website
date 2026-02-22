@@ -7,27 +7,24 @@ import Link from "next/link";
 export default function OurServices() {
   const services = [
     {
-      title: "Corte Chapa Plasma",
-      subtitle:
-        "Corte de alta precisión con control CNC de chapas de acero a medida de 1,5 a 100 mm de forma intuitiva",
+      title: "Corte Chapa CNC",
+      subtitle: "Dibuja la chapa y nosotros la cortamos",
       btn: "Calcular Precios",
       img: "/images/REBAR-FACILITES.png",
       icon: Ruler,
       href: "/services/cutting",
     },
     {
-      title: "Plegado de chapa",
-      subtitle:
-        "Doblado de chapas a medida; selecciona plantillas, ángulos y dimensiones para crear tus remates",
+      title: "Plegado de Chapa",
+      subtitle: "Diseña tu cortado y plegado",
       btn: "Calcular Precios",
       img: "/images/BENDING-PRODUCT.png",
       icon: Settings,
       href: "/services/bending",
     },
     {
-      title: "Ferralla Elaborada",
-      subtitle:
-        "Recibe el acero corrugado cortado y doblado listo para armar; estribos, negativos, arranques, todo listo para montar en obra",
+      title: "Ferralla",
+      subtitle: "Elaboramos la ferralla a medida",
       btn: "Calcular Precios",
       img: "/images/REBAR-DETAIL.png",
       icon: Box,
@@ -44,7 +41,9 @@ export default function OurServices() {
             ¡Lleva tu proyecto a otro nivel con nuestros servicios!
           </h2>
           <p className="text-white">
-            Aprovecha todos nuestros servicios de transformación de productos metalúrgicos de una forma rápida y sencilla. Selecciona el servicio, escoge la plantilla, introduce las medidas y recíbelo en casa
+            Aprovecha todos nuestros servicios de transformación de productos
+            metalúrgicos de una forma rápida y sencilla. Selecciona el servicio,
+            escoge la plantilla, introduce las medidas y recíbelo en casa
           </p>
         </div>
 
