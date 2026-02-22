@@ -16,25 +16,25 @@ const SHIPPING_METHODS = [
   {
     id: "courier",
     type: "courier",
-    label: "Courier",
-    eta: "2-4 business days",
-    sizeLimit: "Length < 2500 mm",
+    label: "Paquetería",
+    eta: "2-4 días laborables",
+    sizeLimit: "Largo < 2500 MM",
     price: "15 €",
     extras: [
-      "Weight: +0.50€ per kg (over 30kg)",
-      "Oversize: +20€ (if ≥ 2000 mm)",
+      "Peso: +0.50€ por kg (más de 30kg)",
+      "Tamaño: +20€ (si ≥ 2000 mm)",
     ],
-    priceCap: "150 €",
+    priceCap: "60 €",
   },
   {
     id: "truck",
     type: "truck",
-    label: "Truck",
-    eta: "3-6 business days",
-    sizeLimit: "No Limit",
+    label: "Camión Grúa",
+    eta: "3-6 días laborables",
+    sizeLimit: "Largo < 6000MM",
     price: "60 €",
-    extras: ["Weight: +10€ per 500kg (over 1000kg)"],
-    priceCap: "150 €",
+    extras: ["SIN EXTRAS"],
+    priceCap: "",
   },
 ];
 
@@ -47,13 +47,10 @@ export default function ShippingPolicy() {
       <div className="max-w-[1200px] mx-auto px-6">
         <header className="text-center mb-8">
           <h2 className="text-4xl font-semibold text-gray-900">
-            Clear Shipping Rates with No Surprises
+            Tarifas de Envío Claras y Sin Sorpresas
           </h2>
           <p className=" text-gray-500 mt-3 w-[900px] mx-auto">
-            Iron is not an easy material to transport, which is why we use
-            different shipping methods depending on the product you select.
-            Below, we detail how our transport policy works in a transparent and
-            visual way.
+            El hierro no es un material sencillo de transportar, por esto usamos distintos métodos de envío según el producto que selecciones. A continuación, te detallamos de forma transparente y visual cómo funciona nuestra política de transporte
           </p>
         </header>
 
@@ -61,10 +58,10 @@ export default function ShippingPolicy() {
         <Card className="overflow-hidden py-0! rounded-2xl">
           <div className="bg-[rgb(105,23,7)] px-6 py-6 text-white">
             <h3 className="text-lg font-semibold">
-              Shipping Methods Comparison
+              Comparativa de los métodos de envío
             </h3>
             <p className=" text-orange-100/80 mt-1">
-              Shipment rate without surprises
+              Tarifa de envío clara y sin sorpresas
             </p>
           </div>
 
@@ -74,15 +71,15 @@ export default function ShippingPolicy() {
                 <TableHeader className="bg-slate-50/50 dark:bg-slate-900/50">
                   <TableRow>
                     <TableHead className="pl-6 w-[250px]">
-                      Shipping Method
+                      Método de envío
                     </TableHead>
-                    <TableHead className="text-center">Size Limit</TableHead>
+                    <TableHead className="text-center">Límite de medidas</TableHead>
                     <TableHead className="text-center">
-                      Starting Price (Min)
+                      Precio inicial (Min)
                     </TableHead>
                     <TableHead className="text-center">Extras</TableHead>
                     <TableHead className="text-right pr-6">
-                      Price Cap (Max)
+                      Tope Precio (Max)
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -95,11 +92,10 @@ export default function ShippingPolicy() {
                       <TableCell className="pl-6 py-4">
                         <div className="flex items-center gap-4">
                           <div
-                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${
-                              m.type === "truck"
-                                ? "bg-blue-50 border-blue-100 text-blue-600"
-                                : "bg-rose-50 border-rose-100 text-rose-600"
-                            }`}
+                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${m.type === "truck"
+                              ? "bg-blue-50 border-blue-100 text-blue-600"
+                              : "bg-rose-50 border-rose-100 text-rose-600"
+                              }`}
                           >
                             {m.type === "truck" ? (
                               <Truck className="w-6 h-6" />
@@ -138,7 +134,7 @@ export default function ShippingPolicy() {
                       <TableCell className="text-right pr-6">
                         {m.priceCap ? (
                           <span className="text-lg font-bold text-slate-900">
-                            {m.priceCap}
+                            {m.priceCap} €
                           </span>
                         ) : (
                           <span className="text-slate-400">-</span>
@@ -213,11 +209,10 @@ export default function ShippingPolicy() {
               </div>
             </div>
             <h4 className="font-semibold text-slate-900 dark:text-white">
-              Parcel Shipping Delivered to your doorstep
+              Envío por paquetería (Opción recomendada)
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              If you are an individual, it is best to adapt the measurements to
-              receive it without any issues.
+              Para los pedidos con todas las medidas inferiores a 2.500 mm (2,5 mts). Entregado a la puerta de tu casa, sin ningún problema. ¡Adapta las medidas para simplificar la entrega!
             </p>
           </Card>
 
@@ -228,12 +223,10 @@ export default function ShippingPolicy() {
               </div>
             </div>
             <h4 className="font-semibold text-slate-900 dark:text-white">
-              Truck Shipping
+              Envío con camión
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              Depending on your order&apos;s dimensions, it is important to
-              ensure that a truck can access the delivery address without
-              problems.
+              Para los materiales con medidas superiores a 2.500 mm (2,5 mts). Es importante que asegures que en la dirección de entrega puede acceder un camión sin problema
             </p>
           </Card>
 
@@ -244,11 +237,10 @@ export default function ShippingPolicy() {
               </div>
             </div>
             <h4 className="font-semibold text-slate-900 dark:text-white">
-              No Surprises
+              Sin sorpresas
             </h4>
             <p className="text-sm text-slate-500 mt-2">
-              When you select a product, we will indicate the delivery type and
-              cost at all times.
+              Cuando selecciones un producto, te indicaremos en todo momento el tipo de entrega y el importe
             </p>
           </Card>
         </div>

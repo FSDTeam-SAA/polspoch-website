@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
 export default function Review() {
@@ -13,56 +13,49 @@ export default function Review() {
     text: string;
     rating: number;
   }[] = [
-    {
-      image: "/images/review1.jpg",
-      name: "Michael R.",
-      location: "Phoenix, AZ",
-      text: `“We’ve been sourcing steel beams from HierroMarket for over a year now, and the consistency has been outstanding. The team is quick to respond, transparent about pricing, and always delivers on time. It’s rare to find a supplier this reliable.”`,
-      rating: 5,
-    },
-    {
-      image: "/images/review1.jpg",
-      name: "Sarah Thompson",
-      location: "Los Angeles, CA",
-      text: `“I reached out with a last-minute order and was honestly expecting delays, but HierroMarket exceeded our expectations. Not only did they fulfill the request, they helped us pick the right grade of steel for our project. Amazing customer service!”`,
-      rating: 5,
-    },
-    {
-      image: "/images/review1.jpg",
-      name: "James P.",
-      location: "San Diego, CA",
-      text: `“What really stands out is their level of professionalism. The products are always high-quality, and the team is extremely knowledgeable. They explain everything clearly—even for someone like me who isn’t a metal expert.”`,
-      rating: 5,
-    },
-    {
-      image: "/images/review1.jpg",
-      name: "Vanessa G.",
-      location: "San Francisco, CA",
-      text: `“We switched suppliers after ongoing issues elsewhere, and I’m so glad we did. HierroMarket made the transition easy, sent updates throughout delivery, and ensured every detail matched our order. Truly a company that cares about its customers.”`,
-      rating: 5,
-    },
-    {
-      image: "/images/review1.jpg",
-      name: "Luis Martinez",
-      location: "Austin, TX",
-      text: `“I run a small fabrication shop, and finding trustworthy suppliers is tough. HierroMarket has been a game-changer for us—fair prices, excellent quality steel, and no hidden surprises. Highly recommended.”`,
-      rating: 5,
-    },
-    {
-      image: "/images/review1.jpg",
-      name: "Rebecca L.",
-      location: "Seattle, WA",
-      text: `“From inquiry to delivery, everything was smooth and efficient. The support team answered all my questions and helped ensure the materials matched our engineering requirements. I’ll definitely be ordering again.”`,
-      rating: 5,
-    },
-    {
-      image: "/images/review1.jpg",
-      name: "Daniel Kim",
-      location: "Denver, CO",
-      text: `“Top-notch service. The order arrived faster than expected, packaging was secure, and the steel quality was excellent. It’s refreshing to work with a company that consistently goes above and beyond.”`,
-      rating: 5,
-    },
-  ];
+      {
+        name: "Jorge M.",
+        location: "Madrid",
+        text: "“Medidas exactas, ni un milímetro de error. Pedí unos perfiles estructurales para una estantería de diseño que estoy montando y me preocupaba que el corte no fuera limpio. Para mi sorpresa, las piezas venían cortadas al milímetro y sin rebabas. El configurador de la web es muy intuitivo. Repetiré seguro para el próximo proyecto.”",
+        rating: 5,
+        image: "/images/review1.jpg",
+      },
+      {
+        name: "Anónimo",
+        location: "",
+        text: "“Embalaje robusto y envío rápido. Era la primera vez que compraba hierro por internet y me daba un poco de respeto el tema del transporte por el peso y el volumen. El paquete llegó súper bien flejado y protegido en las esquinas. El repartidor fue muy amable y me ayudó a dejarlo en el garaje. Un 10 en logística.”",
+        rating: 5,
+        image: "/images/review1.jpg",
+      },
+      {
+        name: "Ismael Hoyos",
+        location: "Toledo",
+        text: "“Un poco más caro que en almacén, pero merece la pena. Estuve dudando por el precio comparado con el almacén de mi zona, pero la comodidad de recibirlo en casa cortado a la medida exacta compensa totalmente. El material es de primera, aunque eso sí, avisados quedáis: las piezas vienen con la grasa protectora típica del hierro y te manchas un poco al desembalar. Le quito una estrella porque el transportista no me avisó antes de llegar, pero por el producto no tengo ninguna queja, volveré a comprar.”",
+        rating: 4,
+        image: "/images/review1.jpg",
+      },
+      {
+        name: "Iker",
+        location: "Bilbao",
+        text: "“Te ahorra una vida de vueltas por almacenes. Lo mejor es no tener que ir con el coche a un almacén de metales a que te miren raro por pedir tres cortes pequeños. Aquí lo pides un domingo desde el sofá y te llega a casa listo para soldar. Para los que hacemos proyectos pequeños en casa, esta web es un descubrimiento.”",
+        rating: 5,
+        image: "/images/review1.jpg",
+      },
+      {
+        name: "David G.",
+        location: "Barcelona",
+        text: "“Hierro de verdad, no lo que encuentras en grandes superficies. Necesitaba una pletina gruesa para reforzar un dintel y la calidad del acero es muy superior a lo que venden en los Leroy o similares. Se nota que es material profesional. Le pongo 4 estrellas solo porque tardó un día más de lo previsto, pero la atención al cliente por WhatsApp me resolvió la duda al momento.”",
+        rating: 4,
+        image: "/images/review1.jpg",
+      },
+      {
+        name: "Elena V.",
+        location: "Valencia",
+        text: "“Perfecto para mi proyecto de exterior. Encargué unas chapas cortadas a medida para hacer unas jardineras industriales en el jardín. El acabado es impecable, muy limpio”",
+        rating: 5,
+        image: "/images/review1.jpg",
+      },
+    ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [itemsPerView, setItemsPerView] = useState(3);
@@ -103,18 +96,17 @@ export default function Review() {
           className="object-cover object-center"
           priority
         />
-        <div className="absolute inset-0 bg-black/40"></div>{" "}
-        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/40"></div>
       </div>
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto">
         <h2 className="text-3xl font-semibold text-white mb-2">
-          What Our Clients Say
+          ¿Que opinan nuestros clientes?
         </h2>
         <p className="text-gray-200 mb-10 max-w-3xl mx-auto">
-          Hear from businesses and customers who trust HierroMarket for quality
-          steel products and services.
+          Descubre por qué particulares y profesionales confían en nosotros para
+          sus proyectos de hierro y acero
         </p>
 
         {/* Slider */}
@@ -122,7 +114,8 @@ export default function Review() {
           <div
             className="flex gap-6"
             style={{
-              transform: `translateX(calc(-${(currentIndex * 100) / itemsPerView}% - ${currentIndex * 24}px))`,
+              transform: `translateX(calc(-${(currentIndex * 100) / itemsPerView
+                }% - ${currentIndex * 24}px))`,
               transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
@@ -131,51 +124,36 @@ export default function Review() {
                 key={i}
                 className="shrink-0 max-w-4xl rounded-2xl shadow-md border my-3 border-gray-100 hover:shadow-sm transition-all duration-300"
                 style={{
-                  width: `calc((100% - ${(itemsPerView - 1) * 24}px) / ${itemsPerView})`,
+                  width: `calc((100% - ${(itemsPerView - 1) * 24
+                    }px) / ${itemsPerView})`,
                 }}
               >
-                <CardContent className="text-left flex flex-col h-full justify-start">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center rounded-full gap-3">
-                      {t.image ? (
-                        <Image
-                          src={t.image}
-                          alt={t.name}
-                          width={72}
-                          height={72}
-                          className="w-25 h-25 rounded-full overflow-hidden flex-shrink-0 object-cover"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center p-12 object-cover text-4xl  bg-red-500 text-white rounded-full font-medium">
-                          {t.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-semibold text-gray-800 mb-2">
-                          {t.name}
-                        </p>
-                        {/* {t.location && (
-                          <p className="text-sm text-gray-500">{t.location}</p>
-                        )} */}
-                        <p className="text-gray-600 italic text-sm leading-relaxed">
-                          {t.text}
-                        </p>
+                <CardContent className="text-left flex flex-col h-full justify-start p-6">
+                  <div className="flex items-center gap-3">
+                    {t.image ? (
+                      <Image
+                        src={t.image}
+                        alt={t.name}
+                        width={72}
+                        height={72}
+                        className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-16 h-16 object-cover text-2xl bg-red-500 text-white rounded-full font-medium">
+                        {t.name?.charAt(0).toUpperCase()}
                       </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-gray-800">{t.name}</p>
+                      {t.location && (
+                        <p className="text-sm text-gray-500">{t.location}</p>
+                      )}
                     </div>
-
-                    {/* <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, idx) => (
-                        <Star
-                          key={idx}
-                          size={16}
-                          className={`${
-                            idx < t.rating
-                              ? "text-yellow-400 fill-yellow-400"
-                              : "text-gray-300"
-                          } transition-all duration-200`}
-                        />
-                      ))}
-                    </div> */}
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-gray-600 italic text-sm leading-relaxed">
+                      {t.text}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -190,11 +168,10 @@ export default function Review() {
             size="icon"
             variant="ghost"
             disabled={currentIndex === 0}
-            className={`rounded-full w-10 h-10 transition-all duration-200 hover:scale-110 ${
-              currentIndex === 0
+            className={`rounded-full w-10 h-10 transition-all duration-200 hover:scale-110 ${currentIndex === 0
                 ? " bg-white opacity-40 cursor-not-allowed"
                 : "hover:bg-[#7E1800] cursor-pointer"
-            }`}
+              }`}
           >
             <ChevronLeft className="text-white w-5 h-5" />
           </Button>
@@ -207,9 +184,8 @@ export default function Review() {
                 <button
                   key={idx}
                   onClick={() => setCurrentIndex(Math.min(idx, maxIndex))}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    isActive ? "bg-gray-700 w-8" : "bg-gray-300 w-2.5"
-                  }`}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${isActive ? "bg-gray-700 w-8" : "bg-gray-300 w-2.5"
+                    }`}
                 ></button>
               );
             })}
@@ -220,11 +196,10 @@ export default function Review() {
             size="icon"
             variant="ghost"
             disabled={currentIndex === maxIndex}
-            className={`rounded-full w-10 h-10 transition-all duration-200 hover:scale-110 ${
-              currentIndex === maxIndex
+            className={`rounded-full w-10 h-10 transition-all duration-200 hover:scale-110 ${currentIndex === maxIndex
                 ? " bg-white opacity-40 cursor-not-allowed"
                 : "hover:bg-[#7E1800] cursor-pointer"
-            }`}
+              }`}
           >
             <ChevronRight className="text-white w-5 h-5" />
           </Button>

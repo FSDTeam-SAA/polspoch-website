@@ -4,9 +4,9 @@ import Navbar from "@/components/website/Common/Navbar";
 import Footer from "@/components/website/Common/Footer";
 
 export const metadata: Metadata = {
-    title: "Hierro A Medida",
+  title: "Comprar Hierro a Medida Online | Tubos, Vigas y Chapas | Hierroamedida.com",
   description:
-    "Design amazing digital experiences that create more happy in the world.",
+    "Tu almacén de hierro digital en España. Compra tubos, vigas, chapas y pletinas con corte a medida exacto. Venta a particulares sin pedido mínimo y envío a domicilio.",
 };
 
 export default function RootLayout({
