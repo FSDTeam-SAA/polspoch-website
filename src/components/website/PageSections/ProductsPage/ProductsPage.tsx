@@ -8,9 +8,9 @@ export default function ProductsPage() {
     <div>
       {/* Products Page Content */}
       <HeadingText
-        subHeading="All Products"
-        heading="Explore Our Product Range"
-        description="Discover high-quality iron and steel materials built for durability, precision, and industrial performance."
+        subHeading="Todos los productos"
+        heading="Descubre nuestro catálogo de Hierro y Acero"
+        description="Tu Almacén de Hierro Online: Encuentra la mayor variedad de tubos, vigas, chapas o perfiles, todo con corte personalizado. Selecciona la categoría de producto para filtrar la búsqueda"
         align="center"
       />
       <Suspense

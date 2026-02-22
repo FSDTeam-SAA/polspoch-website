@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import HeadingText from "./HeadingText";
 
 export default function MostPopularProducts() {
   const { data, isLoading, isError } = useProducts({ limit: 8 }, true);
@@ -21,13 +22,20 @@ export default function MostPopularProducts() {
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4 text-center">
         {/* Title */}
-        <div className="mb-12">
+        {/* <div className="mb-12">
           <h2 className="text-4xl font-semibold ">Most Popular Products</h2>
           <p className="text-gray-600 mt-2">
             Customize your steel products with our advanced processing and
             fabrication options.
           </p>
-        </div>
+        </div> */}
+
+        <HeadingText
+          subHeading="Todos los productos"
+          heading="Descubre nuestro catálogo de Hierro y Acero"
+          description="Tu Almacén de Hierro Online: Encuentra la mayor variedad de tubos, vigas, chapas o perfiles, todo con corte personalizado. Selecciona la categoría de producto para filtrar la búsqueda"
+          align="center"
+        />
 
         {/* Loading State */}
         {isLoading && (

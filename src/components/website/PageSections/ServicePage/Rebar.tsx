@@ -154,10 +154,6 @@ const Rebar = () => {
     }
   };
 
-  const getGridClass = () => {
-    return "col-span-6 md:col-span-3";
-  };
-
   const handleAddToCart = () => {
     if (!calculationResult) {
       toast.error("Please calculate dimensions first");
@@ -189,39 +185,37 @@ const Rebar = () => {
     "w-full h-12 px-3 box-border rounded-xl border-2 flex items-center transition-all duration-300";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-slate-100">
       <div className="container mx-auto px-4 py-12">
         {/* Header Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#7E1800]/10 rounded-full mb-4">
             <Sparkles className="w-4 h-4 text-[#7E1800]" />
             <span className="text-sm font-semibold text-[#7E1800]">
-              Premium Steel
+              Suministro de Ferralla Premium
             </span>
           </div>
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
-            Design Your Custom Metal Profile
+          <h1 className="text-5xl font-bold mb-4 bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
+            Ferralla a Medida
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Configure your perfect metal profile with real-time visualization.
-            Choose from various shapes, materials, and dimensions.
+            Elaboramos la ferralla a medida conforme a tus necesidades técnicas.
+            Selecciona el tipo de ferralla y configura sus dimensiones.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT: SVG Visualization */}
           <div className="lg:col-span-6">
-            {/* Main Visualization Card */}
             <div className="sticky top-28 ">
-              <div className="relative group h-full">
-                <div className="absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
-                <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col">
+              <div className="relative group">
+                <div className="relative h-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-xl flex flex-col min-h-[500px]">
                   <div className="absolute top-4 right-4 z-10">
                     <div className="px-4 py-2 rounded-lg bg-[#7E1800] text-white text-sm font-semibold shadow-lg uppercase">
-                      {material || "Material"}
+                      {material || "Acero Corrugado"}
                     </div>
                   </div>
-                  <div className="relative w-full flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 min-h-[520px]">
+                  <div className="relative w-full flex-1 flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 min-h-[520px]">
                     {/* Grid Background */}
                     <svg
                       className="absolute inset-0 w-full h-full"
@@ -257,8 +251,9 @@ const Rebar = () => {
                           priority
                         />
                       ) : (
-                        <div className="text-slate-400 font-medium">
-                          Select a shape to visualize
+                        <div className="text-slate-400 font-medium text-center">
+                          <div className="text-6xl mb-4">⚒️</div>
+                          Selecciona una forma para visualizar
                         </div>
                       )}
                     </div>
@@ -266,22 +261,21 @@ const Rebar = () => {
                 </div>
               </div>
             </div>
-            {/* Old Grid Was Here, Moving to Right Side */}
           </div>
 
           {/* RIGHT: Configuration Panel */}
           <div className="lg:col-span-6">
             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 h-full flex flex-col">
               <div className="space-y-6 flex-1">
-                {/* 1. Shape Selection (Moved Here) */}
+                {/* 1. Shape Selection */}
                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                   <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                     <Zap className="w-5 h-5 text-[#7E1800]" />
-                    Select Shape
+                    Selecciona plantilla
                   </h3>
                   {isLoading ? (
                     <div className="text-center py-4 text-slate-500">
-                      Loading templates...
+                      Cargando plantillas...
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 gap-3">
@@ -299,15 +293,15 @@ const Rebar = () => {
                           <Image
                             src={shape.imageUrl}
                             alt={shape.shapeName}
-                            width={48}
-                            height={48}
-                            className="w-12 h-12 object-contain mb-1 opacity-80 group-hover:opacity-100 transition-opacity"
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 object-contain mb-1 opacity-80 group-hover:opacity-100 transition-opacity"
                           />
-                          <span className="text-[10px] font-bold text-slate-600 text-center leading-tight line-clamp-2">
+                          <span className="text-[10px] font-bold text-slate-600 text-center leading-tight line-clamp-2 uppercase">
                             {shape.shapeName}
                           </span>
                           {selectedShapeId === shape._id && (
-                            <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center animate-bounce shadow">
+                            <div className="absolute top-1 right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center shadow">
                               <span className="text-white text-[10px] font-bold">
                                 ✓
                               </span>
@@ -319,203 +313,216 @@ const Rebar = () => {
                   )}
                 </div>
 
-                {/* 3. Thickness Selection */}
-                <div className="space-y-3">
-                  <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                    <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                    DIAMETER (MM)
-                  </label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {selectedTemplate?.availableDiameters.map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => {
-                          setThickness(String(t));
-                          handleCalculate(quantity, dimensions, String(t));
-                        }}
-                        className={`py-3 px-2 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${
-                          thickness === String(t)
-                            ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
-                        }`}
-                      >
-                        {t}mm
-                      </button>
-                    ))}
-                    {!selectedTemplate && (
-                      <p className="text-sm text-slate-400">
-                        Select a shape first
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* 4. Dimensions Grid */}
                 {selectedTemplate && (
-                  <div className="space-y-3">
-                    <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                      <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                      SIZES (MM)
-                    </label>
-                    <div className="grid grid-cols-12 gap-4">
-                      {selectedTemplate.dimensions.map((dim) => (
-                        <div
-                          key={dim.key}
-                          className={`space-y-2 ${getGridClass()}`}
-                        >
-                          <div className="flex justify-between items-end">
-                            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                              {dim.label || `Size ${dim.key}`}
-                            </label>
-                            <span className="text-[12px] text-slate-400 font-mono">
-                              {dim.minRange}mm-{dim.maxRange}mm
-                            </span>
-                          </div>
+                  <>
+                    {/* 3. Thickness Selection (Diameter for Rebar) */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                        <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                        DIÁMETRO (MM)
+                      </label>
+                      <div className="grid grid-cols-5 gap-2">
+                        {selectedTemplate.availableDiameters.map((t) => (
+                          <button
+                            key={t}
+                            onClick={() => {
+                              setThickness(String(t));
+                              handleCalculate(quantity, dimensions, String(t));
+                            }}
+                            className={`py-3 px-2 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${
+                              thickness === String(t)
+                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg scale-105"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30 hover:shadow-md"
+                            }`}
+                          >
+                            {t}mm
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                          <div className="relative group">
-                            {dim.isCalculated ? (
-                              <div
-                                className={`${BASE_BOX} border-slate-100 bg-slate-50 text-slate-500 font-mono text-sm`}
-                              >
-                                Calculated
-                              </div>
-                            ) : (
-                              <div className="space-y-2">
-                                <div className="flex items-center border border-[#7E1800]/20 rounded-lg bg-white overflow-hidden focus-within:border-[#7E1800] transition-colors">
-                                  <input
-                                    type="number"
-                                    min={dim.minRange}
-                                    max={dim.maxRange}
-                                    value={dimensions[dim.key] || ""}
-                                    onChange={(e) =>
-                                      handleDimensionChange(
-                                        dim.key,
-                                        e.target.value,
-                                      )
-                                    }
-                                    className="flex-1 px-3 py-2 text-center text-sm font-medium focus:outline-none"
-                                    placeholder={`${dim.minRange}`}
-                                  />
-                                  <span className="px-3 text-xs text-gray-600 font-medium  h-full flex items-center border-l border-[#7E1800]/20">
-                                    {dim.unit || "mm"}
-                                  </span>
+                    {/* 4. Dimensions Grid */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                        <div className="w-1.5 h-6 bg-[#7E1800]"></div>
+                        MEDIDAS (MM)
+                      </label>
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        {selectedTemplate.dimensions.map((dim) => (
+                          <div key={dim.key} className="space-y-2">
+                            <div className="flex justify-between items-end">
+                              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                {dim.label || `Medida ${dim.key}`}
+                              </label>
+                              <span className="text-[12px] text-slate-400 font-mono">
+                                {dim.minRange}mm-{dim.maxRange}mm
+                              </span>
+                            </div>
+
+                            <div className="relative group">
+                              {dim.isCalculated ? (
+                                <div
+                                  className={`${BASE_BOX} border-slate-100 bg-slate-50 text-slate-500 font-mono text-sm`}
+                                >
+                                  Calculado
                                 </div>
-                                {/* <div className="text-[10px] text-gray-500 whitespace-nowrap text-center">
-                                  Range: {dim.minRange}mm - {dim.maxRange}mm
-                                </div> */}
-                              </div>
+                              ) : (
+                                <div className="space-y-2">
+                                  <div className="flex items-center border border-[#7E1800]/20 rounded-lg bg-white overflow-hidden focus-within:border-[#7E1800] transition-colors">
+                                    <input
+                                      type="number"
+                                      min={dim.minRange}
+                                      max={dim.maxRange}
+                                      value={dimensions[dim.key] || ""}
+                                      onChange={(e) =>
+                                        handleDimensionChange(
+                                          dim.key,
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="flex-1 px-3 py-2 text-center text-sm font-medium focus:outline-none"
+                                      placeholder={`${dim.minRange}`}
+                                    />
+                                    <span className="px-3 text-xs text-slate-600 font-medium h-full flex items-center border-l border-[#7E1800]/20">
+                                      {dim.unit || "mm"}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            {errors[dim.key] && (
+                              <p className="text-[10px] text-red-500 font-medium italic">
+                                {errors[dim.key]}
+                              </p>
                             )}
                           </div>
-                          {errors[dim.key] && (
-                            <p className="text-xs text-red-500 font-medium animate-pulse">
-                              {errors[dim.key]}
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+
+                    {/* Quantity & Price Section */}
+                    <div className="border-t-2 border-[#7E1800]/20 pt-6">
+                      <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+                        {/* Quantity */}
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-slate-700 mb-2">
+                            Cantidad
+                          </span>
+                          <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
+                            <button
+                              onClick={() => {
+                                const newQty = Math.max(1, quantity - 1);
+                                setQuantity(newQty);
+                                handleCalculate(newQty);
+                              }}
+                              className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
+                            >
+                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
+                                −
+                              </div>
+                            </button>
+                            <input
+                              type="number"
+                              value={quantity}
+                              onChange={(e) => {
+                                const newQty = Math.max(
+                                  1,
+                                  parseInt(e.target.value) || 1,
+                                );
+                                setQuantity(newQty);
+                                handleCalculate(newQty);
+                              }}
+                              className="w-16 py-3 text-lg font-bold text-center outline-none"
+                            />
+                            <button
+                              onClick={() => {
+                                const newQty = quantity + 1;
+                                setQuantity(newQty);
+                                handleCalculate(newQty);
+                              }}
+                              className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
+                            >
+                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
+                                +
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Price Breakdown */}
+                        {calculationResult && (
+                          <div className="flex-1 bg-linear-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-slate-600">
+                                Peso Total:
+                              </span>
+                              <span className="font-semibold text-slate-900">
+                                {calculationResult.summary.totalWeight.toFixed(
+                                  2,
+                                )}{" "}
+                                kg
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-slate-600">
+                                Precio por Unidad:
+                              </span>
+                              <span className="font-semibold text-slate-900">
+                                €
+                                {calculationResult.pricing.pricePerUnit.toFixed(
+                                  2,
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-slate-600">
+                                Precio del Servicio:
+                              </span>
+                              <span className="font-semibold text-slate-900">
+                                €
+                                {calculationResult.pricing.productPrice.toFixed(
+                                  2,
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
+                              <span className="text-slate-600">
+                                Gastos de Envío:
+                              </span>
+                              <span className="font-semibold text-slate-900">
+                                €
+                                {calculationResult.pricing.shippingPrice.toFixed(
+                                  2,
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-lg font-bold text-slate-900">
+                                Total:
+                              </span>
+                              <span className="text-2xl font-bold text-[#7E1800]">
+                                €
+                                {calculationResult.pricing.finalQuote.toFixed(
+                                  2,
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={handleAddToCart}
+                          className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all bg-linear-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                        >
+                          <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                          Añadir al carrito
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
-
-                {/* Quantity & Price Section */}
-                <div className="border-t-2 border-[#7E1800]/20 pt-6">
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
-                    {/* Quantity */}
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-gray-700 mb-2">
-                        Quantity
-                      </span>
-                      <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
-                        <button
-                          onClick={() => {
-                            const newQty = Math.max(1, quantity - 1);
-                            setQuantity(newQty);
-                            handleCalculate(newQty);
-                          }}
-                          className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
-                        >
-                          <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
-                            −
-                          </div>
-                        </button>
-                        <input
-                          type="number"
-                          value={quantity}
-                          onChange={(e) => {
-                            const newQty = Math.max(
-                              1,
-                              parseInt(e.target.value) || 1,
-                            );
-                            setQuantity(newQty);
-                            handleCalculate(newQty);
-                          }}
-                          className="w-16 py-3 text-lg font-bold text-center outline-none"
-                        />
-                        <button
-                          onClick={() => {
-                            const newQty = quantity + 1;
-                            setQuantity(newQty);
-                            handleCalculate(newQty);
-                          }}
-                          className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
-                        >
-                          <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
-                            +
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Price Breakdown */}
-                    {calculationResult && (
-                      <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600">Total Weight:</span>
-                          <span className="font-semibold text-gray-900">
-                            {calculationResult.summary.totalWeight.toFixed(2)} kg
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600">Price Per Unit:</span>
-                          <span className="font-semibold text-gray-900">
-                            €{calculationResult.pricing.pricePerUnit.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600">Service Price:</span>
-                          <span className="font-semibold text-gray-900">
-                            €{calculationResult.pricing.productPrice.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
-                          <span className="text-gray-600">Shipping Cost:</span>
-                          <span className="font-semibold text-gray-900">
-                            €
-                            {calculationResult.pricing.shippingPrice.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-lg font-bold text-gray-900">
-                            Total Amount:
-                          </span>
-                          <span className="text-2xl font-bold text-[#7E1800]">
-                            €{calculationResult.pricing.finalQuote.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={handleAddToCart}
-                      className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-                    >
-                      <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

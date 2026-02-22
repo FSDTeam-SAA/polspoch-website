@@ -124,9 +124,9 @@ export type GetProductsParams = {
 };
 
 export async function getProducts(params: GetProductsParams = {}) {
-  const { family, search, page = 1, limit = 8 } = params;
+  const { family, search, page, limit } = params;
   const query = new URLSearchParams();
-  if (page) query.append("page", String(page));
+  // if (page) query.append("page", String(page));
   if (limit) query.append("limit", String(limit));
   if (family) query.append("family", family);
   if (search) query.append("search", search);
