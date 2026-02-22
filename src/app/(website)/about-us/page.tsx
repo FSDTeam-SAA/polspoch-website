@@ -9,9 +9,9 @@ export default function page() {
   return (
     <div>
       <HeadingText
-        subHeading="About Us"
-        heading="Who We Are"
-        description="Delivering premium iron and steel products with precision, innovation, and a commitment to excellence for B2C and B2B customers."
+        subHeading="Sobre Nosotros"
+        heading="Quiénes Somos: Tu Socio en Suministro y Transformación de Hierro y Aceros"
+        description="Proveemos soluciones integrales con una amplia gama de productos de hierro y acero. Combinamos precisión, maquinaria CNC y un compromiso total con la excelencia para clientes industriales (B2B) y particulares (B2C) en toda la península"
         align="center"
       />
       <AboutInfo />

@@ -1,227 +1,218 @@
-// import React from 'react'
-
-// const TermsConditions = () => {
-//   return (
-//     <div>
-//       <div className="w-full bg-white py-12 px-4">
-//         <div className="max-w-4xl mx-auto text-gray-800">
-//           <section className="space-y-4">
-//             <p>
-//               These Terms and Conditions ("Terms") govern your use of our
-//               service. By accessing or using our service, you agree to be bound
-//               by these Terms. If you disagree with any part of the terms, then
-//               you may not access the service.
-//             </p>
-//             <p>
-//               We reserve the right to modify or replace these Terms at any time.
-//               It is your responsibility to check the Terms periodically for
-//               changes. Your continued use of the service after any changes to
-//               the Terms constitutes acceptance of those changes.
-//             </p>
-//           </section>
-
-//           {/* ---------------------------------------- */}
-//           <section className="mt-10">
-//             <h2 className="text-2xl font-semibold mb-4">Use of Service</h2>
-//             <p>
-//               You agree to use the service only for lawful purposes and in a way
-//               that does not infringe the rights of, restrict, or inhibit anyone else's use
-//               and enjoyment of the service.
-//             </p>
-//             <p>
-//               Prohibited behavior includes harassing or causing distress or
-//               inconvenience to any other user, transmitting obscene or offensive
-//               content, or disrupting the normal flow of dialogue within the
-//               service.
-//             </p>
-//           </section>
-
-//           {/* ---------------------------------------- */}
-//           <section className="mt-10">
-//             <h2 className="text-2xl font-semibold mb-4">Intellectual Property</h2>
-//             <p>
-//               All content included on the service, such as text, graphics,
-//               logos, images, and software, is the property of the service owner
-//               or its content suppliers and is protected by international copyright
-//               laws.
-//             </p>
-//             <p>
-//               You may not reproduce, distribute, modify, create derivative works
-//               of, publicly display, publicly perform, republish, download,
-//               store, or transmit any of the material on our service without our
-//               prior written consent.
-//             </p>
-//           </section>
-//           {/* ---------------------------------------- */}
-//           <section className="mt-10">
-//             <h2 className="text-2xl font-semibold mb-4">Limitation of Liability</h2>
-//             <p>
-//               In no event shall the service owner, nor its directors, employees,
-//               partners, agents, suppliers, or affiliates, be liable for any
-//               indirect, incidental, special, consequential or punitive damages,
-//               including without limitation, loss of profits, data, use, goodwill,
-//               or other intangible losses, resulting from (i) your access to or
-//               use of or inability to access or use the service; (ii) any conduct
-//               or content of any third party on the service; (iii) any content
-//               obtained from the service; and (iv) unauthorized access, use or
-//               alteration of your transmissions or content, whether based on
-//               warranty, contract, tort (including negligence) or any other legal
-//               theory, whether or not we have been informed of the possibility of
-//               such damage.
-//             </p>
-//           </section>
-
-//           {/* ---------------------------------------- */}
-//           <section className="mt-10">
-//             <h2 className="text-2xl font-semibold mb-4">Governing Law</h2>
-//             <p>
-//               These Terms shall be governed and construed in accordance with the
-//               laws of [Your Country/State], without regard to its conflict of law
-//               provisions.
-//             </p>
-//             <p>
-//               Our failure to enforce any right or provision of these Terms will
-//               not be considered a waiver of those rights. If any provision of
-//               these Terms is held to be invalid or unenforceable by a court, the
-//               remaining provisions of these Terms will remain in effect.
-//             </p>
-//           </section>
-
-//           {/* ---------------------------------------- */}
-//           <section className="mt-10">
-//             <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
-//             <p>
-//               If you have any questions about these Terms, please contact us at
-//               example@example.com.
-              
-
-//             </p>
-//           </section>  
-
-
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-// export default TermsConditions
-
-import React from "react";
-
+"use client";
 const TermsConditions = () => {
   return (
     <div className="w-full bg-white py-12 px-4">
       <div className="max-w-4xl mx-auto text-gray-800">
-        
-        {/* Intro */}
+        <h1 className="text-3xl font-bold mb-8">
+          Términos y Condiciones Generales de Venta
+        </h1>
+
+        {/* 1. Información General y Objeto */}
         <section className="space-y-4">
+          <h2 className="text-2xl font-semibold mb-4">
+            1. Información General y Objeto
+          </h2>
           <p>
-            These Terms and Conditions (“Terms”) govern your use of this website
-            and any services, products, or information provided by our steel
-            corporation (“Service”). By accessing or using the Service, you agree
-            to be bound by these Terms. If you do not agree with any part of the
-            Terms, please discontinue use of the Service immediately.
-          </p>
-          <p>
-            We may update or modify these Terms from time to time. It is your
-            responsibility to review the Terms periodically. Continued use of the
-            Service following any changes constitutes acceptance of the updated
-            Terms.
-          </p>
-        </section>
-
-        {/* Use of Service */}
-        <section className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4">Use of Service</h2>
-          <p>
-            You agree to use the Service for lawful and legitimate purposes
-            related to steel products, industrial inquiries, or general business
-            communication. You may not misuse the Service or engage in behavior
-            that disrupts normal operations.
-          </p>
-          <p>
-            Prohibited actions include, but are not limited to: providing false
-            information when submitting inquiries or orders, attempting
-            unauthorized access to our systems, transmitting harmful content, or
-            interfering with any industrial or logistical process associated with
-            the Service.
+            Las presentes Condiciones Generales de Venta regulan la compra de
+            productos a través del sitio web Hierroamedida.com, operado por
+            FERROS POCH SA (en adelante, el &quot;Vendedor&quot; o
+            &quot;Hierroamedida.com&quot;), con domicilio en Av. de les Puntes,
+            Esquina Calle Grecia, Polígono Industrial de Constantí (Tarragona).
+            La realización de cualquier pedido en Hierroamedida.com implica la
+            aceptación expresa, plena y sin reservas de la totalidad de los
+            presentes Términos y Condiciones.
           </p>
         </section>
 
-        {/* Product and Service Information */}
+        {/* 2. Proceso de Compra y Precios */}
         <section className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4">Product & Service Information</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            2. Proceso de Compra y Precios
+          </h2>
           <p>
-            All information regarding steel products, specifications, pricing,
-            availability, and services is provided for general guidance only.
-            Actual product characteristics may vary based on manufacturing
-            processes, raw materials, and industry standards.
-          </p>
-          <p>
-            We reserve the right to modify product specifications, pricing, or
-            availability without prior notice.
+            Todos los precios indicados en la página web se muestran en euros
+            (€) y detallan los impuestos aplicables (IVA) en el resumen final de
+            la compra, antes de proceder al pago. Los costes de envío se
+            calculan y se muestran de forma desglosada antes de la confirmación
+            del pedido. Hierroamedida.com se reserva el derecho de modificar sus
+            precios en cualquier momento, pero los productos se facturarán sobre
+            la base de las tarifas en vigor en el momento de registrar el
+            pedido.
           </p>
         </section>
 
-        {/* Intellectual Property */}
+        {/* 3. Política de Envíos y Condiciones de Entrega */}
         <section className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4">Intellectual Property</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            3. Política de Envíos y Condiciones de Entrega
+          </h2>
           <p>
-            All content on this website—including product descriptions, technical
-            information, images, branding elements, and digital assets—is
-            protected by applicable intellectual property laws. Unauthorized use,
-            reproduction, or distribution of any materials is strictly
-            prohibited.
+            El método de envío y las condiciones de entrega aplicables
+            dependerán de la longitud máxima de los productos adquiridos:
+          </p>
+          <ul className="list-disc pl-5 mt-4 space-y-4">
+            <li>
+              <strong>
+                3.1. Envíos mediante Mensajería (Longitud inferior a 2.500 mm):
+              </strong>{" "}
+              Para aquellos pedidos donde todas las piezas tengan una longitud
+              inferior a 2.500 mm, la entrega se realizará a través de empresas
+              de mensajería o paquetería estándar. En estos casos, los plazos,
+              intentos de entrega y operativas se regirán por las condiciones
+              generales de la empresa de transporte contratada.
+            </li>
+            <li>
+              <strong>
+                3.2. Envíos mediante Camión (Longitud igual o superior a 2.500
+                mm):
+              </strong>{" "}
+              Para pedidos que incluyan piezas con una longitud igual o superior
+              a 2.500 mm, la entrega se realizará mediante transporte pesado por
+              motivos de seguridad y volumen. Estas entregas están sujetas a las
+              siguientes condiciones estrictas:
+              <ul className="list-disc pl-5 mt-2 space-y-2">
+                <li>
+                  <strong>Requisitos de acceso:</strong> Las entregas se
+                  efectúan con un camión rígido de 3 ejes (medidas aproximadas:
+                  10 metros de longitud, 2,55 metros de ancho y 4 metros de
+                  altura).
+                </li>
+                <li>
+                  <strong>Responsabilidad de acceso:</strong> Es responsabilidad
+                  exclusiva del cliente asegurarse de que la dirección de
+                  entrega facilitada sea accesible para un vehículo de estas
+                  dimensiones (calles asfaltadas, sin restricciones de tonelaje,
+                  sin giros imposibles o caminos de tierra estrechos).
+                </li>
+                <li>
+                  <strong>Entregas fallidas por accesibilidad:</strong> En caso
+                  de que el camión no pueda acceder a la dirección indicada por
+                  causas ajenas al transportista, el coste de entrega no se
+                  devolverá en ningún caso. El material retornará y quedará
+                  depositado en nuestras instalaciones. Será responsabilidad del
+                  cliente recogerlo por sus propios medios, o bien abonar un
+                  nuevo gasto de transporte facilitando una dirección
+                  alternativa viable. En ningún caso se abonará o reembolsará el
+                  coste del material cortado a medida ni el del primer
+                  transporte.
+                </li>
+                <li>
+                  <strong>Descarga del material:</strong> El servicio de
+                  transporte mediante camión incluye únicamente el
+                  desplazamiento hasta la dirección indicada. El transportista
+                  no realiza la descarga del camión. Es responsabilidad
+                  exclusiva del cliente disponer de los medios mecánicos
+                  (carretilla elevadora, puente grúa, etc.) o del personal
+                  necesario para efectuar la descarga de forma rápida y segura
+                  en el momento de la entrega.
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        {/* 4. Revisión de la Mercancía y Reclamaciones por Transporte */}
+        <section className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4">
+            4. Revisión de la Mercancía y Reclamaciones por Transporte
+          </h2>
+          <p>
+            Es obligación del cliente revisar el estado exterior y la cantidad
+            del material en el momento exacto de la recepción. Cualquier daño,
+            golpe o anomalía visible ocasionada durante el transporte deberá
+            anotarse obligatoriamente en el albarán de entrega del transportista
+            (ya sea en papel o en la PDA digital). Además, el cliente dispone de
+            un plazo máximo de 24 horas desde la recepción para notificar a
+            Hierroamedida.com cualquier incidencia relacionada con el
+            transporte. Pasado este plazo, no se aceptarán reclamaciones por
+            daños derivados del envío.
           </p>
         </section>
 
-        {/* Limitation of Liability */}
+        {/* 5. Política de Devoluciones y Derecho de Desistimiento */}
         <section className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4">Limitation of Liability</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            5. Política de Devoluciones y Derecho de Desistimiento
+          </h2>
           <p>
-            The Service is provided “as is” without warranties of any kind,
-            whether express or implied. To the fullest extent permitted by law,
-            the steel corporation shall not be liable for any indirect,
-            incidental, or consequential damages arising from the use of the
-            Service or any reliance on product information displayed.
+            De conformidad con el artículo 103, apartado c), de la Ley General
+            para la Defensa de los Consumidores y Usuarios, el derecho de
+            desistimiento no es aplicable. Todos los productos comercializados
+            en Hierroamedida.com son bienes confeccionados conforme a las
+            especificaciones del consumidor y claramente personalizados
+            (cortados a medida bajo pedido). Por lo tanto, no se aceptarán
+            devoluciones ni cancelaciones bajo ningún concepto una vez el
+            material haya entrado en proceso de corte.
           </p>
-          <p>
-            This includes, but is not limited to, delays in delivery, supply
-            chain disruptions, technical errors, inaccurate product details, or
-            unauthorized access to submitted information.
-          </p>
-        </section>
-
-        {/* Industrial Safety Disclaimer */}
-        <section className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4">Industrial Safety Disclaimer</h2>
-          <p>
-            Steel products should only be handled, installed, or processed by
-            qualified professionals following proper safety standards and
-            guidelines. We are not responsible for injuries or damages resulting
-            from improper use, handling, fabrication, or installation of steel
-            products.
+          <p className="mt-2">
+            <strong>Excepción:</strong> Únicamente se aceptarán devoluciones o
+            sustituciones en el caso de que el material entregado presente un
+            mal estado evidente (defectos de fabricación que comprometan su uso)
+            o no coincida con la medida solicitada, siempre y cuando supere las
+            tolerancias legales descritas en el punto 6.
           </p>
         </section>
 
-        {/* Governing Law */}
+        {/* 6. Tolerancias de Corte y Medidas */}
         <section className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4">Governing Law</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            6. Tolerancias de Corte y Medidas
+          </h2>
+          <ul className="list-disc pl-5 space-y-2">
+            <li>
+              <strong>Tolerancias de corte:</strong> El proceso de corte de
+              metales está sujeto a las tolerancias establecidas en la normativa
+              europea vigente (como la norma UNE-EN ISO 9013 o normativas
+              equivalentes). Variaciones milimétricas en la longitud final del
+              corte se consideran aceptables y no constituyen un defecto del
+              producto.
+            </li>
+            <li>
+              <strong>
+                Tolerancias de fabricación (Medidas del producto):
+              </strong>{" "}
+              Los perfiles, chapas y tubos de acero laminado se rigen por las
+              normas europeas de tolerancias dimensionales y de forma (ej.
+              UNE-EN 10025, UNE-EN 10051). Esto implica que el grosor, ancho o
+              las alas de los perfiles pueden presentar ligeras desviaciones
+              estandarizadas desde la acería, las cuales entran dentro de la
+              legalidad de comercialización y no son motivo de reclamación.
+            </li>
+          </ul>
+        </section>
+
+        {/* 7. Presentación y Aspecto del Producto */}
+        <section className="mt-10">
+          <h2 className="text-2xl font-semibold mb-4">
+            7. Presentación y Aspecto del Producto
+          </h2>
           <p>
-            These Terms shall be governed by laws applicable in your region or
-            local jurisdiction. Any disputes arising from the use of the Service
-            shall be resolved in accordance with applicable local regulations.
+            Las fotografías y representaciones gráficas mostradas en
+            Hierroamedida.com tienen un fin estrictamente comercial e
+            ilustrativo. Al tratarse de productos industriales (laminados en
+            caliente o en frío procedentes de acerías), no se puede garantizar
+            que el aspecto estético final sea exactamente igual al de las
+            fotografías. Las superficies del hierro y acero pueden presentar
+            suciedad, óxido superficial, imperfecciones estéticas, marcas de
+            manipulación o variaciones de color que son completamente normales
+            en el sector metalúrgico y que no afectan a las propiedades
+            mecánicas ni estructurales del material.
           </p>
         </section>
 
-        {/* Contact */}
+        {/* 8. Legislación Aplicable y Jurisdicción */}
         <section className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            8. Legislación Aplicable y Jurisdicción
+          </h2>
           <p>
-            For any questions regarding these Terms and Conditions or for
-            assistance related to steel products and services, please use the
-            contact information provided on this website.
+            Estas condiciones se rigen por la legislación española. Para la
+            resolución de cualquier conflicto que pudiera derivarse de la compra
+            de productos a través de esta página web, las partes se someten a
+            los Juzgados y Tribunales de Tarragona, renunciando expresamente a
+            cualquier otro fuero que pudiera corresponderles (salvo en los casos
+            en que la ley disponga imperativamente el fuero del domicilio del
+            consumidor).
           </p>
         </section>
       </div>
