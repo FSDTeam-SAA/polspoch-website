@@ -10,6 +10,8 @@ import {
 } from "@/lib/hooks/checkoutCart";
 import { useShippingAdd } from "@/lib/hooks/useShippingAdd";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -32,6 +34,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const CartProducts = () => {
+  const router = useRouter();
   const [orderId, setOrderId] = useState<string | null>(null);
   const [viewingItem, setViewingItem] = useState<CartItem | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
@@ -149,6 +152,11 @@ const CartProducts = () => {
 
   // Handle Checkout (Create Order)
   const handleCheckout = () => {
+    if (!session) {
+      toast.error("Please login to place your order.");
+      router.push("/login");
+      return;
+    }
     setIsCreatingOrder(true);
     const startTime = Date.now();
 
@@ -201,7 +209,8 @@ const CartProducts = () => {
     }
 
     if (!session) {
-      console.error("User not logged in");
+      toast.error("Please login to place your order.");
+      router.push("/login");
       return;
     }
 

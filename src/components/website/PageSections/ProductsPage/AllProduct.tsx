@@ -1,7 +1,7 @@
 // src/components/AllProduct.tsx
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   Card,
   CardFooter,
@@ -20,8 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
-const DEFAULT_LIMIT = 8;
-
 const AllProduct: React.FC = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -29,11 +27,8 @@ const AllProduct: React.FC = () => {
 
   const family = searchParams.get("family") || undefined;
   const search = searchParams.get("search") || undefined; // Derive search from URL
-  const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
-  const [limit] = useState<number>(DEFAULT_LIMIT); // Use DEFAULT_LIMIT
-
-  const updateQueryParams = (newFamily?: string | null, newPage?: number) => {
+  const updateQueryParams = (newFamily?: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (newFamily !== undefined) {
@@ -42,36 +37,23 @@ const AllProduct: React.FC = () => {
       } else {
         params.delete("family");
       }
-      // Reset page when category changes
-      params.set("page", "1");
-    }
-
-    if (newPage !== undefined) {
-      params.set("page", String(newPage));
     }
 
     router.push(`${pathname}?${params.toString()}`, { scroll: true });
   };
 
   const params = useMemo(() => {
-    const p: { page: number; limit: number; family?: string; search?: string } =
-      { page: currentPage, limit };
+    const p: { family?: string; search?: string } = {};
     if (family) p.family = family;
     if (search) p.search = search;
     return p;
-  }, [family, search, currentPage, limit]);
+  }, [family, search]);
 
   const { data, isLoading, isError } = useProducts(params, true);
   const products: Product[] = data?.data || [];
 
   const { data: familyData, isLoading: isFamilyLoading } = useGetAllFamily();
   const categories = useMemo(() => familyData?.data || [], [familyData?.data]);
-
-  const hasMore = products.length === limit;
-  const lastPage = Math.max(
-    currentPage + (hasMore ? 1 : 0),
-    Math.ceil((data?.total ?? products.length) / limit),
-  );
 
   const selectedFamilyName = useMemo(() => {
     if (!family || categories.length === 0) return family;
@@ -121,7 +103,7 @@ const AllProduct: React.FC = () => {
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">No Image</span>
+                      <span className="text-gray-400 text-xs">Sin imagen</span>
                     </div>
                   )}
                   <div
@@ -149,7 +131,7 @@ const AllProduct: React.FC = () => {
               className="text-[#7E1800] border-[#7E1800] hover:bg-[#7E1800] hover:text-white transition-all"
             >
               <Filter className="mr-2" size={16} />
-              Clear Filter: {selectedFamilyName}
+              Limpiar filtro: {selectedFamilyName}
             </Button>
           </div>
         )}
@@ -188,7 +170,7 @@ const AllProduct: React.FC = () => {
             {isError && (
               <div className="col-span-full text-center py-12 bg-red-50 rounded-xl border border-red-100">
                 <p className="text-red-600 font-medium">
-                  Error loading products. Please try again.
+                  Error al cargar productos. Por favor, inténtelo de nuevo.
                 </p>
               </div>
             )}
@@ -201,14 +183,14 @@ const AllProduct: React.FC = () => {
                   className="mx-auto text-gray-300 mb-4"
                 />
                 <p className="text-gray-500 font-medium text-lg">
-                  No products found in this category.
+                  No se han encontrado productos en esta categoría.
                 </p>
                 <Button
                   onClick={() => updateQueryParams(null)}
                   variant="link"
                   className="mt-2 text-[#7E1800]"
                 >
-                  View all products
+                  Ver todos los productos
                 </Button>
               </div>
             )}
@@ -237,7 +219,7 @@ const AllProduct: React.FC = () => {
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full text-sm text-gray-400">
-                        No Image
+                        Sin imagen
                       </div>
                     )}
                   </div>
@@ -264,7 +246,7 @@ const AllProduct: React.FC = () => {
                   <Link href={`/products/${p._id}`}>
                     <CardFooter className="p-0 mt-4 pt-0">
                       <Button className="group w-full bg-[#7E1800] hover:bg-[#7E1800]/90 cursor-pointer text-white rounded-lg flex items-center justify-center gap-2 py-5 transition-all relative z-20 font-bold">
-                        <span>Buy Now</span>
+                        <span>Comprar ahora</span>
                         <ShoppingBag
                           size={18}
                           className="opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1"
@@ -275,72 +257,6 @@ const AllProduct: React.FC = () => {
                 </Card>
               ))}
           </div>
-
-          {/* Pagination (bottom) */}
-          {(lastPage > 1 || currentPage > 1 || products.length === limit) && (
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-6 py-8 border-t border-gray-100">
-              <div className="text-sm font-semibold text-gray-500 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
-                Showing page{" "}
-                <span className="text-[#7E1800]">{currentPage}</span> of{" "}
-                <span className="text-gray-900">{lastPage}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => updateQueryParams(undefined, currentPage - 1)}
-                  disabled={currentPage <= 1}
-                  className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 hover:border-[#7E1800]/20 transition-all cursor-pointer shadow-sm active:scale-95 flex items-center gap-2"
-                >
-                  <span className="text-lg">←</span> Previous
-                </button>
-                <div className="hidden md:flex items-center gap-2">
-                  {[...Array(lastPage)].map((_, i) => {
-                    const pageNum = i + 1;
-                    if (
-                      pageNum === 1 ||
-                      pageNum === lastPage ||
-                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
-                    ) {
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => updateQueryParams(undefined, pageNum)}
-                          className={clsx(
-                            "w-11 h-11 rounded-xl text-sm font-bold transition-all cursor-pointer border-2",
-                            currentPage === pageNum
-                              ? "bg-[#7E1800] border-[#7E1800] text-white shadow-lg shadow-[#7E1800]/30 scale-110 z-10"
-                              : "border-transparent text-gray-600 hover:bg-gray-100 hover:border-gray-200",
-                          )}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    }
-                    if (
-                      pageNum === currentPage - 2 ||
-                      pageNum === currentPage + 2
-                    ) {
-                      return (
-                        <span
-                          key={pageNum}
-                          className="text-gray-300 font-bold px-1"
-                        >
-                          •••
-                        </span>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-                <button
-                  onClick={() => updateQueryParams(undefined, currentPage + 1)}
-                  disabled={currentPage >= lastPage && products.length < limit}
-                  className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 hover:border-[#7E1800]/20 transition-all cursor-pointer shadow-sm active:scale-95 flex items-center gap-2"
-                >
-                  Next <span className="text-lg">→</span>
-                </button>
-              </div>
-            </div>
-          )}
         </main>
       </div>
     </div>

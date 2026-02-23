@@ -7,28 +7,25 @@ import Link from "next/link";
 export default function OurServices() {
   const services = [
     {
-      title: "Plasma Sheet Cutting",
-      subtitle:
-        "High-precision CNC cutting for custom steel sheets from 1.5 to 100 mm in an intuitive way",
-      btn: "Create & Calculate Price",
+      title: "Corte Chapa CNC",
+      subtitle: "Dibuja la chapa y nosotros la cortamos",
+      btn: "Calcular Precios",
       img: "/images/REBAR-FACILITES.png",
       icon: Ruler,
       href: "/services/cutting",
     },
     {
-      title: "Sheet Metal Bending",
-      subtitle:
-        "Custom sheet bending; select templates, angles, and dimensions to create your finishings",
-      btn: "Create & Calculate Price",
+      title: "Plegado de Chapa",
+      subtitle: "Diseña tu cortado y plegado",
+      btn: "Calcular Precios",
       img: "/images/BENDING-PRODUCT.png",
       icon: Settings,
       href: "/services/bending",
     },
     {
-      title: "Rebar Fabrication",
-      subtitle:
-        "Receive corrugated steel cut and bent, ready to assemble; stirrups, bent bars, starter bars, all ready for on-site installation.",
-      btn: "Create & Calculate Price",
+      title: "Ferralla",
+      subtitle: "Elaboramos la ferralla a medida",
+      btn: "Calcular Precios",
       img: "/images/REBAR-DETAIL.png",
       icon: Box,
       href: "/services/rebar",
@@ -41,12 +38,12 @@ export default function OurServices() {
         {/* Heading */}
         <div className="text-center mb-12">
           <h2 className="text-4xl mb-2 text-white">
-            Take Your Project to the Next Level with Our Services!
+            ¡Lleva tu proyecto a otro nivel con nuestros servicios!
           </h2>
           <p className="text-white">
-            Take advantage of all our metal processing services quickly and
-            easily. Select the service, choose the template, enter the
-            measurements, and receive it at home.
+            Aprovecha todos nuestros servicios de transformación de productos
+            metalúrgicos de una forma rápida y sencilla. Selecciona el servicio,
+            escoge la plantilla, introduce las medidas y recíbelo en casa
           </p>
         </div>
 

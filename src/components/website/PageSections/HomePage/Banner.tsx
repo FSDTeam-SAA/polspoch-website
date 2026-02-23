@@ -53,7 +53,7 @@ export default function Banner() {
     `,
             }}
           >
-            CUSTOM CUT IRON & STEEL DELIVERED TO YOUR DOOR
+            El primer Almacén de Hierros y Acero Online en España: Corte a Medida y Envío a Domicilio sin sorpresas
           </h1>
 
           <p
@@ -65,9 +65,7 @@ export default function Banner() {
     `,
             }}
           >
-            Spain’s leading online warehouse for DIY and professional projects.
-            Select your exact measurements and get instant pricing with no
-            hidden fees.
+            Buscas hierro para tus proyectos de bricolaje o reformas Muy sencillo; Escoge el producto, selecciona las medidas exactas y recíbelo en la puerta de tu casa.
           </p>
 
           <div className="mt-6 flex justify-center gap-4">
@@ -76,7 +74,7 @@ export default function Banner() {
                 className="rounded cursor-pointer px-5 py-3 font-medium text-gray-200 shadow-sm bg-[#7E1800] hover:bg-[#9E2200] focus:outline-none "
                 onClick={handleserviceCard}
               >
-                Calculate Price & Order
+                Calcular Precios
               </button>
             </Link>
           </div>
