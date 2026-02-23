@@ -5,9 +5,8 @@ import { addToCart, deleteCart, getCart, AddToCartPayload } from "../api";
 import { toast } from "sonner";
 
 interface UseAddToCartOptions {
-  token: string;
+  token?: string;
 }
-
 
 // add to cart
 export const useAddToCart = ({ token }: UseAddToCartOptions) => {

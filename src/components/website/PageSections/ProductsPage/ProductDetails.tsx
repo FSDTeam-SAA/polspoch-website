@@ -20,23 +20,26 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import SelectedConfiguration from "./SelectedConfiguration";
-
+import { Info } from "lucide-react";
+import { getOrCreateGuestId } from "@/lib/guestId";
 import { calculateShippingCost } from "@/lib/shippingUtils";
 
 // Helper tooltips
 const TOOLTIPS = {
-  thickness: "Thickness determines product strength. Thicker = Stronger",
-  size1: "Primary dimension - width or diameter of the product",
+  thickness:
+    "El espesor determina la resistencia del producto. Más grueso = más resistente",
+  size1: "Dimensión principal - ancho o diámetro del producto",
   size2:
-    "Secondary dimension - height or second dimension (required for this product)",
-  finishQuality: `Finish Quality Options:
-• Mill Finish: Standard (economical)
-• Polished: Glossy (medium price)
-• Galvanized: Rust-resistant (outdoor use)
-• Powder Coated: Colored + Durable (premium)`,
-  length: "Choose a standard length or customize using the slider",
+    "Dimensión secundaria - altura o segunda dimensión (requerida para este producto)",
+  finishQuality: `Opciones de calidad de acabado:
+• Acabado de fábrica: Estándar (económico)
+• Pulido: Brillante (precio medio)
+• Galvanizado: Resistente al óxido (uso exterior)
+• Recubrimiento en polvo: Color + Duradero (premium)`,
+  length:
+    "Elige un largo estándar o personalízalo usando el control deslizante",
   shipping:
-    "Shipping cost calculated based on weight and length. Courier for packages under 2.5m, Truck delivery for larger items.",
+    "Gasto de envío calculado según el peso y el largo. Mensajería para paquetes de menos de 2,5 m, entrega en camión para artículos más grandes.",
 };
 
 // Tooltip component
@@ -391,7 +394,8 @@ export default function ProductDetails() {
   }, [selectedUnitSizeMm, rangeLengthMm]);
 
   // Is length effectively selected? (used for checkout validation)
-  const isLengthSelected = selectedUnitSizeMm !== null || (hasRange && rangeLengthMm > 0);
+  const isLengthSelected =
+    selectedUnitSizeMm !== null || (hasRange && rangeLengthMm > 0);
 
   const availableUnitSizes = useMemo(
     () => selectedFeature?.unitSizes || [],
@@ -417,7 +421,11 @@ export default function ProductDetails() {
     const singleUnitWeight = kgsPerUnit * meters;
 
     // Calculate shipping cost for a single unit
-    const singleUnitShippingCost = calculateShippingCost(singleUnitWeight, lengthMm, isCourier);
+    const singleUnitShippingCost = calculateShippingCost(
+      singleUnitWeight,
+      lengthMm,
+      isCourier,
+    );
 
     // Shipping cost independent of quantity
     const totalShippingCost = singleUnitShippingCost;
@@ -479,11 +487,6 @@ export default function ProductDetails() {
   const handleAddToCart = () => {
     if (!canCheckout || !product) return;
 
-    if (!token) {
-      toast.error("Please login to add items to cart");
-      return;
-    }
-
     // Calculate unit price (price for 1 item)
     const pricePerMeter = selectedFeature?.miterPerUnitPrice ?? 0;
     // Use effectiveLengthMm which handles the fallback logic correctly
@@ -508,6 +511,8 @@ export default function ProductDetails() {
           : (rangeLengthMm > 0 ? rangeLengthMm : effectiveLengthMm) / 1000,
       },
       totalAmount: Number(totalPrice.toFixed(2)),
+      userId: session?.user?.id,
+      guestId: !session?.user?.id ? getOrCreateGuestId() : undefined,
     };
 
     addToCartMutate(payload, {
@@ -516,9 +521,8 @@ export default function ProductDetails() {
         handleClearFilters();
         setQuantity(1);
       },
-      //eslint-disable-next-line
-      onError: (err: any) => {
-        toast.error(err.message || "Failed to add to cart");
+      onError: (err: { message?: string }) => {
+        toast.error(err?.message || "Failed to add to cart");
       },
     });
   };
@@ -598,17 +602,17 @@ export default function ProductDetails() {
             <span className="text-2xl">⚠️</span>
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Product Not Found
+            Producto no encontrado
           </h2>
           <p className="text-gray-600 mb-6">
             {error?.message ||
-              "We couldn't find the product you're looking for."}
+              "No hemos podido encontrar el producto que busca."}
           </p>
           <Link
             href="/products"
             className="inline-block px-6 py-3 bg-[#7E1800] text-white rounded-lg font-medium hover:bg-[#7E1800]/90 transition-colors"
           >
-            Browse All Products
+            Ver todos los productos
           </Link>
         </div>
       </div>
@@ -633,7 +637,7 @@ export default function ProductDetails() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      No image
+                      Sin imagen
                     </div>
                   )}
                 </div>
@@ -644,10 +648,11 @@ export default function ProductDetails() {
                   <button
                     key={idx}
                     onClick={() => setSelectedThumbnail(idx)}
-                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${selectedThumbnail === idx
-                      ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                      : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
-                      }`}
+                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${
+                      selectedThumbnail === idx
+                        ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                        : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
+                    }`}
                   >
                     <Image
                       src={img.url}
@@ -684,7 +689,7 @@ export default function ProductDetails() {
                     className="flex items-center gap-2 text-sm text-[#7E1800] hover:text-[#7E1800]/80 font-medium px-4 py-2 rounded-lg hover:bg-[#7E1800]/5 transition-all border border-[#7E1800]/20"
                   >
                     <Trash2 size={16} />
-                    Clear All Filters
+                    Borrar filtros
                   </button>
                 </div>
               )}
@@ -696,7 +701,7 @@ export default function ProductDetails() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-gray-900">
-                        Width / Diameter
+                        Ancho / Diámetro
                       </h3>
                       <Tooltip
                         text={TOOLTIPS.size1}
@@ -706,7 +711,7 @@ export default function ProductDetails() {
                       />
                     </div>
                     <span className="text-[10px] text-gray-500 font-medium">
-                      in mm
+                      en mm
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -723,12 +728,13 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                            : isAvailable
-                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                            isSelected
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                          }`}
                         >
                           {size}
                         </button>
@@ -743,7 +749,7 @@ export default function ProductDetails() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-semibold text-gray-900">
-                          Height / Second Dimension
+                          Altura / Segunda medida
                         </h3>
                         <Tooltip
                           text={TOOLTIPS.size2}
@@ -753,7 +759,7 @@ export default function ProductDetails() {
                         />
                       </div>
                       <span className="text-[10px] text-gray-500 font-medium">
-                        in mm
+                        en mm
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -770,12 +776,13 @@ export default function ProductDetails() {
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                              }`}
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                              isSelected
+                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                : isAvailable
+                                  ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                           >
                             {size}
                           </button>
@@ -791,7 +798,7 @@ export default function ProductDetails() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-semibold text-gray-900">
-                          Thickness
+                          Espesor
                         </h3>
                         <Tooltip
                           text={TOOLTIPS.thickness}
@@ -801,7 +808,7 @@ export default function ProductDetails() {
                         />
                       </div>
                       <span className="text-[10px] text-gray-500 font-medium">
-                        in mm
+                        en mm
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -819,12 +826,13 @@ export default function ProductDetails() {
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                              }`}
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                              isSelected
+                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                : isAvailable
+                                  ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                           >
                             {thickness}
                           </button>
@@ -839,7 +847,7 @@ export default function ProductDetails() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-semibold text-gray-900">
-                        Finish Quality
+                        Calidad / Acabado
                       </h3>
                       <Tooltip
                         text={TOOLTIPS.finishQuality}
@@ -864,12 +872,13 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
-                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                            : isAvailable
-                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${
+                            isSelected
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                          }`}
                         >
                           {quality}
                         </button>
@@ -883,7 +892,7 @@ export default function ProductDetails() {
                     <div className="flex items-center mb-4">
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-semibold text-gray-900">
-                          Length Selection
+                          Personalización del largo
                         </h3>
                         <Tooltip
                           text={TOOLTIPS.length}
@@ -898,8 +907,8 @@ export default function ProductDetails() {
                       {!selectedFeature ? (
                         <div className="col-span-2 py-4 text-center border-2 border-dashed border-[#7E1800]/10 rounded-lg bg-[#7E1800]/5">
                           <p className="text-sm font-medium text-[#7E1800]/60">
-                            Please select width and quality above to see
-                            available lengths
+                            Seleccione el ancho y la calidad anteriores para ver
+                            los largos disponibles
                           </p>
                         </div>
                       ) : (
@@ -913,7 +922,7 @@ export default function ProductDetails() {
                                   className="text-[#7E1800]/80"
                                 />
                                 <span className="text-xs font-semibold text-gray-700">
-                                  Standard Lengths
+                                  Largo estándar
                                 </span>
                               </div>
                               <div className="flex flex-wrap gap-2">
@@ -921,10 +930,11 @@ export default function ProductDetails() {
                                   <button
                                     key={size}
                                     onClick={() => handleUnitSizeSelect(size)}
-                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
-                                      ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                      : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                      }`}
+                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${
+                                      selectedUnitSizeMm === size
+                                        ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                        : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                    }`}
                                   >
                                     {size}mm
                                   </button>
@@ -948,7 +958,7 @@ export default function ProductDetails() {
                                   className="text-[#7E1800]/80"
                                 />
                                 <span className="text-xs font-semibold text-gray-700">
-                                  Custom Length (mm)
+                                  Largo personalizado
                                 </span>
                               </div>
 
@@ -1001,7 +1011,7 @@ export default function ProductDetails() {
                                     </span>
                                   </div>
                                   <div className="text-[10px] text-gray-500 whitespace-nowrap">
-                                    Range:{" "}
+                                    Rango:{" "}
                                     {selectedFeature?.minRange ??
                                       product?.features?.[0]?.minRange ??
                                       product?.minRange ??
@@ -1037,10 +1047,10 @@ export default function ProductDetails() {
                 <div className="mb-6 mt-4 p-5 rounded-xl border-2 border-[#7E1800]/20 bg-gradient-to-br from-[#7E1800]/5 to-white">
                   <div className="flex items-center gap-2 mb-3">
                     <h3 className="text-base font-semibold text-gray-900">
-                      Shipping Method
+                      Método de envío
                     </h3>
                     <span className="text-xs text-gray-500">
-                      (Auto-Calculated)
+                      (Calculado automáticamente)
                     </span>
                     <Tooltip
                       text={TOOLTIPS.shipping}
@@ -1050,23 +1060,24 @@ export default function ProductDetails() {
                     />
                   </div>
                   <div
-                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${shippingMethod === "courier"
-                      ? "bg-green-50 border-green-300"
-                      : "bg-blue-50 border-blue-300"
-                      }`}
+                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${
+                      shippingMethod === "courier"
+                        ? "bg-green-50 border-green-300"
+                        : "bg-blue-50 border-blue-300"
+                    }`}
                   >
                     <div>
                       <div
                         className={`font-bold text-base ${shippingMethod === "courier" ? "text-green-800" : "text-blue-800"}`}
                       >
                         {shippingMethod === "courier"
-                          ? "🚚 Courier Service"
-                          : "🚛 Truck Delivery"}
+                          ? "🚚 Servicio de mensajería"
+                          : "🚛 Envío en camión"}
                       </div>
                       <div className="text-xs text-gray-600 mt-1">
                         {shippingMethod === "courier"
-                          ? "Standard Package (≤ 2.5m)"
-                          : "Large Freight (> 2.5m)"}
+                          ? "Paquete estándar (≤ 2,5 m)"
+                          : "Carga grande (> 2,5 m)"}
                       </div>
                     </div>
                     <div className="text-right">
@@ -1076,7 +1087,7 @@ export default function ProductDetails() {
                         €{shippingCost.toFixed(2)}
                       </div>
                       <div className="text-xs text-gray-500">
-                        Total Weight: {totalWeight.toFixed(1)} kg
+                        Peso total: {totalWeight.toFixed(1)} kg
                       </div>
                     </div>
                   </div>
@@ -1089,7 +1100,7 @@ export default function ProductDetails() {
                   {/* Quantity */}
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-gray-700 mb-2">
-                      Quantity
+                      Cantidad
                     </span>
                     <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
                       <button
@@ -1113,29 +1124,29 @@ export default function ProductDetails() {
                   {/* Price Breakdown */}
                   {selectedFeature && (
                     <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
-
                       {/* Hint for fallback pricing */}
                       {isUsingFallbackLength && hasAnyLengthOption && (
                         <div className="mb-2 p-2 bg-yellow-50 text-yellow-700 text-xs rounded border border-yellow-200">
-                          Price shown for {effectiveLengthMm}mm length until a length is selected
+                          Precio mostrado para el largo de {effectiveLengthMm}mm
+                          hasta que se seleccione un largo
                         </div>
                       )}
 
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Product Price:</span>
+                        <span className="text-gray-600">Importe Total:</span>
                         <span className="font-semibold text-gray-900">
                           €{productPrice.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
-                        <span className="text-gray-600">Shipping Cost:</span>
+                        <span className="text-gray-600">Precio de envío:</span>
                         <span className="font-semibold text-gray-900">
                           €{shippingCost.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-gray-900">
-                          Total Amount:
+                          Importe Total:
                         </span>
                         <span className="text-2xl font-bold text-[#7E1800]">
                           €{totalPrice.toFixed(2)}
@@ -1145,15 +1156,37 @@ export default function ProductDetails() {
                   )}
                 </div>
 
+                {/* Shipping Warning Text */}
+                {selectedFeature && (
+                  <div className="mb-6 p-4 rounded-xl border border-red-100 bg-red-50/50 flex gap-3 text-xs leading-relaxed text-red-600 font-medium">
+                    <Info size={16} className="shrink-0 mt-0.5" />
+                    <p>
+                      El importe de gastos de envío es una estimación para este
+                      producto según las medidas seleccionadas. En caso de pedir
+                      varios productos los gastos se agrupan y no se cobran por
+                      duplicado. Selecciona todos los productos y visita la
+                      página de{" "}
+                      <Link
+                        href="/cart"
+                        className="underline font-bold hover:text-red-700"
+                      >
+                        check out
+                      </Link>{" "}
+                      para ver importe total.
+                    </p>
+                  </div>
+                )}
+
                 {/* Add to Cart Button */}
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={handleAddToCart}
                     disabled={!canCheckout || isPending}
-                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${canCheckout && !isPending
-                      ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      }`}
+                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
+                      canCheckout && !isPending
+                        ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    }`}
                   >
                     {isPending ? (
                       <Loader2 className="animate-spin" size={22} />
@@ -1161,26 +1194,26 @@ export default function ProductDetails() {
                       <ShoppingCart size={22} />
                     )}
                     {isPending
-                      ? "Adding to Cart..."
+                      ? "Añadiendo..."
                       : canCheckout
-                        ? "Add to Cart"
-                        : "Select Length to Continue"}
+                        ? "Añadir al carro"
+                        : "Seleccione el largo para continuar"}
                   </button>
 
                   {selectedFeature &&
                     !selectedUnitSizeMm &&
                     (!hasRange || rangeLengthMm === 0) && (
                       <p className="text-center text-xs font-medium text-[#7E1800] animate-pulse">
-                        ⚠️ Please choose a standard length or custom range to
-                        calculate price
+                        ⚠️ Elija un largo estándar o un rango personalizado para
+                        calcular el precio
                       </p>
                     )}
                 </div>
 
                 {!selectedFeature && (
                   <p className="text-center text-sm text-gray-500 mt-3">
-                    Please select options from each category above to view
-                    pricing and add to cart
+                    Elija las opciones de cada categoría anterior para ver el
+                    precio y añadir al carrito
                   </p>
                 )}
               </div>

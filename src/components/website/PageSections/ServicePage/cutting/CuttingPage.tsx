@@ -15,6 +15,7 @@ import {
   CalculateCuttingResponse,
   CalculateCuttingPayload,
 } from "@/lib/services/calculationService";
+import { getOrCreateGuestId } from "@/lib/guestId";
 
 const CuttingPage = () => {
   // Fetch templates using custom hook
@@ -195,14 +196,16 @@ const CuttingPage = () => {
       },
       pricing: calculationResult.pricing,
       shippingStatus: calculationResult.shippingStatus,
+      userId: session?.user?.id,
+      guestId: !session?.user?.id ? getOrCreateGuestId() : undefined,
     };
 
     addToCart(payload, {
       onSuccess: () => {
         toast.success("Successfully added to cart");
       },
-      onError: () => {
-        toast.error("Please login to add items to cart");
+      onError: (err: { message?: string }) => {
+        toast.error(err?.message || "Failed to add to cart");
       },
     });
   };
@@ -222,11 +225,11 @@ const CuttingPage = () => {
             </span>
           </div>
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent">
-            Design Your Custom Cut Profile
+            Corte de Chapa a Medida
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Configure your metal pieces with laser precision. Select your shape,
-            material, and exact dimensions.
+            Configura tus piezas metálicas con precisión láser. Selecciona tu
+            forma, material y dimensiones exactas.
           </p>
         </div>
 
@@ -295,7 +298,7 @@ const CuttingPage = () => {
                 <div className="bg-slate-50 rounded-xl p-6 border border-slate-100">
                   <h3 className="text-lg font-bold text-slate-900 mb-5 flex items-center gap-2 uppercase tracking-wide">
                     <Zap className="w-5 h-5 text-[#7E1800]" />
-                    Select Shape
+                    Selecciona plantilla
                   </h3>
                   {isLoading ? (
                     <div className="text-center py-8 text-slate-500">
@@ -308,10 +311,11 @@ const CuttingPage = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
+                            selectedShapeId === shape._id
                               ? "border-[#7E1800] bg-white shadow-lg ring-4 ring-[#7E1800]/5"
                               : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                            }`}
+                          }`}
                         >
                           <Image
                             src={shape.imageUrl}
@@ -362,10 +366,11 @@ const CuttingPage = () => {
                                 );
                               }
                             }}
-                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${material === mObj.material
+                            className={`py-3.5 rounded-xl border-2 font-bold cursor-pointer transition-all duration-300 uppercase tracking-wider text-sm ${
+                              material === mObj.material
                                 ? "border-[#7E1800] bg-[#7E1800] text-white shadow-xl transform scale-[1.02]"
                                 : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                              }`}
+                            }`}
                           >
                             {mObj.material}
                           </button>
@@ -377,7 +382,7 @@ const CuttingPage = () => {
                     <div className="space-y-4">
                       <label className="block text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
                         <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                        THICKNESS (MM)
+                        Espesor (mm)
                       </label>
                       <div className="grid grid-cols-5 gap-2">
                         {selectedTemplate.materials
@@ -393,10 +398,11 @@ const CuttingPage = () => {
                                   String(t),
                                 );
                               }}
-                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${thickness === String(t)
+                              className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 text-sm ${
+                                thickness === String(t)
                                   ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
                                   : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                                }`}
+                              }`}
                             >
                               {t}mm
                             </button>
@@ -408,7 +414,7 @@ const CuttingPage = () => {
                     <div className="space-y-4">
                       <label className="block text-sm font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
                         <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                        SIZES (MM)
+                        Medidas (mm)
                       </label>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {selectedTemplate.dimensions?.map((dim) => (
@@ -430,10 +436,11 @@ const CuttingPage = () => {
                                 onChange={(e) =>
                                   handleDimensionChange(dim.key, e.target.value)
                                 }
-                                className={`${BASE_BOX} pr-12 outline-none font-bold text-slate-900 ${errors[dim.key]
+                                className={`${BASE_BOX} pr-12 outline-none font-bold text-slate-900 ${
+                                  errors[dim.key]
                                     ? "border-red-500 focus:border-red-600 ring-4 ring-red-100"
                                     : "border-slate-200 focus:border-[#7E1800] ring-4 ring-[#7E1800]/5"
-                                  }`}
+                                }`}
                                 placeholder={`${dim.minRange}`}
                               />
                               <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs font-bold text-slate-400 group-hover:text-[#7E1800] transition-colors">
@@ -468,7 +475,7 @@ const CuttingPage = () => {
                     {/* Quantity */}
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-gray-700 mb-2">
-                        Quantity
+                        Cantidad
                       </span>
                       <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
                         <button
@@ -478,6 +485,7 @@ const CuttingPage = () => {
                             handleCalculate(newQty, dimensions, thickness);
                           }}
                           className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
+                          aria-label="Decrease quantity"
                         >
                           <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
                             −
@@ -517,23 +525,30 @@ const CuttingPage = () => {
                         <div className="flex justify-between text-sm mb-2">
                           <span className="text-gray-600">Total Weight:</span>
                           <span className="font-semibold text-gray-900">
-                            {calculationResult.summary.totalWeight.toFixed(2)} kg
+                            {calculationResult.summary.totalWeight.toFixed(2)}{" "}
+                            kg
                           </span>
                         </div>
                         <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600">Price Per Unit:</span>
+                          <span className="text-gray-600">
+                            Precio por Unidad:
+                          </span>
                           <span className="font-semibold text-gray-900">
                             €{calculationResult.pricing.pricePerUnit.toFixed(2)}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600">Service Price:</span>
+                          <span className="text-gray-600">
+                            Precio del Servicio:
+                          </span>
                           <span className="font-semibold text-gray-900">
                             €{calculationResult.pricing.productPrice.toFixed(2)}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
-                          <span className="text-gray-600">Shipping Cost:</span>
+                          <span className="text-gray-600">
+                            Gastos de Envío:
+                          </span>
                           <span className="font-semibold text-gray-900">
                             €
                             {calculationResult.pricing.shippingPrice.toFixed(2)}
@@ -541,7 +556,7 @@ const CuttingPage = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-bold text-gray-900">
-                            Total Amount:
+                            Total:
                           </span>
                           <span className="text-2xl font-bold text-[#7E1800]">
                             €{calculationResult.pricing.finalQuote.toFixed(2)}
@@ -558,7 +573,7 @@ const CuttingPage = () => {
                       className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
                     >
                       <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                      Add to Cart
+                      Añadir al carrito
                     </button>
                   </div>
                 </div>

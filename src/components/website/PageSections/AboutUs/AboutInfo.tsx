@@ -24,17 +24,22 @@ export default function AboutInfo() {
           {/* RIGHT: content */}
           <div className="px-6 md:px-12 py-10 md:py-16 flex flex-col justify-center">
             <p className="text-sm text-[#7E1800] font-medium mb-3">
-              Trusted by Steel Professionals Worldwide
+              Confianza respaldada por profesionales del sector
             </p>
 
             <h2 className="text-[#111827] text-3xl md:text-4xl font-semibold leading-tight mb-6">
-              Premium steel solutions for <br className="hidden md:block" />
-              businesses worldwide.
+              Soluciones metálicas de alta calidad{" "}
+              <br className="hidden md:block" />
+              para proyectos que no aceptan errores.
             </h2>
 
             <p className="text-gray-500 mb-8 max-w-xl">
-              We deliver high-quality steel products with unmatched reliability,
-              helping businesses finish projects on time and on budget.
+              En HierroaMedida.com, sabemos que un milímetro de error o un día
+              de retraso cuestan dinero. Por eso, entregamos materiales de
+              primera calidad (desde chapas, tubos o vigas hasta ferralla
+              elaborada) con una fiabilidad inigualable. Ayudamos a ingenierías,
+              constructoras, talleres y también particulares a terminar sus
+              proyectos a tiempo y con un presupuesto cerrado.
             </p>
 
             {/* Stats grid */}
@@ -43,28 +48,36 @@ export default function AboutInfo() {
                 <div className="text-3xl md:text-4xl font-extrabold text-[#7E1800]">
                   400+
                 </div>
-                <div className="text-sm text-gray-500">Projects completed</div>
+                <div className="text-sm text-gray-500">
+                  Proyectos industriales completados
+                </div>
               </div>
 
               <div>
                 <div className="text-3xl md:text-4xl font-extrabold text-[#7E1800]">
-                  600%
+                  100%
                 </div>
-                <div className="text-sm text-gray-500">Return on investment for clients</div>
+                <div className="text-sm text-gray-500">
+                  Precisión en corte y plegado CNC
+                </div>
               </div>
 
               <div>
                 <div className="text-3xl md:text-4xl font-extrabold text-[#7E1800]">
-                  10k
+                  4.8
                 </div>
-                <div className="text-sm text-gray-500">Tons of steel delivered</div>
+                <div className="text-sm text-gray-500">
+                  Nota media de satisfacción
+                </div>
               </div>
 
               <div>
                 <div className="text-3xl md:text-4xl font-extrabold text-[#7E1800]">
-                  200+
+                  100+
                 </div>
-                <div className="text-sm text-gray-500">Satisfied customers</div>
+                <div className="text-sm text-gray-500">
+                  Clientes recurrentes
+                </div>
               </div>
             </div>
           </div>

@@ -1,16 +1,11 @@
 // src/lib/api.ts
 
-import axios from "axios";
+import axiosInstance from "./instance/axios-instance";
 import { UserProfilePayload } from "./types/profile";
 import { ServicePayload } from "./services/createservice";
 import { ShippingAddressPayload } from "./types/shipping";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-});
+const api = axiosInstance;
 
 // Get reviews all with pagination and dynamic params
 export async function getAllReview(page = 1, limit = 10) {
@@ -124,9 +119,9 @@ export type GetProductsParams = {
 };
 
 export async function getProducts(params: GetProductsParams = {}) {
-  const { family, search, page = 1, limit = 8 } = params;
+  const { family, search, limit } = params;
   const query = new URLSearchParams();
-  if (page) query.append("page", String(page));
+  // if (page) query.append("page", String(page));
   if (limit) query.append("limit", String(limit));
   if (family) query.append("family", family);
   if (search) query.append("search", search);
@@ -152,14 +147,13 @@ export async function getProductById(productId: string) {
   }
 }
 
-export async function createService(data: ServicePayload, token: string) {
+export async function createService(data: ServicePayload, token?: string) {
   try {
-    const res = await api.post("/service/create-service", data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const res = await api.post("/service/create-service", data, { headers });
     return res.data;
   } catch (err) {
     throw err;
@@ -188,18 +182,19 @@ export interface AddToCartPayload {
   price?: number;
   shippingMethod?: string;
   totalAmount?: number;
+  userId?: string;
+  guestId?: string;
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any; // Allow other properties if necessary
 }
 
-export async function addToCart(data: AddToCartPayload, token: string) {
+export async function addToCart(data: AddToCartPayload, token?: string) {
   try {
-    const res = await api.post("/cart/add-cart", data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const res = await api.post("/cart/add-cart", data, { headers });
     return res.data;
   } catch (err) {
     throw err;
@@ -207,14 +202,13 @@ export async function addToCart(data: AddToCartPayload, token: string) {
 }
 
 // get cart
-export async function getCart(token: string) {
+export async function getCart(token?: string) {
   try {
-    const res = await api.get("/cart/my-cart", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const res = await api.get("/cart/my-cart", { headers });
     return res.data;
   } catch (err) {
     throw err;
@@ -222,20 +216,18 @@ export async function getCart(token: string) {
 }
 
 // delete cart
-export async function deleteCart(token: string, id: string) {
+export async function deleteCart(token?: string, id?: string) {
   try {
-    const res = await api.delete(`/cart/delete-cart/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const res = await api.delete(`/cart/delete-cart/${id}`, { headers });
     return res.data;
   } catch (err) {
     throw err;
   }
 }
-
 // order create
 export async function checkoutCart(
   payload: {
@@ -245,15 +237,14 @@ export async function checkoutCart(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   },
-  token: string,
+  token?: string,
 ) {
   try {
-    const res = await api.post("/order/create-order", payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const res = await api.post("/order/create-order", payload, { headers });
     return res.data;
   } catch (err) {
     throw err;
@@ -268,7 +259,7 @@ export async function checkoutCartInModal(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   },
-  token: string,
+  token?: string,
 ) {
   try {
     const res = await api.post("/payment/pay", payload, {
@@ -283,14 +274,15 @@ export async function checkoutCartInModal(
   }
 }
 // get my orders
-export async function getMyOrders(token: string, page = 1, limit = 10) {
+export async function getMyOrders(token?: string, page = 1, limit = 10) {
   try {
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
     const res = await api.get(`/order/my-orders?page=${page}&limit=${limit}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
     });
-
     return res.data;
   } catch (err) {
     throw err;
@@ -344,17 +336,37 @@ export async function getAllFamily() {
 //shipping post api
 export async function shippingPostApi(
   payload: ShippingAddressPayload,
-  token: string,
+  token?: string,
 ) {
   try {
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
     const res = await api.post("/shipping-address/create", payload, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
     });
     return res.data;
   } catch (err) {
     console.error("Error fetching shipping:", err);
     throw new Error("Failed to fetch shipping");
+  }
+}
+// Merge Cart
+export async function mergeCart(guestId: string, token: string) {
+  try {
+    const res = await api.post(
+      "/cart/merge-cart",
+      { guestId },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Error merging cart:", err);
+    throw err;
   }
 }
