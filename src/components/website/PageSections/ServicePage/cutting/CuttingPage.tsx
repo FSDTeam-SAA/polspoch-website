@@ -15,6 +15,7 @@ import {
   CalculateCuttingResponse,
   CalculateCuttingPayload,
 } from "@/lib/services/calculationService";
+import { getOrCreateGuestId } from "@/lib/guestId";
 
 const CuttingPage = () => {
   // Fetch templates using custom hook
@@ -195,14 +196,16 @@ const CuttingPage = () => {
       },
       pricing: calculationResult.pricing,
       shippingStatus: calculationResult.shippingStatus,
+      userId: session?.user?.id,
+      guestId: !session?.user?.id ? getOrCreateGuestId() : undefined,
     };
 
     addToCart(payload, {
       onSuccess: () => {
         toast.success("Successfully added to cart");
       },
-      onError: () => {
-        toast.error("Please login to add items to cart");
+      onError: (err: { message?: string }) => {
+        toast.error(err?.message || "Failed to add to cart");
       },
     });
   };
@@ -482,6 +485,7 @@ const CuttingPage = () => {
                             handleCalculate(newQty, dimensions, thickness);
                           }}
                           className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
+                          aria-label="Decrease quantity"
                         >
                           <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
                             −

@@ -16,6 +16,7 @@ import {
   CalculateRebarResponse,
   CalculateRebarPayload,
 } from "@/lib/services/calculationService";
+import { getOrCreateGuestId } from "@/lib/guestId";
 import { toast } from "sonner";
 
 const Rebar = () => {
@@ -56,7 +57,7 @@ const Rebar = () => {
       };
 
       selectedTemplate.dimensions.forEach((dim, index) => {
-        const letter = String.fromCharCode(65 + index); // 65 is 'A'
+        const letter = String.fromCodePoint(65 + index); // 65 is 'A'
         payload[`size${letter}`] = currentDimensions[dim.key] || 0;
       });
 
@@ -128,7 +129,7 @@ const Rebar = () => {
   };
 
   const handleDimensionChange = (key: string, valueStr: string) => {
-    const value = parseInt(valueStr) || 0;
+    const value = Number.parseInt(valueStr) || 0;
     const dimensionConfig = selectedTemplate?.dimensions.find(
       (d) => d.key === key,
     );
@@ -169,14 +170,16 @@ const Rebar = () => {
       },
       pricing: calculationResult.pricing,
       shippingStatus: calculationResult.shippingStatus,
+      userId: session?.user?.id,
+      guestId: !session?.user?.id ? getOrCreateGuestId() : undefined,
     };
 
     addToCart(payload, {
       onSuccess: () => {
         toast.success("Successfully added to cart");
       },
-      onError: () => {
-        toast.error("Please login to add items to cart");
+      onError: (err: { message?: string }) => {
+        toast.error(err?.message || "Failed to add to cart");
       },
     });
   };
@@ -351,7 +354,10 @@ const Rebar = () => {
                         {selectedTemplate.dimensions.map((dim) => (
                           <div key={dim.key} className="space-y-2">
                             <div className="flex justify-between items-end">
-                              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                              <label
+                                htmlFor={`dim-${dim.key}`}
+                                className="block text-[10px] font-semibold text-slate-500 uppercase flex items-center gap-1"
+                              >
                                 {dim.label || `Medida ${dim.key}`}
                               </label>
                               <span className="text-[12px] text-slate-400 font-mono">
@@ -371,6 +377,7 @@ const Rebar = () => {
                                   <div className="flex items-center border border-[#7E1800]/20 rounded-lg bg-white overflow-hidden focus-within:border-[#7E1800] transition-colors">
                                     <input
                                       type="number"
+                                      id={`dim-${dim.key}`}
                                       min={dim.minRange}
                                       max={dim.maxRange}
                                       value={dimensions[dim.key] || ""}

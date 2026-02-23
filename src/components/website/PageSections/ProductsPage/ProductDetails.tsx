@@ -21,7 +21,7 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import SelectedConfiguration from "./SelectedConfiguration";
 import { Info } from "lucide-react";
-
+import { getOrCreateGuestId } from "@/lib/guestId";
 import { calculateShippingCost } from "@/lib/shippingUtils";
 
 // Helper tooltips
@@ -487,11 +487,6 @@ export default function ProductDetails() {
   const handleAddToCart = () => {
     if (!canCheckout || !product) return;
 
-    if (!token) {
-      toast.error("Please login to add items to cart");
-      return;
-    }
-
     // Calculate unit price (price for 1 item)
     const pricePerMeter = selectedFeature?.miterPerUnitPrice ?? 0;
     // Use effectiveLengthMm which handles the fallback logic correctly
@@ -516,6 +511,8 @@ export default function ProductDetails() {
           : (rangeLengthMm > 0 ? rangeLengthMm : effectiveLengthMm) / 1000,
       },
       totalAmount: Number(totalPrice.toFixed(2)),
+      userId: session?.user?.id,
+      guestId: !session?.user?.id ? getOrCreateGuestId() : undefined,
     };
 
     addToCartMutate(payload, {
@@ -524,9 +521,8 @@ export default function ProductDetails() {
         handleClearFilters();
         setQuantity(1);
       },
-      //eslint-disable-next-line
-      onError: (err: any) => {
-        toast.error(err.message || "Failed to add to cart");
+      onError: (err: { message?: string }) => {
+        toast.error(err?.message || "Failed to add to cart");
       },
     });
   };

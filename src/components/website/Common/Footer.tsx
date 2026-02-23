@@ -8,6 +8,7 @@ import { BsTwitterX } from "react-icons/bs";
 import { FaFacebook, FaLinkedin } from "react-icons/fa";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Product } from "@/lib/types/product";
 
 const companyLinks = [
   { label: "Home", href: "/" },
@@ -60,10 +61,12 @@ const FooterList: FC<{
 const Footer = () => {
   const { data, isLoading } = useProducts({ limit: 5 }, true);
 
-  const productLinks = (data?.data || []).map((p) => ({
-    label: p.productName,
-    href: `/products/${p._id}`,
-  }));
+  // ✅ Ensure maximum 5 products shown (frontend safety)
+  const productLinks =
+    data?.data?.slice(0, 5).map((p: Product) => ({
+      label: p.productName,
+      href: `/products/${p._id}`,
+    })) || [];
 
   return (
     <footer className="relative w-full text-white py-12 overflow-hidden">

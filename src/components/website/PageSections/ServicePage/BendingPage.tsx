@@ -14,6 +14,7 @@ import {
   CalculateBendingResponse,
   CalculateBendingPayload,
 } from "@/lib/services/calculationService";
+import { getOrCreateGuestId } from "@/lib/guestId";
 import { toast } from "sonner";
 
 const BendingPage = () => {
@@ -66,7 +67,7 @@ const BendingPage = () => {
         } else if (dim.key !== "L") {
           // Exclude length dimension - it's already in the length field
           const char =
-            alphabeticalKeys[sizeIdx - 1] || String.fromCharCode(64 + sizeIdx);
+            alphabeticalKeys[sizeIdx - 1] || String.fromCodePoint(64 + sizeIdx);
           payload[`size${char}`] = currentDimensions[dim.key] || 0;
           sizeIdx++;
         }
@@ -74,7 +75,7 @@ const BendingPage = () => {
 
       // Fill remaining with 0 if needed (api example showed up to 6)
       for (let i = sizeIdx; i <= 6; i++) {
-        const char = alphabeticalKeys[i - 1] || String.fromCharCode(64 + i);
+        const char = alphabeticalKeys[i - 1] || String.fromCodePoint(64 + i);
         if (!payload[`size${char}`]) payload[`size${char}`] = 0;
       }
       for (let i = degreeIdx; i <= 6; i++) {
@@ -158,7 +159,7 @@ const BendingPage = () => {
   };
 
   const handleDimensionChange = (key: string, valueStr: string) => {
-    const value = parseInt(valueStr) || 0;
+    const value = Number.parseInt(valueStr) || 0;
     const dimensionConfig = selectedTemplate?.dimensions.find(
       (d) => d.key === key,
     );
@@ -195,14 +196,16 @@ const BendingPage = () => {
       },
       pricing: calculationResult.pricing,
       shippingStatus: calculationResult.shippingStatus,
+      userId: session?.user?.id,
+      guestId: !session?.user?.id ? getOrCreateGuestId() : undefined,
     };
 
     addToCart(payload, {
       onSuccess: () => {
         toast.success("Successfully added to cart");
       },
-      onError: () => {
-        toast.error("Please login to add items to cart");
+      onError: (err: { message?: string }) => {
+        toast.error(err?.message || "Failed to add to cart");
       },
     });
   };
@@ -395,58 +398,6 @@ const BendingPage = () => {
                       </div>
                     </div>
 
-                    {/* SIZES Section */}
-                    {/* <div className="space-y-3">
-                      <label className="block text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                        <div className="w-1.5 h-6 bg-[#7E1800]"></div>
-                        SIZES (MM)
-                      </label>
-                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                        {selectedTemplate.dimensions
-                          .filter(
-                            (dim) =>
-                              !dim.key.toLowerCase().includes("degree") &&
-                              !dim.key.toLowerCase().includes("angle") &&
-                              !dim.key.toLowerCase().includes("length"),
-                          )
-                          .map((dim) => (
-                            <div key={dim.key} className="space-y-2">
-                              <div className="flex justify-between items-end">
-                                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                  {dim.label || `Size ${dim.key}`}
-                                </label>
-                                <span className="text-[12px] text-slate-400 font-mono">
-                                  {dim.minRange}mm-{dim.maxRange}mm
-                                </span>
-                              </div>
-                              <div className="relative group">
-                                <input
-                                  type="number"
-                                  min={dim.minRange}
-                                  max={dim.maxRange}
-                                  value={dimensions[dim.key] || ""}
-                                  onChange={(e) =>
-                                    handleDimensionChange(dim.key, e.target.value)
-                                  }
-                                  className={`${BASE_BOX} ${errors[dim.key]
-                                    ? "border-red-500 focus:border-red-600"
-                                    : "border-slate-200 focus:border-[#7E1800]"
-                                    } outline-none font-semibold text-slate-900`}
-                                  placeholder={`${dim.minRange}`}
-                                />
-                              </div>
-                              <p className="text-[10px] text-slate-500 font-medium">
-                                Unit: {dim.unit || "MM"}
-                              </p>
-                              {errors[dim.key] && (
-                                <p className="text-[10px] text-red-500 font-medium">
-                                  {errors[dim.key]}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                      </div>
-                    </div> */}
                     {/* MAIN CONTAINER */}
                     <div className="space-y-8">
                       {/* 1. SIZES SECTION (MM) - Standard Brand Color */}
@@ -574,7 +525,7 @@ const BendingPage = () => {
                                     errors[dim.key]
                                       ? "border-red-500 focus:border-red-600"
                                       : "border-slate-200 focus:border-[#7E1800]"
-                                  } bg-gray/30 outline-none font-bold text-lg text-slate-900`}
+                                  } outline-none font-bold text-lg text-slate-900`}
                                   placeholder={dim.minRange.toString()}
                                 />
                                 {errors[dim.key] && (

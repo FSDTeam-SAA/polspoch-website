@@ -16,7 +16,8 @@ import HeadingText from "./HeadingText";
 
 export default function MostPopularProducts() {
   const { data, isLoading, isError } = useProducts({ limit: 8 }, true);
-  const products = data?.data || [];
+  //  Ensure maximum 8 products shown
+  const products = data?.data?.slice(0, 8) || [];
 
   return (
     <section className="py-16 bg-white">
