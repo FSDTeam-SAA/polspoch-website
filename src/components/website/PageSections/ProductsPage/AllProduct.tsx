@@ -27,7 +27,7 @@ const AllProduct: React.FC = () => {
   const pathname = usePathname();
 
   const family = searchParams.get("family") || undefined;
-  const search = searchParams.get("search") || undefined; // Derive search from URL
+  const search = searchParams.get("search") || undefined;
 
   const updateQueryParams = (newFamily?: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -245,6 +245,32 @@ const AllProduct: React.FC = () => {
                     </div>
                   </CardHeader>
 
+                  {/* Global Available Finish Qualities */}
+                  {(() => {
+                    const uniqueQualities = Array.from(
+                      new Set(
+                        p.features?.map((f) => f.finishQuality).filter(Boolean),
+                      ),
+                    ).sort();
+
+                    if (uniqueQualities.length === 0) return null;
+
+                    return (
+                      <div className="">
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueQualities.map((quality) => (
+                            <span
+                              key={quality}
+                              className="px-2.5 py-1 bg-[#7E1800]/5 text-[#7E1800] border border-[#7E1800]/20 rounded-md text-xs font-medium"
+                            >
+                              {quality}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   <CardContent className="p-0 mt-2 flex-1">
                     <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
                       {p.unitSizeCustomizationNote ??
@@ -252,7 +278,7 @@ const AllProduct: React.FC = () => {
                     </p>
                   </CardContent>
                   <Link href={`/products/${slugify(p.productName)}-${p._id}`}>
-                    <CardFooter className="p-0 mt-4 pt-0">
+                    <CardFooter className="p-0 pt-0">
                       <Button className="group w-full bg-[#7E1800] hover:bg-[#7E1800]/90 cursor-pointer text-white rounded-lg flex items-center justify-center gap-2 py-5 transition-all relative z-20 font-bold">
                         <span>Comprar ahora</span>
                         <ShoppingBag
