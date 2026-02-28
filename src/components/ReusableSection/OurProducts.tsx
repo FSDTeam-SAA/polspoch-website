@@ -14,11 +14,11 @@ export default function OurProducts() {
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4 text-center">
         {/* Heading */}
-        <h2 className="text-3xl md:text-4xl font-semibold text-gray-900">
+        <h2 className="text-4xl md:text-5xl font-bold text-slate-900">
           Descubre nuestro catálogo de Hierro y Acero
         </h2>
 
-        <p className="max-w-2xl mx-auto mt-2 text-gray-500 text-sm">
+        <p className="max-w-2xl mx-auto mt-4 text-slate-600 text-lg">
           Tu Almacén de Hierro Online: Encuentra la mayor variedad de tubos,
           vigas, chapas o perfiles, todo con corte personalizado
         </p>

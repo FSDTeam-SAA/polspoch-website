@@ -84,11 +84,11 @@ export default function Navbar() {
   }, []);
 
   const menuItems = [
-    { href: "/", label: "Home" },
-    { href: "/products", label: "Products" },
-    { href: "/servicios", label: "Servicios", hasDropdown: true },
-    { href: "/about-us", label: "About" },
-    { href: "/contact-us", label: "Contact Us" },
+    { href: "/", label: "HOME" },
+    { href: "/products", label: "PRODUCTOS" },
+    { href: "/servicios", label: "SERVICIOS", hasDropdown: true },
+    { href: "/about-us", label: "SOBRE NOSOTROS" },
+    { href: "/contact-us", label: "CONTACTO" },
   ];
 
   const servicesSubItems = [
