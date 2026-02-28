@@ -130,19 +130,13 @@ export default function Review() {
               >
                 <CardContent className="text-left flex flex-col h-full justify-start p-6">
                   <div className="flex items-center gap-3">
-                    {t.image ? (
-                      <Image
-                        src={t.image}
-                        alt={t.name}
-                        width={72}
-                        height={72}
-                        className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0 object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center w-16 h-16 object-cover text-2xl bg-red-500 text-white rounded-full font-medium">
-                        {t.name?.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <div className="flex items-center justify-center w-16 h-16 bg-red-600 text-white rounded-full font-bold text-2xl uppercase">
+                      {t.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)}
+                    </div>
                     <div>
                       <p className="font-semibold text-gray-800">{t.name}</p>
                       {t.location && (
@@ -169,8 +163,8 @@ export default function Review() {
             variant="ghost"
             disabled={currentIndex === 0}
             className={`rounded-full w-10 h-10 transition-all duration-200 hover:scale-110 ${currentIndex === 0
-                ? " bg-white opacity-40 cursor-not-allowed"
-                : "hover:bg-[#7E1800] cursor-pointer"
+              ? " bg-white opacity-40 cursor-not-allowed"
+              : "hover:bg-[#7E1800] cursor-pointer"
               }`}
           >
             <ChevronLeft className="text-white w-5 h-5" />
@@ -197,8 +191,8 @@ export default function Review() {
             variant="ghost"
             disabled={currentIndex === maxIndex}
             className={`rounded-full w-10 h-10 transition-all duration-200 hover:scale-110 ${currentIndex === maxIndex
-                ? " bg-white opacity-40 cursor-not-allowed"
-                : "hover:bg-[#7E1800] cursor-pointer"
+              ? " bg-white opacity-40 cursor-not-allowed"
+              : "hover:bg-[#7E1800] cursor-pointer"
               }`}
           >
             <ChevronRight className="text-white w-5 h-5" />

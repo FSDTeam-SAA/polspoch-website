@@ -22,7 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SelectedConfiguration from "./SelectedConfiguration";
 import { Info } from "lucide-react";
 import { getOrCreateGuestId } from "@/lib/guestId";
-import { calculateShippingCost } from "@/lib/shippingUtils";
+import { useQuery } from "@tanstack/react-query";
+import { getShippingPrice } from "@/lib/api";
 
 // Helper tooltips
 const TOOLTIPS = {
@@ -402,39 +403,25 @@ export default function ProductDetails() {
     [selectedFeature],
   );
 
-  const totalWeight = useMemo(() => {
+  const singleUnitWeight = useMemo(() => {
     if (!selectedFeature) return 0;
     const kgsPerUnit = selectedFeature.kgsPerUnit ?? 0;
     const meters = effectiveLengthMm / 1000;
-    return kgsPerUnit * meters * quantity;
-  }, [selectedFeature, effectiveLengthMm, quantity]);
-
-  const { shippingCost, shippingMethod } = useMemo(() => {
-    if (!selectedFeature) return { shippingCost: 0, shippingMethod: "courier" };
-    // Use effective length for calculation
-    const lengthMm = effectiveLengthMm;
-    const isCourier = lengthMm <= 2500;
-
-    // Calculate weight for a single unit
-    const kgsPerUnit = selectedFeature.kgsPerUnit ?? 0;
-    const meters = lengthMm / 1000;
-    const singleUnitWeight = kgsPerUnit * meters;
-
-    // Calculate shipping cost for a single unit
-    const singleUnitShippingCost = calculateShippingCost(
-      singleUnitWeight,
-      lengthMm,
-      isCourier,
-    );
-
-    // Shipping cost independent of quantity
-    const totalShippingCost = singleUnitShippingCost;
-
-    return {
-      shippingCost: totalShippingCost,
-      shippingMethod: isCourier ? "courier" : "truck",
-    };
+    return kgsPerUnit * meters;
   }, [selectedFeature, effectiveLengthMm]);
+
+  const totalWeight = useMemo(() => {
+    return singleUnitWeight * quantity;
+  }, [singleUnitWeight, quantity]);
+
+  const { data: shippingData, isFetching: isShippingLoading } = useQuery({
+    queryKey: ["shippingQuote", totalWeight, effectiveLengthMm],
+    queryFn: () => getShippingPrice({ totalWeight, maxDimension: effectiveLengthMm }),
+    enabled: !!selectedFeature && totalWeight > 0 && effectiveLengthMm > 0,
+  });
+
+  const shippingCost = shippingData?.shippingPrice || 15;
+  const shippingMethod = shippingData?.shippingStatus?.method || "courier";
 
   const productPrice = useMemo(() => {
     if (!selectedFeature) return 0;
@@ -476,7 +463,8 @@ export default function ProductDetails() {
   const canCheckout =
     !!selectedFeature &&
     quantity > 0 &&
-    (hasAnyLengthOption ? isLengthSelected : true);
+    (hasAnyLengthOption ? isLengthSelected : true) &&
+    !isShippingLoading;
 
   const hasAnySelection =
     selectedThickness ||
@@ -648,11 +636,10 @@ export default function ProductDetails() {
                   <button
                     key={idx}
                     onClick={() => setSelectedThumbnail(idx)}
-                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${
-                      selectedThumbnail === idx
-                        ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                        : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
-                    }`}
+                    className={`relative w-24 h-24 rounded-xl overflow-hidden border-3 shrink-0 transition-all duration-200 ${selectedThumbnail === idx
+                      ? "border-[#7E1800] shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                      : "border-[#7E1800]/20 hover:border-[#7E1800]/40 hover:scale-102"
+                      }`}
                   >
                     <Image
                       src={img.url}
@@ -728,13 +715,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                            isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                          }`}
+                          className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                            : isAvailable
+                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                         >
                           {size}
                         </button>
@@ -776,13 +762,12 @@ export default function ProductDetails() {
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                              isSelected
-                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                : isAvailable
-                                  ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                              }`}
                           >
                             {size}
                           </button>
@@ -826,13 +811,12 @@ export default function ProductDetails() {
                               )
                             }
                             disabled={!isAvailable && !isSelected}
-                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                              isSelected
-                                ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                : isAvailable
-                                  ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                  : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                            }`}
+                            className={`min-w-[60px] px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                              : isAvailable
+                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                              }`}
                           >
                             {thickness}
                           </button>
@@ -872,13 +856,12 @@ export default function ProductDetails() {
                             )
                           }
                           disabled={!isAvailable && !isSelected}
-                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${
-                            isSelected
-                              ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                              : isAvailable
-                                ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
-                          }`}
+                          className={`px-3 py-2 rounded-lg font-medium text-xs transition-all ${isSelected
+                            ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                            : isAvailable
+                              ? "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                              : "bg-gray-50 border border-gray-100 text-gray-300 cursor-not-allowed opacity-50"
+                            }`}
                         >
                           {quality}
                         </button>
@@ -930,11 +913,10 @@ export default function ProductDetails() {
                                   <button
                                     key={size}
                                     onClick={() => handleUnitSizeSelect(size)}
-                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${
-                                      selectedUnitSizeMm === size
-                                        ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
-                                        : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
-                                    }`}
+                                    className={`px-4 py-2 rounded-lg font-medium text-xs transition-all ${selectedUnitSizeMm === size
+                                      ? "bg-[#7E1800] text-white shadow-lg scale-105 ring-2 ring-[#7E1800]/30"
+                                      : "bg-white border border-[#7E1800]/20 text-gray-700 hover:border-[#7E1800]/40 hover:shadow-sm"
+                                      }`}
                                   >
                                     {size}mm
                                   </button>
@@ -1060,12 +1042,16 @@ export default function ProductDetails() {
                     />
                   </div>
                   <div
-                    className={`p-4 rounded-lg border-2 flex items-center justify-between ${
-                      shippingMethod === "courier"
-                        ? "bg-green-50 border-green-300"
-                        : "bg-blue-50 border-blue-300"
-                    }`}
+                    className={`relative p-4 rounded-lg border-2 flex items-center justify-between transition-all ${shippingMethod === "courier"
+                      ? "bg-green-50 border-green-300"
+                      : "bg-blue-50 border-blue-300"
+                      } ${isShippingLoading ? "opacity-60" : ""}`}
                   >
+                    {isShippingLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px] rounded-lg z-10">
+                        <Loader2 className="w-6 h-6 animate-spin text-[#7E1800]" />
+                      </div>
+                    )}
                     <div>
                       <div
                         className={`font-bold text-base ${shippingMethod === "courier" ? "text-green-800" : "text-blue-800"}`}
@@ -1138,12 +1124,12 @@ export default function ProductDetails() {
                           €{productPrice.toFixed(2)}
                         </span>
                       </div>
-                      {/* <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
+                      <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
                         <span className="text-gray-600">Precio de envío:</span>
                         <span className="font-semibold text-gray-900">
                           €{shippingCost.toFixed(2)}
                         </span>
-                      </div> */}
+                      </div>
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-gray-900">
                           Importe Total:
@@ -1181,12 +1167,11 @@ export default function ProductDetails() {
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={handleAddToCart}
-                    disabled={!canCheckout || isPending}
-                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${
-                      canCheckout && !isPending
-                        ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
+                    disabled={!canCheckout || isPending || isShippingLoading}
+                    className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-bold text-lg transition-all ${canCheckout && !isPending && !isShippingLoading
+                      ? "bg-gradient-to-r from-[#7E1800] to-[#7E1800]/80 text-white hover:from-[#7E1800]/80 hover:to-[#7E1800] shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      }`}
                   >
                     {isPending ? (
                       <Loader2 className="animate-spin" size={22} />
@@ -1195,9 +1180,11 @@ export default function ProductDetails() {
                     )}
                     {isPending
                       ? "Añadiendo..."
-                      : canCheckout
-                        ? "Añadir al carro"
-                        : "Seleccione el largo para continuar"}
+                      : isShippingLoading
+                        ? "Calculando envío..."
+                        : canCheckout
+                          ? "Añadir al carro"
+                          : "Seleccione el largo para continuar"}
                   </button>
 
                   {selectedFeature &&
