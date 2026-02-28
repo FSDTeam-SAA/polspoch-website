@@ -3,12 +3,36 @@ import ProductsPage from "@/components/website/PageSections/ProductsPage/Product
 import { Metadata } from "next";
 import React from "react";
 
-export const metadata: Metadata = {
-  title:
-    "Comprar Hierro a Medida Online | Tubos, Vigas y Chapas | Hierroamedida.com",
-  description:
-    "Tu almacén de hierro digital en España. Compra tubos, vigas, chapas, pletinas, ángulos y mucho más con corte a medida exacto. Venta a particulares sin pedido mínimo, envío a domicilio y al mejor precio.",
-};
+import { getSeoMetadata } from "@/lib/seo";
+
+export async function generateMetadata(props: {
+  searchParams: Promise<{ family?: string }>;
+}): Promise<Metadata> {
+  const searchParams = await props.searchParams;
+  // Extract family name from slug if present (Format is "family-name-mongoID")
+  const familySlug = searchParams.family || "";
+  let categoryName = null;
+
+  if (familySlug) {
+    const parts = familySlug.split("-");
+    const last = parts.at(-1) || "";
+    const isObjectId = /^[a-f0-9]{24}$/i.test(last);
+
+    // Attempt to parse out the pure family name
+    if (isObjectId && parts.length > 1) {
+      categoryName = parts.slice(0, -1).join(" ");
+    } else {
+      categoryName = familySlug.replace(/-/g, " ");
+    }
+  }
+
+  const seoData = getSeoMetadata(categoryName);
+
+  return {
+    title: seoData.title,
+    description: seoData.description,
+  };
+}
 
 export default function page() {
   return (
