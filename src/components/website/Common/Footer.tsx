@@ -12,19 +12,19 @@ import { Product } from "@/lib/types/product";
 import { slugify } from "@/lib/utils";
 
 const companyLinks = [
-  { label: "Home", href: "/" },
-  { label: "Products", href: "/products" },
-  { label: "Services", href: "/#service-card" },
-  { label: "About", href: "/about-us" },
-  { label: "Contact Us", href: "/contact-us" },
+  { label: "HOME", href: "/" },
+  { label: "PRODUCTOS", href: "/products" },
+  { label: "SERVICIOS", href: "/#service-card" },
+  { label: "SOBRE NOSOTROS", href: "/about-us" },
+  { label: "CONTACTO", href: "/contact-us" },
 ];
 
 const legalLinks = [
-  { label: "Terms & Conditions", href: "/terms-conditions" },
-  { label: "Privacy & Policy", href: "/privacy-policy" },
-  { label: "Shipping Policy", href: "/#ShippingPolicy" },
-  { label: "Cookies Policy", href: "/cookies-policy" },
-  { label: "FAQs", href: "/contact-us#faq-section" },
+  { label: "Términos y condiciones", href: "/terms-conditions" },
+  { label: "Política de privacidad", href: "/privacy-policy" },
+  { label: "Política de envíos", href: "/#ShippingPolicy" },
+  { label: "Política de cookies", href: "/cookies-policy" },
+  { label: "Preguntas frecuentes", href: "/contact-us#faq-section" },
 ];
 
 const FooterList: FC<{
@@ -86,22 +86,21 @@ const Footer = () => {
             />
           </Link>
           <p className="text-white">
-            Design amazing digital experiences that create more happy in the
-            world.
+            El primer almacén de hierros y aceros digital en España
           </p>
         </div>
 
-        <FooterList title="Company" items={companyLinks} />
+        <FooterList title="HIERRO A MEDIDA" items={companyLinks} />
         <FooterList
-          title="Product"
+          title="PRODUCTOS"
           items={productLinks}
           isLoading={isLoading}
         />
-        <FooterList title="Legal" items={legalLinks} />
+        <FooterList title="LEGAL" items={legalLinks} />
 
         {/* Contact Section */}
         <div>
-          <h3 className="font-semibold text-3xl text-white mb-4">Contact Us</h3>
+          <h3 className="font-semibold text-3xl text-white mb-4">CONTACTO</h3>
           <ul className="space-y-4 text-white">
             <li className="flex items-center gap-2">
               <Phone className="w-4 h-4" />
@@ -116,10 +115,10 @@ const Footer = () => {
             <li className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
               <a
-                href="mailto:example@example.com"
+                href="mailto:hola@hierroamedida.com"
                 className="hover:underline text-[10px] sm:text-xs md:text-sm transition-colors"
               >
-                example@example.com
+                hola@hierroamedida.com
               </a>
             </li>
 

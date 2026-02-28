@@ -8,15 +8,15 @@ const HeadingText = ({
 }) => {
   return (
     <div className={`text-${align} p-5 mb-8 max-w-3xl mx-auto`}>
-      <p className="text-sm text-[#A0462C] font-medium tracking-wide">
+      <p className="text-sm md:text-base text-[#A0462C] font-bold tracking-wider">
         {subHeading}
       </p>
 
-      <h2 className="text-3xl md:text-4xl text-[#2C343E] font-semibold mt-2">
+      <h2 className="text-4xl md:text-5xl text-slate-900 font-bold mt-2">
         {heading}
       </h2>
 
-      <p className="text-[#6B7280] mt-3 leading-relaxed">
+      <p className="text-lg md:text-xl text-slate-600 mt-4 leading-relaxed max-w-2xl mx-auto">
         {description}
       </p>
     </div>
