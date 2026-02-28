@@ -56,7 +56,7 @@ export default function Navbar() {
     data: { data: CartItem[] } | undefined;
   };
 
-  console.log(cart?.data?.length);
+  // console.log(cart?.data?.length);
 
   const servicesRef = useRef<HTMLDivElement>(null);
 
@@ -86,19 +86,19 @@ export default function Navbar() {
   const menuItems = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Products" },
-    { href: "/services", label: "Services", hasDropdown: true },
+    { href: "/servicios", label: "Servicios", hasDropdown: true },
     { href: "/about-us", label: "About" },
     { href: "/contact-us", label: "Contact Us" },
   ];
 
   const servicesSubItems = [
-    { href: "/services/rebar", label: "Ferralla" },
-    { href: "/services/cutting", label: "Corte Chapa CNC" },
-    { href: "/services/bending", label: "Plegado de Chapa" },
+    { href: "/servicios/ferralla", label: "Ferralla" },
+    { href: "/servicios/corte-chapa-cnc", label: "Corte Chapa CNC" },
+    { href: "/servicios/plegado-de-chapa", label: "Plegado de Chapa" },
   ];
 
   // Check if current path is any services page
-  const isServicesActive = pathname?.startsWith("/services");
+  const isServicesActive = pathname?.startsWith("/servicios");
 
   return (
     <AlertDialog>

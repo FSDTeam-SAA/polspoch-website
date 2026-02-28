@@ -12,7 +12,7 @@ export default function OurServices() {
       btn: "Calcular Precios",
       img: "/images/REBAR-FACILITES.png",
       icon: Ruler,
-      href: "/services/cutting",
+      href: "/servicios/corte-chapa-cnc",
     },
     {
       title: "Plegado de Chapa",
@@ -20,7 +20,7 @@ export default function OurServices() {
       btn: "Calcular Precios",
       img: "/images/BENDING-PRODUCT.png",
       icon: Settings,
-      href: "/services/bending",
+      href: "/servicios/plegado-de-chapa",
     },
     {
       title: "Ferralla",
@@ -28,7 +28,7 @@ export default function OurServices() {
       btn: "Calcular Precios",
       img: "/images/REBAR-DETAIL.png",
       icon: Box,
-      href: "/services/rebar",
+      href: "/servicios/ferralla",
     },
   ];
 
