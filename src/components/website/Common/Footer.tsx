@@ -9,6 +9,7 @@ import { FaFacebook, FaLinkedin } from "react-icons/fa";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Product } from "@/lib/types/product";
+import { slugify } from "@/lib/utils";
 
 const companyLinks = [
   { label: "Home", href: "/" },
@@ -65,7 +66,7 @@ const Footer = () => {
   const productLinks =
     data?.data?.slice(0, 5).map((p: Product) => ({
       label: p.productName,
-      href: `/products/${p._id}`,
+      href: `/products/${slugify(p.productName)}-${p._id}`,
     })) || [];
 
   return (

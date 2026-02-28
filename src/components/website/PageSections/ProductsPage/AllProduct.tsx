@@ -16,6 +16,7 @@ import Image from "next/image";
 import { ShoppingCart, ShoppingBag, Filter } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
+import { slugify } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -57,15 +58,17 @@ const AllProduct: React.FC = () => {
 
   const selectedFamilyName = useMemo(() => {
     if (!family || categories.length === 0) return family;
-    const found = categories.find((c) => c._id === family);
+    const found = categories.find(
+      (c) => `${slugify(c.familyName)}-${c._id}` === family,
+    );
     return found ? found.familyName : family;
   }, [family, categories]);
 
-  const handleCategoryClick = (id: string) => {
-    if (family === id) {
+  const handleCategoryClick = (catSlugId: string) => {
+    if (family === catSlugId) {
       updateQueryParams(null);
     } else {
-      updateQueryParams(id);
+      updateQueryParams(catSlugId);
     }
   };
 
@@ -83,43 +86,48 @@ const AllProduct: React.FC = () => {
                   <Skeleton className="absolute inset-0 w-full h-full" />
                 </div>
               ))
-            : categories.map((cat) => (
-                <button
-                  key={cat._id}
-                  onClick={() => handleCategoryClick(cat._id)}
-                  className={clsx(
-                    "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
-                    family === cat._id
-                      ? "border-[#7E1800] shadow-xl scale-105 z-10"
-                      : "border-transparent hover:border-[#7E1800]/40",
-                  )}
-                >
-                  {cat.img?.url ? (
-                    <Image
-                      src={cat.img.url}
-                      alt={cat.familyName}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">Sin imagen</span>
-                    </div>
-                  )}
-                  <div
+            : categories.map((cat) => {
+                const catSlugId = `${slugify(cat.familyName)}-${cat._id}`;
+                return (
+                  <button
+                    key={cat._id}
+                    onClick={() => handleCategoryClick(catSlugId)}
                     className={clsx(
-                      "absolute inset-0 flex items-center justify-center transition-colors duration-300",
-                      family === cat._id
-                        ? "bg-[#7E1800]/40"
-                        : "bg-black/40 group-hover:bg-black/20",
+                      "group relative h-28 rounded-xl overflow-hidden cursor-pointer border-3 transition-all duration-300",
+                      family === catSlugId
+                        ? "border-[#7E1800] shadow-xl scale-105 z-10"
+                        : "border-transparent hover:border-[#7E1800]/40",
                     )}
                   >
-                    <span className="text-white font-bold text-lg tracking-wide uppercase text-center px-2">
-                      {cat.familyName}
-                    </span>
-                  </div>
-                </button>
-              ))}
+                    {cat.img?.url ? (
+                      <Image
+                        src={cat.img.url}
+                        alt={cat.familyName}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-400 text-xs">
+                          Sin imagen
+                        </span>
+                      </div>
+                    )}
+                    <div
+                      className={clsx(
+                        "absolute inset-0 flex items-center justify-center transition-colors duration-300",
+                        family === catSlugId
+                          ? "bg-[#7E1800]/40"
+                          : "bg-black/40 group-hover:bg-black/20",
+                      )}
+                    >
+                      <span className="text-white font-bold text-lg tracking-wide uppercase text-center px-2">
+                        {cat.familyName}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
         </div>
         {family && (
           <div className="flex justify-center mt-6">
@@ -204,7 +212,7 @@ const AllProduct: React.FC = () => {
                   className="group/card p-3 hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden flex flex-col h-full relative border-2 border-transparent hover:border-[#7E1800]/10"
                 >
                   <Link
-                    href={`/products/${p._id}`}
+                    href={`/products/${slugify(p.productName)}-${p._id}`}
                     className="absolute inset-0 z-10"
                   />
                   {/* Image */}
@@ -243,7 +251,7 @@ const AllProduct: React.FC = () => {
                         "High-quality industrial steel product built for precision and durability."}
                     </p>
                   </CardContent>
-                  <Link href={`/products/${p._id}`}>
+                  <Link href={`/products/${slugify(p.productName)}-${p._id}`}>
                     <CardFooter className="p-0 mt-4 pt-0">
                       <Button className="group w-full bg-[#7E1800] hover:bg-[#7E1800]/90 cursor-pointer text-white rounded-lg flex items-center justify-center gap-2 py-5 transition-all relative z-20 font-bold">
                         <span>Comprar ahora</span>
