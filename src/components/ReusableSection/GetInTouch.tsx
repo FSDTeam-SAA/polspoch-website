@@ -22,16 +22,15 @@ import { Loader2 } from "lucide-react";
 
 // Zod schema using union of literals
 const formSchema = z.object({
-  fname: z.string().min(1, "First Name is required"),
-  lname: z.string().min(1, "Last Name is required"),
-  email: z.string().email("Invalid email address"),
+  fname: z.string().min(1, "El nombre es obligatorio"),
+  lname: z.string().min(1, "El apellido es obligatorio"),
+  email: z.string().email("Correo electrónico no válido"),
   phone: z
     .string()
-    .min(10, "Phone number must be at least 10 digits")
-    .max(15, "Phone number is too long"),
-  message: z.string().min(1, "Message is required"),
+    .min(9, "El número de teléfono debe tener al menos 9 dígitos"),
+  message: z.string().min(1, "El mensaje es obligatorio"),
   agree: z.boolean().refine((val) => val === true, {
-    message: "You must agree to the privacy policy",
+    message: "Debes aceptar la política de privacidad",
   }),
 });
 
@@ -65,13 +64,13 @@ export default function GetInTouch() {
       const res = await submitContact(payload);
 
       if (res?.success) {
-        toast.success("Your message has been sent successfully! ");
+        toast.success("¡Tu mensaje ha sido enviado con éxito!");
         form.reset();
       } else {
-        toast.error("Failed to send message ");
+        toast.error("Error al enviar el mensaje");
       }
-    } catch (error) {
-      toast.error("Something went wrong while sending the message.");
+    } catch {
+      toast.error("Algo salió mal al enviar el mensaje.");
     }
   }
 
@@ -82,10 +81,10 @@ export default function GetInTouch() {
         <div className="p-10 h-full ">
           {/* Title */}
           <h2 className="text-4xl font-semibold text-[#1a1a1a] mb-2">
-            Get in touch
+            ¡Deja aquí tu mensaje!
           </h2>
           <p className="text-[#606060] mb-8">
-            Our friendly team would love to hear from you.
+            Nuestro equipo se pondrá en contacto contigo en breve
           </p>
 
           <Form {...form}>
@@ -98,11 +97,11 @@ export default function GetInTouch() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm text-[#4a4a4a]">
-                        First name
+                        Nombre
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="First name"
+                          placeholder="Nombre"
                           {...field}
                           className="h-12 rounded-lg border border-[#d3d3d3]"
                         />
@@ -118,11 +117,11 @@ export default function GetInTouch() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm text-[#4a4a4a]">
-                        Last name
+                        Apellido
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Last name"
+                          placeholder="Apellido"
                           {...field}
                           className="h-12 rounded-lg border border-[#d3d3d3]"
                         />
@@ -144,7 +143,7 @@ export default function GetInTouch() {
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="olivia@untitledui.com"
+                        placeholder="tu@email.com"
                         {...field}
                         className="h-12 rounded-lg border border-[#d3d3d3]"
                       />
@@ -161,22 +160,13 @@ export default function GetInTouch() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm text-[#4a4a4a]">
-                      Phone number
+                      Teléfono
                     </FormLabel>
 
                     <div className="flex gap-2">
-                      {/* Country Dropdown */}
-                      <select className="h-12 w-28 rounded-lg border border-[#d3d3d3] px-2">
-                        <option>US</option>
-                        <option>UK</option>
-                        <option>CA</option>
-                        <option>AU</option>
-                      </select>
-
-                      {/* Actual Number */}
                       <FormControl>
                         <Input
-                          placeholder="+1 (555) 000–0000"
+                          placeholder="600 000 000"
                           {...field}
                           className="h-12 rounded-lg border border-[#d3d3d3] flex-1"
                         />
@@ -195,11 +185,11 @@ export default function GetInTouch() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm text-[#4a4a4a]">
-                      Message
+                      Mensaje
                     </FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder=""
+                        placeholder="Escribe tu mensaje aquí..."
                         {...field}
                         className="h-[140px] rounded-lg border border-[#d3d3d3] p-3"
                       />
@@ -226,9 +216,9 @@ export default function GetInTouch() {
                       </FormControl>
 
                       <p className="text-sm text-[#4a4a4a]">
-                        You agree to our friendly{" "}
+                        Acepto la{" "}
                         <span className="text-[#b62400] font-medium cursor-pointer">
-                          privacy policy
+                          política de privacidad
                         </span>
                         .
                       </p>
@@ -249,10 +239,10 @@ export default function GetInTouch() {
                 {loading ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Sending...
+                    Enviando...
                   </>
                 ) : (
-                  "Send message"
+                  "Enviar mensaje"
                 )}
               </Button>
             </form>
