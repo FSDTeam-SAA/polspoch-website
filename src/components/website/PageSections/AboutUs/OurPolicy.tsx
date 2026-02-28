@@ -20,7 +20,7 @@ const SHIPPING_METHODS = [
     baseSize: "Up to 2000 mm",
     extraWeight: "+0.50€ per kg (over 30kg)",
     extraSize: "+20.00€ (if ≥ 2000 mm)",
-    maxCapacity: "2500 mm / 150.00€ Cap",
+    maxCapacity: "2500 mm / 60.00€ Cap",
     eta: "3 - 5 Business Days",
   },
   {
@@ -128,11 +128,10 @@ const OurPolicy = () => {
                       <TableCell className="pl-6 py-4">
                         <div className="flex items-center gap-4">
                           <div
-                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${
-                              m.type === "truck"
+                            className={`flex items-center justify-center w-12 h-12 rounded-xl border ${m.type === "truck"
                                 ? "bg-blue-50 border-blue-100 text-blue-600"
                                 : "bg-rose-50 border-rose-100 text-rose-600"
-                            }`}
+                              }`}
                           >
                             {m.type === "truck" ? (
                               <Truck className="w-6 h-6" />

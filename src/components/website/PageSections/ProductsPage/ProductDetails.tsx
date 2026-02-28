@@ -1138,12 +1138,12 @@ export default function ProductDetails() {
                           €{productPrice.toFixed(2)}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
+                      {/* <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
                         <span className="text-gray-600">Precio de envío:</span>
                         <span className="font-semibold text-gray-900">
                           €{shippingCost.toFixed(2)}
                         </span>
-                      </div>
+                      </div> */}
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-gray-900">
                           Importe Total:

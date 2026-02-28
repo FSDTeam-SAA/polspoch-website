@@ -73,12 +73,19 @@ export default function MostPopularProducts() {
                 {/* Image */}
                 <div className="w-full h-[220px] relative bg-gray-100 rounded-lg overflow-hidden">
                   {p.productImage && p.productImage[0]?.url ? (
+                    // <Image
+                    //   src={p.productImage[0].url}
+                    //   alt={p.productName}
+                    //   fill
+                    //   className="object-contain transition-transform duration-500 group-hover/card:scale-105"
+                    //   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    // />
                     <Image
                       src={p.productImage[0].url}
                       alt={p.productName}
                       fill
-                      className="object-contain transition-transform duration-500 group-hover/card:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover/card:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-sm text-gray-400">
