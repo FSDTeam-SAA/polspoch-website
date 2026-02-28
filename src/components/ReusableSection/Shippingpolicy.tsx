@@ -10,7 +10,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { useShippingPolicy } from "@/lib/hooks/useShippingPolicy";
-import { ShippingPolicy as IShippingPolicy, AdvancedPolicy } from "@/lib/types/shippingpolicy";
+import { AdvancedPolicy } from "@/lib/types/shippingpolicy";
 
 /* --- Helper for European currency formatting --- */
 const formatPrice = (price: number) =>
@@ -35,60 +35,28 @@ export default function ShippingPolicy() {
 
   if (isLoading || error) return null;
 
-  const { simple = [], advanced = [] } = (data as { simple: IShippingPolicy[]; advanced: AdvancedPolicy[] }) || {};
+  const { advanced = [] } = (data as { advanced: AdvancedPolicy[] }) || {};
 
-  // Find Courier and Truck in BOTH simple and advanced, then merge
-  const courierSimple = simple.find((p) => p.shippingMethod.toLowerCase() === "courier");
   const courierAdv = advanced.find((p) => p.methodName === "courier");
-
-  const truckSimple = simple.find((p) => p.shippingMethod.toLowerCase() === "truck");
   const truckAdv = advanced.find((p) => p.methodName === "truck");
 
-
-  console.log(courierSimple, truckSimple);
   // Reconciled Courier object
   const courier: UnifiedShippingMethod | null = courierAdv ? {
     ...courierAdv,
-    label: courierSimple?.shippingMethod || "Paquetería",
-    eta: courierSimple?.Extras || "2-4 días laborables",
-    sizeHeading: courierSimple?.limits || `MATERIALES DE MEDIDAS INFERIORES A ${courierAdv.maxSizeAllowed / 1000} MTS`,
-    maxPrice: Math.min(courierAdv.maxTotalCost || (courierSimple?.maxPrice ?? 0), 60)
-  } : (courierSimple ? {
-    methodName: "courier",
-    basePrice: courierSimple.minPrice,
-    maxPrice: Math.min(courierSimple.maxPrice, 60),
-    label: courierSimple.shippingMethod,
-    eta: courierSimple.Extras,
-    sizeHeading: courierSimple.limits,
-    // Fallbacks for missing advanced data
-    freeWeightLimit: 30,
-    extraWeightPrice: 0,
-    sizeSurcharge: 0,
-    sizeThreshold: 2000,
-    maxSizeAllowed: 2500,
-  } : null);
+    label: "Paquetería",
+    eta: "2-4 días laborables",
+    sizeHeading: `MATERIALES DE MEDIDAS INFERIORES A ${courierAdv.maxSizeAllowed / 1000} MTS`,
+    maxPrice: Math.min(courierAdv.maxTotalCost, 60)
+  } : null;
 
   // Reconciled Truck object
   const truck: UnifiedShippingMethod | null = truckAdv ? {
     ...truckAdv,
-    label: truckSimple?.shippingMethod || "Camión Grúa",
-    eta: truckSimple?.Extras || "3-6 días laborables",
-    sizeHeading: truckSimple?.limits || "MATERIALES DE MEDIDAS SUPERIORES A 2,5 MTS",
-    maxPrice: truckAdv.maxTotalCost || (truckSimple?.maxPrice ?? 0)
-  } : (truckSimple ? {
-    methodName: "truck",
-    basePrice: truckSimple.minPrice,
-    maxPrice: truckSimple.maxPrice,
-    label: truckSimple.shippingMethod,
-    eta: truckSimple.Extras,
-    sizeHeading: truckSimple.limits,
-    // Fallbacks
-    freeWeightLimit: 0,
-    extraWeightPrice: 0,
-    sizeSurcharge: 0,
-    sizeThreshold: 0,
-    maxSizeAllowed: 0,
-  } : null);
+    label: "Camión Grúa",
+    eta: "3-6 días laborables",
+    sizeHeading: "MATERIALES DE MEDIDAS SUPERIORES A 2,5 MTS",
+    maxPrice: truckAdv.maxTotalCost
+  } : null;
 
   return (
     <section id="ShippingPolicy" className="bg-transparent py-16">
@@ -108,8 +76,12 @@ export default function ShippingPolicy() {
         <Card className="overflow-hidden rounded-2xl border-none shadow-lg">
           {/* Exact Maroon Header */}
           <div className="bg-[#691707] px-6 py-5 text-white">
-            <h3 className="text-lg font-semibold">Comparativa de los métodos de envío</h3>
-            <p className="text-orange-100/80 mt-1 text-sm font-light">Tarifa de envío clara y sin sorpresas</p>
+            <h3 className="text-lg font-semibold">
+              Comparativa de los métodos de envío
+            </h3>
+            <p className="text-orange-100/80 mt-1 text-sm font-light">
+              Tarifa de envío clara y sin sorpresas
+            </p>
           </div>
 
           <CardContent className="p-4 sm:p-8 space-y-10 bg-white">
@@ -138,29 +110,43 @@ export default function ShippingPolicy() {
                   <Table>
                     <TableBody>
                       <TableRow className="border-b border-slate-100">
-                        <TableCell className="font-bold text-slate-700 py-4 px-6 w-[240px] border-r border-slate-100">Tarifa base (Mínimo)</TableCell>
+                        <TableCell className="font-bold text-slate-700 py-4 px-6 w-[240px] border-r border-slate-100">
+                          Tarifa base (Mínimo)
+                        </TableCell>
                         <TableCell className="font-bold text-slate-900 py-4 w-28 text-center border-r border-slate-100">{courier.basePrice} €</TableCell>
-                        <TableCell className="text-slate-500 text-sm px-6 font-normal">Para pedidos de hasta {courier.freeWeightLimit} kg</TableCell>
+                        <TableCell className="text-slate-500 text-sm px-6 font-normal">
+                          Para pedidos de hasta {courier.freeWeightLimit} kg
+                        </TableCell>
                       </TableRow>
 
                       {courier.extraWeightPrice > 0 && (
                         <TableRow className="border-b border-slate-100">
-                          <TableCell className="font-medium text-slate-700 py-4 px-6 border-r border-slate-100">Suplemento por peso</TableCell>
+                          <TableCell className="font-medium text-slate-700 py-4 px-6 border-r border-slate-100">
+                            Suplemento por peso
+                          </TableCell>
                           <TableCell className="font-bold text-slate-900 py-4 text-center border-r border-slate-100">{formatPrice(courier.extraWeightPrice)}</TableCell>
-                          <TableCell className="text-slate-500 text-sm px-6">Por cada kilo extra (a partir de los primeros {courier.freeWeightLimit} kg).</TableCell>
+                          <TableCell className="text-slate-500 text-sm px-6">
+                            Por cada kilo extra (a partir de los primeros {courier.freeWeightLimit} kg).
+                          </TableCell>
                         </TableRow>
                       )}
 
                       {courier.sizeSurcharge > 0 && (
                         <TableRow className="border-b border-slate-100">
-                          <TableCell className="font-medium text-slate-700 py-4 px-6 border-r border-slate-100">Suplemento por longitud</TableCell>
+                          <TableCell className="font-medium text-slate-700 py-4 px-6 border-r border-slate-100">
+                            Suplemento por longitud
+                          </TableCell>
                           <TableCell className="font-bold text-slate-900 py-4 text-center border-r border-slate-100">{courier.sizeSurcharge} €</TableCell>
-                          <TableCell className="text-slate-500 text-sm px-6">Si algún material de tu pedido mide entre {courier.sizeThreshold / 1000} y {courier.maxSizeAllowed / 1000} metros.</TableCell>
+                          <TableCell className="text-slate-500 text-sm px-6">
+                            Si algún material de tu pedido mide entre {courier.sizeThreshold / 1000} y {courier.maxSizeAllowed / 1000} metros.
+                          </TableCell>
                         </TableRow>
                       )}
 
                       <TableRow className="bg-slate-50/30">
-                        <TableCell className="font-black text-slate-900 py-4 px-6 border-r border-slate-100">Tope máximo garantizado</TableCell>
+                        <TableCell className="font-black text-slate-900 py-4 px-6 border-r border-slate-100">
+                          Tope máximo garantizado
+                        </TableCell>
                         <TableCell className="font-black text-slate-900 py-4 text-center border-r border-slate-100 text-lg">{courier.maxPrice} €</TableCell>
                         <TableCell className="text-slate-600 text-sm px-6 italic">
                           Tu envío <span className="font-bold text-slate-900">nunca</span> costará más de {courier.maxPrice} €, pase lo que pase.
@@ -194,9 +180,13 @@ export default function ShippingPolicy() {
                 <Table>
                   <TableBody>
                     <TableRow>
-                      <TableCell className="font-bold text-slate-700 py-5 px-6 w-[240px] border-r border-slate-100">Tarifa fija</TableCell>
+                      <TableCell className="font-bold text-slate-700 py-5 px-6 w-[240px] border-r border-slate-100">
+                        Tarifa fija
+                      </TableCell>
                       <TableCell className="font-bold text-slate-900 py-5 w-28 text-center border-r border-slate-100 text-lg">{truck.basePrice} €</TableCell>
-                      <TableCell className="text-slate-500 text-sm px-6">No importa tamaño ni cantidad, precio cerrado de {truck.basePrice}€/envío</TableCell>
+                      <TableCell className="text-slate-500 text-sm px-6">
+                        No importa tamaño ni cantidad, precio cerrado de {truck.basePrice}€/envío
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -208,9 +198,21 @@ export default function ShippingPolicy() {
         {/* Info Cards (From your original design) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           {[
-            { icon: Package, title: "Envío por paquetería", text: "Para medidas inferiores a 2,5 mts. Entregado a la puerta de tu casa." },
-            { icon: Truck, title: "Envío con camión", text: "Para medidas superiores a 2,5 mts. Asegura acceso para camiones." },
-            { icon: Shield, title: "Sin sorpresas", text: "Te indicaremos en todo momento el tipo de entrega y el importe." }
+            {
+              icon: Package,
+              title: "Envío por paquetería",
+              text: "Para medidas inferiores a 2,5 mts. Entregado a la puerta de tu casa."
+            },
+            {
+              icon: Truck,
+              title: "Envío con camión",
+              text: "Para medidas superiores a 2,5 mts. Asegura acceso para camiones."
+            },
+            {
+              icon: Shield,
+              title: "Sin sorpresas",
+              text: "Te indicaremos en todo momento el tipo de entrega y el importe."
+            }
           ].map((item, idx) => (
             <Card key={idx} className="p-6 text-center border-none shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-center mb-4">

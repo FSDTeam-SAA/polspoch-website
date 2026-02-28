@@ -8,9 +8,9 @@ const page = () => {
   return (
     <div>
       <HeadingText
-        subHeading="Cart"
-        heading="Your Shopping Cart"
-        description="Review your selected products and services before proceeding to checkout."
+        subHeading="CART"
+        heading="Tu carro de la compra"
+        description="Revisa las medidas y cortes de tus productos antes de proceder al check out"
         align="center"
       />
       <CartProducts />
