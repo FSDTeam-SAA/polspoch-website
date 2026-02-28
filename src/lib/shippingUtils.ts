@@ -25,8 +25,8 @@ export function calculateShippingCost(
             cost += extraKg * 0.5;
         }
 
-        // MAXIMUM: 150 € (Cap)
-        return Math.min(cost, 150);
+        // MAXIMUM: 60 € (Cap)
+        return Math.min(cost, 60);
     } else {
         // TRUCK DELIVERY SERVICE (Blue Sizes)
         // MINIMUM PRICE: 60 € (Up to 1000 kgs)

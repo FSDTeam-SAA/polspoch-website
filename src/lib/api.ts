@@ -370,3 +370,27 @@ export async function mergeCart(guestId: string, token: string) {
     throw err;
   }
 }
+
+// get shipping policy (Simple)
+export async function getShippingPolicy() {
+  try {
+    const res = await api.get("/order-shipping");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching shipping policy:", err);
+    throw new Error("Failed to fetch shipping policy");
+  }
+}
+
+// get advanced shipping policies (Courier/Truck)
+export async function getAdvancedShippingPolicies() {
+  try {
+    const res = await api.get("/shippingPolicy/all");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching advanced shipping policies:", err);
+    throw new Error("Failed to fetch advanced shipping policies");
+  }
+}
+
+
