@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ShoppingBag, Loader2 } from "lucide-react";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { Button } from "../ui/button";
+import { slugify } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -66,19 +67,26 @@ export default function MostPopularProducts() {
                 className="group/card p-3 hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden flex flex-col h-full relative border-2 border-transparent hover:border-[#7E1800]/10"
               >
                 <Link
-                  href={`/products/${p._id}`}
+                  href={`/products/${slugify(p.productName)}-${p._id}`}
                   className="absolute inset-0 z-10"
                 />
 
                 {/* Image */}
                 <div className="w-full h-[220px] relative bg-gray-100 rounded-lg overflow-hidden">
                   {p.productImage && p.productImage[0]?.url ? (
+                    // <Image
+                    //   src={p.productImage[0].url}
+                    //   alt={p.productName}
+                    //   fill
+                    //   className="object-contain transition-transform duration-500 group-hover/card:scale-105"
+                    //   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    // />
                     <Image
                       src={p.productImage[0].url}
                       alt={p.productName}
                       fill
-                      className="object-contain transition-transform duration-500 group-hover/card:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover/card:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-sm text-gray-400">
@@ -108,7 +116,7 @@ export default function MostPopularProducts() {
                 </CardContent>
 
                 <Link
-                  href={`/products/${p._id}`}
+                  href={`/products/${slugify(p.productName)}-${p._id}`}
                   className="relative z-20 mt-4"
                 >
                   <CardFooter className="p-0 pt-0">

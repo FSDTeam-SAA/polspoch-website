@@ -12,7 +12,7 @@ export default function OurServices() {
       btn: "Calcular Precios",
       img: "/images/REBAR-FACILITES.png",
       icon: Ruler,
-      href: "/services/cutting",
+      href: "/servicios/corte-chapa-cnc",
     },
     {
       title: "Plegado de Chapa",
@@ -20,7 +20,7 @@ export default function OurServices() {
       btn: "Calcular Precios",
       img: "/images/BENDING-PRODUCT.png",
       icon: Settings,
-      href: "/services/bending",
+      href: "/servicios/plegado-de-chapa",
     },
     {
       title: "Ferralla",
@@ -28,7 +28,7 @@ export default function OurServices() {
       btn: "Calcular Precios",
       img: "/images/REBAR-DETAIL.png",
       icon: Box,
-      href: "/services/rebar",
+      href: "/servicios/ferralla",
     },
   ];
 
@@ -36,14 +36,14 @@ export default function OurServices() {
     <div id="service-card" className="w-full py-20">
       <div className="border mx-auto container bg-[rgb(105,23,7)] p-10 rounded-4xl">
         {/* Heading */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl mb-2 text-white">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-white drop-shadow-md tracking-tight">
             ¡Lleva tu proyecto a otro nivel con nuestros servicios!
           </h2>
-          <p className="text-white">
+          <p className="text-lg md:text-xl text-white/95 max-w-3xl mx-auto leading-relaxed">
             Aprovecha todos nuestros servicios de transformación de productos
             metalúrgicos de una forma rápida y sencilla. Selecciona el servicio,
-            escoge la plantilla, introduce las medidas y recíbelo en casa
+            escoge la plantilla, introduce las medidas y recíbelo en casa.
           </p>
         </div>
 

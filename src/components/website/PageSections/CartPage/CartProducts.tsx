@@ -28,7 +28,7 @@ import { Label } from "@/components/ui/label";
 import { CartItem } from "@/lib/types/cart";
 import { Eye } from "lucide-react";
 import CartItemDetailsModal from "./CartItemDetailsModal";
-import { calculateShippingCost } from "@/lib/shippingUtils";
+import { useGetShippingPrice } from "@/lib/hooks/useGetShippingPrice";
 import { useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -92,11 +92,10 @@ const CartProducts = () => {
   };
 
   // 3. Calculate Subtotal, Weight, and Shipping
-  const { subtotal, totalWeight, maxLength, isTruckRequired } = useMemo(() => {
+  const { subtotal, totalWeight, maxLength } = useMemo(() => {
     let sub = 0;
     let weight = 0;
     let maxL = 0;
-    let truckReq = false;
 
     cartItems.forEach((item) => {
       // Subtotal calculation
@@ -115,14 +114,12 @@ const CartProducts = () => {
 
         const lengthMm = lengthMeters * 1000;
         if (lengthMm > maxL) maxL = lengthMm;
-        if (lengthMm > 2500) truckReq = true;
       } else if (item.serviceId) {
         // Length calculation for Services (Old structure)
         const serviceSizes = Object.values(item.serviceId.sizes || {});
         const maxServiceL =
           serviceSizes.length > 0 ? Math.max(...(serviceSizes as number[])) : 0;
         if (maxServiceL > maxL) maxL = maxServiceL;
-        if (maxServiceL > 2500) truckReq = true;
       } else if (item.serviceData) {
         // Length/Weight for Services (New Structure)
         if (item.serviceData.totalWeight) {
@@ -131,7 +128,6 @@ const CartProducts = () => {
 
         const length = item.serviceData.totalLength || 0;
         if (length > maxL) maxL = length;
-        if (length > 2500) truckReq = true;
       }
     });
 
@@ -139,15 +135,16 @@ const CartProducts = () => {
       subtotal: sub,
       totalWeight: weight,
       maxLength: maxL,
-      isTruckRequired: truckReq,
     };
   }, [cartItems]);
 
-  const shippingFee = calculateShippingCost(
+  const { data: shippingData, isLoading: isShippingLoading } = useGetShippingPrice(
     totalWeight,
     maxLength,
-    !isTruckRequired,
+    totalWeight > 0
   );
+
+  const shippingFee = shippingData?.shippingPrice || 0;
   const total = subtotal + shippingFee;
 
   // Handle Checkout (Create Order)
@@ -275,7 +272,7 @@ const CartProducts = () => {
               className="w-5 h-5 rounded border-gray-300"
             /> */}
             <span className="text-sm font-medium">
-              Total Cart Items {cartItems?.length}
+              Productos en el carro de compra {cartItems?.length}
             </span>
           </label>
 
@@ -305,7 +302,7 @@ const CartProducts = () => {
 
               <div className="w-[140px] h-[80px] bg-slate-50 rounded-lg flex items-center justify-center overflow-hidden border border-slate-100">
                 {item?.product?.productId?.productImage &&
-                item.product.productId.productImage.length > 0 ? (
+                  item.product.productId.productImage.length > 0 ? (
                   <Image
                     src={item.product.productId.productImage[0].url}
                     alt={item.product.productId.productName}
@@ -394,7 +391,7 @@ const CartProducts = () => {
                   {item?.serviceId?.units ||
                     item?.serviceData?.units ||
                     item?.quantity}{" "}
-                  unit(s)
+                  Unidades
                 </div>
               </div>
 
@@ -439,7 +436,7 @@ const CartProducts = () => {
 
         {cartItems.length === 0 && (
           <div className="text-center py-10 text-gray-500">
-            Your cart is empty.
+            Tu carro está vacío.
           </div>
         )}
       </div>
@@ -447,23 +444,29 @@ const CartProducts = () => {
       {/* RIGHT: Order Summary */}
       <div className="bg-white rounded-xl shadow-sm border p-6 h-max">
         <h2 className="text-lg font-semibold text-gray-800 mb-6">
-          Order Summary
+          Resumen pedido
         </h2>
 
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
-            <span>Subtotal ({cartItems.length} items)</span>
+            <span>Total Productos ({cartItems.length})</span>
             <span>€ {subtotal.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between items-center">
             <span className="flex flex-col">
-              <span>Shipping Fee</span>
+              <span>Transporte</span>
               <span className="text-[10px] text-gray-500">
                 {totalWeight.toFixed(2)}kg • {maxLength / 1000}m max
               </span>
             </span>
-            <span>€ {shippingFee.toFixed(2)}</span>
+            <span>
+              {isShippingLoading ? (
+                <Loader2 className="animate-spin w-4 h-4 ml-auto" />
+              ) : (
+                `€ ${shippingFee.toFixed(2)}`
+              )}
+            </span>
           </div>
         </div>
 
@@ -471,7 +474,7 @@ const CartProducts = () => {
 
         {/* Total */}
         <div className="flex justify-between text-lg font-semibold mb-6">
-          <span>Total</span>
+          <span>TOTAL</span>
           <span className="text-red-600">€ {total.toFixed(2)}</span>
         </div>
 
@@ -492,10 +495,10 @@ const CartProducts = () => {
               {isCreatingOrder ? (
                 <>
                   <Loader2 className="animate-spin" size={20} />
-                  <span>Creating Order...</span>
+                  <span>Creando pedido...</span>
                 </>
               ) : (
-                "Order Now"
+                "Tramitar pedido"
               )}
             </button>
           </AlertDialogTrigger>
@@ -509,14 +512,12 @@ const CartProducts = () => {
 
               <AlertDialogTitle className="text-xl font-bold text-center uppercase">
                 {step === "shipping"
-                  ? "INTRODUCE YOUR SHIPPING ADRESS"
-                  : "INTRODUCE YOUR INOIVE INFORMATION"}
+                  ? "INTRODUCE LA DIRECCION DE ENVIO"
+                  : "INTRODUCE LOS DATOS DE FACTURACIÓN"}
               </AlertDialogTitle>
 
               <AlertDialogDescription className="text-sm text-muted-foreground text-center w-3/4 mx-auto">
-                {step === "shipping"
-                  ? "Please provide your shipping details to proceed."
-                  : "Please provide your invoice information."}
+                Asegurate de que la información es correcta
               </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -526,7 +527,7 @@ const CartProducts = () => {
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="fullName">Name</Label>
+                        <Label htmlFor="fullName">Nombre</Label>
                         <Input
                           id="fullName"
                           required
@@ -541,7 +542,7 @@ const CartProducts = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="company">Company</Label>
+                        <Label htmlFor="company">Empresa</Label>
                         <Input
                           id="company"
                           placeholder="Polspoch SL"
@@ -574,7 +575,7 @@ const CartProducts = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
+                        <Label htmlFor="phone">Teléfono</Label>
                         <Input
                           id="phone"
                           required
@@ -591,7 +592,7 @@ const CartProducts = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="street">Street Name & Number</Label>
+                      <Label htmlFor="street">Dirección (Calle, Número, Piso)</Label>
                       <Input
                         id="street"
                         required
@@ -609,7 +610,7 @@ const CartProducts = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="postalCode">
-                          Postal Code (5 digits)
+                          Código Postal
                         </Label>
                         <Input
                           id="postalCode"
@@ -626,7 +627,7 @@ const CartProducts = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="city">City / Town</Label>
+                        <Label htmlFor="city">Ciudad</Label>
                         <Input
                           id="city"
                           required
@@ -644,7 +645,7 @@ const CartProducts = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="province">Province</Label>
+                        <Label htmlFor="province">Provincia</Label>
                         <Input
                           id="province"
                           required
@@ -676,12 +677,12 @@ const CartProducts = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="shippingComments">
-                        Shipping Comments
+                        Comentarios envío
                       </Label>
                       <textarea
                         id="shippingComments"
                         className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        placeholder="Any special instructions for delivery..."
+                        placeholder="Introduce cualquier información relevante para el envio"
                         value={shippingComments}
                         onChange={(e) => setShippingComments(e.target.value)}
                       />
@@ -696,14 +697,14 @@ const CartProducts = () => {
                         className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-600 cursor-pointer"
                       />
                       <Label htmlFor="sameAsInvoice" className="cursor-pointer">
-                        Same address for invoice
+                        Mismos datos para la facturación
                       </Label>
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="invoiceName">Name</Label>
+                      <Label htmlFor="invoiceName">Nombre</Label>
                       <Input
                         id="invoiceName"
                         required
@@ -719,7 +720,7 @@ const CartProducts = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="invoiceCompany">Company</Label>
+                        <Label htmlFor="invoiceCompany">Empresa</Label>
                         <Input
                           id="invoiceCompany"
                           placeholder="Company Name"
@@ -766,7 +767,7 @@ const CartProducts = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="invoicePhone">Phone</Label>
+                        <Label htmlFor="invoicePhone">Teléfono</Label>
                         <Input
                           id="invoicePhone"
                           required
@@ -782,7 +783,7 @@ const CartProducts = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="invoiceAddress">Address</Label>
+                      <Label htmlFor="invoiceAddress">Dirección (Calle, Número, Piso)</Label>
                       <Input
                         id="invoiceAddress"
                         required
@@ -798,7 +799,7 @@ const CartProducts = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="invoiceCity">City</Label>
+                        <Label htmlFor="invoiceCity">Ciudad</Label>
                         <Input
                           id="invoiceCity"
                           required
@@ -813,7 +814,7 @@ const CartProducts = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="invoicePostalCode">Postal Code</Label>
+                        <Label htmlFor="invoicePostalCode">Código Postal</Label>
                         <Input
                           id="invoicePostalCode"
                           required
@@ -830,7 +831,7 @@ const CartProducts = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="invoiceProvince">Province</Label>
+                        <Label htmlFor="invoiceProvince">Provincia</Label>
                         <Input
                           id="invoiceProvince"
                           required
@@ -872,7 +873,7 @@ const CartProducts = () => {
                        text-gray-700 transition
                        hover:bg-gray-100 cursor-pointer py-2"
                   >
-                    Back
+                    Atrás
                   </button>
                 ) : (
                   <AlertDialogCancel
@@ -881,7 +882,7 @@ const CartProducts = () => {
                        text-gray-700 transition
                        hover:bg-gray-100 cursor-pointer"
                   >
-                    Cancel
+                    Cancelar
                   </AlertDialogCancel>
                 )}
 
@@ -897,12 +898,12 @@ const CartProducts = () => {
                   {isProcessingPayment ? (
                     <>
                       <Loader2 className="animate-spin" size={18} />
-                      <span>Processing...</span>
+                      <span>Procesando...</span>
                     </>
                   ) : step === "shipping" && !sameAsInvoice ? (
-                    "Next"
+                    "Siguiente"
                   ) : (
-                    "Proceed to Payment"
+                    "Ir al pago"
                   )}
                 </button>
               </AlertDialogFooter>

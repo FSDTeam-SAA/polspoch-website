@@ -119,11 +119,22 @@ export type GetProductsParams = {
 };
 
 export async function getProducts(params: GetProductsParams = {}) {
-  const { family, search, limit } = params;
+  let { family } = params;
+  const { search, limit } = params;
   const query = new URLSearchParams();
   // if (page) query.append("page", String(page));
   if (limit) query.append("limit", String(limit));
-  if (family) query.append("family", family);
+
+  if (family) {
+    // If family contains a slug format (slug-id), extract just the 24-char hex ID
+    const parts = family.split("-");
+    const last = parts.at(-1) ?? "";
+    const isObjectId = /^[a-f0-9]{24}$/i.test(last);
+    family = isObjectId ? last : family;
+
+    query.append("family", family);
+  }
+
   if (search) query.append("search", search);
 
   try {
@@ -138,8 +149,14 @@ export async function getProducts(params: GetProductsParams = {}) {
 }
 
 export async function getProductById(productId: string) {
+  // If the productId contains a slug format (slug-id), extract just the 24-char hex ID
+  const parts = productId.split("-");
+  const last = parts.at(-1) ?? "";
+  const isObjectId = /^[a-f0-9]{24}$/i.test(last);
+  const id = isObjectId ? last : productId;
+
   try {
-    const res = await api.get(`/product/${productId}`);
+    const res = await api.get(`/product/${id}`);
     return res?.data;
   } catch (err) {
     // console.error("Error fetching product by ID:", err);
@@ -368,5 +385,30 @@ export async function mergeCart(guestId: string, token: string) {
   } catch (err) {
     console.error("Error merging cart:", err);
     throw err;
+  }
+}
+
+// get advanced shipping policies (Courier/Truck)
+export async function getAdvancedShippingPolicies() {
+  try {
+    const res = await api.get("/shippingPolicy/all");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching advanced shipping policies:", err);
+    throw new Error("Failed to fetch advanced shipping policies");
+  }
+}
+
+
+// shipping price for the product 
+// shippingPolicy/calculate-product
+
+export async function getShippingPrice(payload: { totalWeight: number; maxDimension: number }) {
+  try {
+    const res = await api.post("/shippingPolicy/calculate-product", payload);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching shipping price:", err);
+    throw new Error("Failed to fetch shipping price");
   }
 }
