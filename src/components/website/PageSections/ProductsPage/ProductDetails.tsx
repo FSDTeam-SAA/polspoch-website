@@ -1118,7 +1118,7 @@ export default function ProductDetails() {
                         </div>
                       )}
 
-                      <div className="flex justify-between text-sm mb-2">
+                      {/* <div className="flex justify-between text-lg font-bold mb-2 border-b border-[#7E1800]/10">
                         <span className="text-gray-600">Importe Total:</span>
                         <span className="font-semibold text-gray-900">
                           €{productPrice.toFixed(2)}
@@ -1129,7 +1129,7 @@ export default function ProductDetails() {
                         <span className="font-semibold text-gray-900">
                           €{shippingCost.toFixed(2)}
                         </span>
-                      </div>
+                      </div> */}
                       <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-gray-900">
                           Importe Total:

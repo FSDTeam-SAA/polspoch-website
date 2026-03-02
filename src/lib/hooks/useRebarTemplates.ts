@@ -11,6 +11,12 @@ export interface RebarDimension {
     isCalculated: boolean;
 }
 
+export interface RebarMaterial {
+    _id: string;
+    material: string;
+    thickness: number[];
+}
+
 export interface RebarTemplate {
     _id: string;
     type: string;
@@ -18,7 +24,7 @@ export interface RebarTemplate {
     shapeName: string;
     imageUrl: string;
     availableDiameters: number[];
-    materials: string[];
+    materials: RebarMaterial[];
     dimensions: RebarDimension[];
 }
 
