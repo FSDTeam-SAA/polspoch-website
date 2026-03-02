@@ -300,11 +300,10 @@ const BendingPage = () => {
                         <button
                           key={shape._id}
                           onClick={() => handleShapeSelect(shape._id)}
-                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${
-                            selectedShapeId === shape._id
-                              ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
-                              : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
-                          }`}
+                          className={`group relative h-24 rounded-xl cursor-pointer border-2 transition-all duration-300 flex flex-col items-center justify-center p-2 ${selectedShapeId === shape._id
+                            ? "border-[#7E1800] bg-white shadow-lg scale-[1.02]"
+                            : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
+                            }`}
                         >
                           <Image
                             src={shape.imageUrl}
@@ -354,11 +353,10 @@ const BendingPage = () => {
                                 mObj.material,
                               );
                             }}
-                            className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 uppercase ${
-                              material === mObj.material
-                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                            }`}
+                            className={`py-3 rounded-lg border-2 cursor-pointer font-bold transition-all duration-300 uppercase ${material === mObj.material
+                              ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                              : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                              }`}
                           >
                             {mObj.material}
                           </button>
@@ -386,11 +384,10 @@ const BendingPage = () => {
                                   material,
                                 );
                               }}
-                              className={`py-3 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${
-                                thickness === String(t)
-                                  ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
-                                  : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
-                              }`}
+                              className={`py-3 rounded-lg border-2 cursor-pointer font-semibold transition-all duration-300 ${thickness === String(t)
+                                ? "border-[#7E1800] bg-[#7E1800] text-white shadow-lg"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-[#7E1800]/30"
+                                }`}
                             >
                               {t}mm
                             </button>
@@ -430,11 +427,10 @@ const BendingPage = () => {
                                       e.target.value,
                                     )
                                   }
-                                  className={`${BASE_BOX} ${
-                                    errors[dim.key]
-                                      ? "border-red-500 focus:border-red-600"
-                                      : "border-slate-200 focus:border-[#7E1800]"
-                                  } outline-none font-semibold text-slate-900`}
+                                  className={`${BASE_BOX} ${errors[dim.key]
+                                    ? "border-red-500 focus:border-red-600"
+                                    : "border-slate-200 focus:border-[#7E1800]"
+                                    } outline-none font-semibold text-slate-900`}
                                   placeholder={dim.minRange.toString()}
                                 />
                                 {errors[dim.key] && (
@@ -463,7 +459,8 @@ const BendingPage = () => {
                                     {dim.label}
                                   </label>
                                   <span className="text-[12px] text-slate-400 font-mono">
-                                    {dim.minRange}mm-{dim.maxRange}mm
+                                    {/* {dim.minRange}mm-{dim.maxRange}mm */}
+                                    <span className="text-gray-900  font-bold">º</span>
                                   </span>
                                 </div>
                                 <input
@@ -475,11 +472,10 @@ const BendingPage = () => {
                                       e.target.value,
                                     )
                                   }
-                                  className={`${BASE_BOX} ${
-                                    errors[dim.key]
-                                      ? "border-red-500 focus:border-red-600"
-                                      : "border-slate-200 focus:border-[#7E1800]"
-                                  } outline-none font-semibold text-slate-900`}
+                                  className={`${BASE_BOX} ${errors[dim.key]
+                                    ? "border-red-500 focus:border-red-600"
+                                    : "border-slate-200 focus:border-[#7E1800]"
+                                    } outline-none font-semibold text-slate-900`}
                                   placeholder={dim.minRange.toString()}
                                 />
                                 {errors[dim.key] && (
@@ -521,11 +517,10 @@ const BendingPage = () => {
                                       e.target.value,
                                     )
                                   }
-                                  className={`${BASE_BOX} ${
-                                    errors[dim.key]
-                                      ? "border-red-500 focus:border-red-600"
-                                      : "border-slate-200 focus:border-[#7E1800]"
-                                  } outline-none font-bold text-lg text-slate-900`}
+                                  className={`${BASE_BOX} ${errors[dim.key]
+                                    ? "border-red-500 focus:border-red-600"
+                                    : "border-slate-200 focus:border-[#7E1800]"
+                                    } outline-none font-bold text-lg text-slate-900`}
                                   placeholder={dim.minRange.toString()}
                                 />
                                 {errors[dim.key] && (
@@ -543,127 +538,163 @@ const BendingPage = () => {
                     </div>
 
                     <div className="border-t-2 border-[#7E1800]/20 pt-6">
-                      <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
-                        {/* Quantity */}
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-gray-700 mb-2">
-                            Cantidad
-                          </span>
-                          <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
-                            <button
-                              onClick={() => {
-                                const newQty = Math.max(1, quantity - 1);
-                                setQuantity(newQty);
-                                handleCalculate(
-                                  newQty,
-                                  dimensions,
-                                  thickness,
-                                  material,
-                                );
-                              }}
-                              className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
-                            >
-                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
-                                −
+                      {calculationResult && (
+                        <>
+                          {calculationResult.shippingStatus && (
+                            <div className="p-5 rounded-xl border-2 border-[#7E1800]/20 bg-gradient-to-br from-[#7E1800]/5 to-white mb-6">
+                              <div className="flex items-center gap-2 mb-3">
+                                <h3 className="text-base font-semibold text-gray-900">
+                                  Método de envío
+                                </h3>
+                                <span className="text-xs text-gray-500">
+                                  (Calculado automáticamente)
+                                </span>
                               </div>
-                            </button>
-                            <input
-                              type="number"
-                              value={quantity}
-                              onChange={(e) => {
-                                const newQty = Math.max(
-                                  1,
-                                  parseInt(e.target.value) || 1,
-                                );
-                                setQuantity(newQty);
-                                handleCalculate(
-                                  newQty,
-                                  dimensions,
-                                  thickness,
-                                  material,
-                                );
-                              }}
-                              className="w-16 py-3 text-lg font-bold text-center outline-none"
-                            />
-                            <button
-                              onClick={() => {
-                                const newQty = quantity + 1;
-                                setQuantity(newQty);
-                                handleCalculate(
-                                  newQty,
-                                  dimensions,
-                                  thickness,
-                                  material,
-                                );
-                              }}
-                              className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
-                            >
-                              <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
-                                +
+                              <div
+                                className={`relative p-4 rounded-lg border-2 flex items-center justify-between transition-all ${calculationResult.shippingStatus.method ===
+                                  "courier"
+                                  ? "bg-green-50 border-green-300"
+                                  : "bg-blue-50 border-blue-300"
+                                  }`}
+                              >
+                                <div>
+                                  <div
+                                    className={`font-bold text-base ${calculationResult.shippingStatus
+                                      .method === "courier"
+                                      ? "text-green-800"
+                                      : "text-blue-800"
+                                      }`}
+                                  >
+                                    {calculationResult.shippingStatus
+                                      .method === "courier"
+                                      ? "🚚 Servicio de mensajería"
+                                      : "🚛 Envío en camión"}
+                                  </div>
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    {calculationResult.shippingStatus
+                                      .method === "courier"
+                                      ? "Paquete estándar (≤ 2,5 m)"
+                                      : "Carga grande (> 2,5 m)"}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div
+                                    className={`text-2xl font-bold ${calculationResult.shippingStatus
+                                      .method === "courier"
+                                      ? "text-green-700"
+                                      : "text-blue-700"
+                                      }`}
+                                  >
+                                    €
+                                    {calculationResult.pricing.shippingPrice.toFixed(
+                                      2,
+                                    )}
+                                  </div>
+                                  <div className="text-lg font-bold text-gray-500">
+                                    Peso total:{" "}
+                                    {calculationResult.summary.totalWeight?.toFixed(
+                                      1,
+                                    )}{" "}
+                                    kg
+                                  </div>
+                                </div>
                               </div>
-                            </button>
-                          </div>
-                        </div>
+                            </div>
+                          )}
 
-                        {/* Price Breakdown */}
-                        {calculationResult && (
-                          <div className="flex-1 bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
-                            <div className="flex justify-between text-sm mb-2">
-                              <span className="text-gray-600">Peso Total:</span>
-                              <span className="font-semibold text-gray-900">
-                                {calculationResult.summary.totalWeight.toFixed(
-                                  2,
-                                )}{" "}
-                                kg
+                          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+                            {/* Quantity */}
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-gray-700 mb-2">
+                                Cantidad
                               </span>
+                              <div className="flex items-center border-2 border-[#7E1800]/20 rounded-lg overflow-hidden bg-white">
+                                <button
+                                  onClick={() => {
+                                    const newQty = Math.max(1, quantity - 1);
+                                    setQuantity(newQty);
+                                    handleCalculate(
+                                      newQty,
+                                      dimensions,
+                                      thickness,
+                                      material,
+                                    );
+                                  }}
+                                  className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-r-2 border-[#7E1800]/20"
+                                >
+                                  <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
+                                    −
+                                  </div>
+                                </button>
+                                <input
+                                  type="number"
+                                  value={quantity}
+                                  onChange={(e) => {
+                                    const newQty = Math.max(
+                                      1,
+                                      parseInt(e.target.value) || 1,
+                                    );
+                                    setQuantity(newQty);
+                                    handleCalculate(
+                                      newQty,
+                                      dimensions,
+                                      thickness,
+                                      material,
+                                    );
+                                  }}
+                                  className="w-16 py-3 text-lg font-bold text-center outline-none"
+                                />
+                                <button
+                                  onClick={() => {
+                                    const newQty = quantity + 1;
+                                    setQuantity(newQty);
+                                    handleCalculate(
+                                      newQty,
+                                      dimensions,
+                                      thickness,
+                                      material,
+                                    );
+                                  }}
+                                  className="px-4 py-3 hover:bg-[#7E1800]/5 transition-colors border-l-2 border-[#7E1800]/20"
+                                >
+                                  <div className="w-5 h-5 flex items-center justify-center font-bold text-slate-700">
+                                    +
+                                  </div>
+                                </button>
+                              </div>
                             </div>
-                            <div className="flex justify-between text-sm mb-2">
-                              <span className="text-gray-600">
-                                Precio por Unidad:
-                              </span>
-                              <span className="font-semibold text-gray-900">
-                                €
-                                {calculationResult.pricing.pricePerUnit.toFixed(
-                                  2,
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm mb-2">
-                              <span className="text-gray-600">
-                                Precio del Servicio:
-                              </span>
-                              <span className="font-semibold text-gray-900">
-                                €
-                                {calculationResult.pricing.productPrice.toFixed(
-                                  2,
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
-                              <span className="text-gray-600">
-                                Gastos de Envío:
-                              </span>
-                              <span className="font-semibold text-gray-900">
-                                €
-                                {calculationResult.pricing.shippingPrice.toFixed(
-                                  2,
-                                )}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-lg font-bold text-gray-900">
-                                Total:
-                              </span>
-                              <span className="text-2xl font-bold text-[#7E1800]">
-                                €
-                                {calculationResult.pricing.finalQuote.toFixed(
-                                  2,
-                                )}
-                              </span>
+
+                            {/* Price Breakdown */}
+                            <div className="w-full flex-1 flex flex-col gap-4">
+                              {/* Total Breakdown */}
+                              <div className="bg-gradient-to-br from-[#7E1800]/5 to-white p-4 rounded-xl border-2 border-[#7E1800]/10">
+                                <div className="flex justify-between text-sm mb-2">
+                                  <span className="text-lg font-bold text-gray-600">
+                                    Precio por Unidad:
+                                  </span>
+                                  <span className="text-lg font-bold text-gray-900">
+                                    €
+                                    {calculationResult.pricing.pricePerUnit.toFixed(
+                                      2,
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-lg font-bold text-gray-900">
+                                    Importe Total:
+                                  </span>
+                                  <span className="text-2xl font-bold text-[#7E1800]">
+                                    €
+                                    {calculationResult.pricing.finalQuote.toFixed(
+                                      2,
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        )}
-                      </div>
+                        </>
+                      )}
 
                       <div className="flex flex-col gap-2">
                         <button
