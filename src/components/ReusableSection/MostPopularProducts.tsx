@@ -106,6 +106,30 @@ export default function MostPopularProducts() {
                         : p.family?.familyName}
                     </span>
                   </div>
+                  {(() => {
+                    const uniqueQualities = Array.from(
+                      new Set(
+                        p.features?.map((f) => f.finishQuality).filter(Boolean),
+                      ),
+                    ).sort();
+
+                    if (uniqueQualities.length === 0) return null;
+
+                    return (
+                      <div className="">
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueQualities.map((quality) => (
+                            <span
+                              key={quality}
+                              className="px-2.5 py-1 bg-[#7E1800]/5 text-[#7E1800] border border-[#7E1800]/20 rounded-md text-xs font-medium"
+                            >
+                              {quality}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </CardHeader>
 
                 <CardContent className="p-0 mt-2 flex-1 text-left">
