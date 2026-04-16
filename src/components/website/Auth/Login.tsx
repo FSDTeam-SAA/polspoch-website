@@ -77,14 +77,16 @@ export default function Login() {
           }
         }
 
-        toast.success("Logged in successfully!");
+        toast.success("¡Sesión iniciada correctamente!");
         router.push("/");
       } else {
-        toast.error(result?.error || "Login failed. Please try again.");
+        toast.error(
+          result?.error || "Error al iniciar sesión. Inténtalo de nuevo.",
+        );
       }
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong. Please try again.");
+      toast.error("Algo salió mal. Inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
     }
@@ -92,25 +94,25 @@ export default function Login() {
 
   return (
     <div className="w-full max-w-md">
-      <h1 className="text-4xl font-semibold mb-2">Welcome!</h1>
+      <h1 className="text-4xl font-semibold mb-2">¡BIENVENIDO!</h1>
       <p className="text-gray-400 text-sm mb-8">
-        Manage your orders, track shipments, and configure products easily.
+        Regístrate para poder ver toda la información de tus pedidos.
       </p>
 
       {/* ✅ FORM */}
       <form onSubmit={handleSignIn} className="mt-6 space-y-4">
         <div>
-          <Label>Email Address</Label>
+          <Label>Email</Label>
           <Input
             type="email"
-            placeholder="hello@example.com"
+            placeholder="hola@ejemplo.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
         <div>
-          <Label>Password</Label>
+          <Label>Contraseña</Label>
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
@@ -131,11 +133,11 @@ export default function Login() {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Checkbox id="remember" />
-            <label htmlFor="remember">Remember me</label>
+            <label htmlFor="remember">Recuérdame</label>
           </div>
 
           <Link href="/reset-your-password" className="text-red-600 text-sm">
-            Forgot password?
+            ¿Olvidaste la contraseña?
           </Link>
         </div>
 
@@ -145,18 +147,18 @@ export default function Login() {
           disabled={isLoading}
           className="w-full bg-[#8A1B00]"
         >
-          {isLoading ? "Signing in..." : "Sign In"}
+          {isLoading ? "Iniciando sesión..." : "Inicia sesión"}
         </Button>
       </form>
 
       {/* Divider space */}
       <div className="mt-8 text-center text-sm text-slate-400">
-        Don&apos;t have an account?{" "}
+        ¿No tienes cuenta?{" "}
         <Link
           href="/singup"
           className="text-red-400 font-semibold hover:underline"
         >
-          Sign Up
+          Regístrate
         </Link>
       </div>
     </div>

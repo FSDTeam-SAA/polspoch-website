@@ -99,7 +99,7 @@ export default function AuthLayout({ imageSrc, children }: AuthLayoutProps) {
             href="/"
             className="text-gray-600 hover:text-gray-900 transition-colors text-sm md:text-base"
           >
-            Back to Home
+            Volver al inicio
           </Link>
         </div>
 

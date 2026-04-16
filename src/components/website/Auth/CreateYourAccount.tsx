@@ -28,7 +28,7 @@ export default function CreateYourAccount() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // ⬅️ REQUIRED
     if (form.password !== form.confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error("Las contraseñas no coinciden");
       return;
     }
 
@@ -40,27 +40,27 @@ export default function CreateYourAccount() {
     });
 
     if (res.success) {
-      toast.success("Account created successfully!");
+      toast.success("¡Cuenta creada correctamente!");
       // optionally redirect after signup
     } else {
-      toast.error(res.message || "Signup failed");
+      toast.error(res.message || "Error al registrarse");
     }
   };
 
   return (
     <div className="w-full max-w-md">
       <h1 className="text-4xl font-bold text-[#1c1c1c] mb-2">
-        Create Your Account
+        CREA TU CUENTA
       </h1>
       <p className="text-gray-500 text-sm mb-8">
-        Create your account to start booking services and products.
+        Crea tu cuenta para empezar a reservar servicios y productos.
       </p>
       {/* ✅ FORM */}
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm mb-1 text-gray-400">
-              First Name
+              Nombre
             </label>
             <Input
               name="firstName"
@@ -73,7 +73,7 @@ export default function CreateYourAccount() {
 
           <div>
             <label className="block text-sm mb-1 text-gray-400">
-              Last Name
+              Apellido
             </label>
             <Input
               name="lastName"
@@ -87,19 +87,19 @@ export default function CreateYourAccount() {
 
         <div className="mb-4">
           <label className="block text-sm mb-1 text-gray-400">
-            Email Address
+            Email
           </label>
           <Input
             name="email"
             value={form.email}
             onChange={handleChange}
-            placeholder="example@example.com"
+            placeholder="ejemplo@ejemplo.com"
             className="bg-transparent border border-gray-700 text-gray-800 h-12"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm mb-1 text-gray-400">Password</label>
+          <label className="block text-sm mb-1 text-gray-400">Contraseña</label>
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
@@ -121,7 +121,7 @@ export default function CreateYourAccount() {
 
         <div className="mb-3">
           <label className="block text-sm mb-1 text-gray-400">
-            Confirm Password
+            Confirma contraseña
           </label>
           <div className="relative">
             <Input
@@ -143,16 +143,18 @@ export default function CreateYourAccount() {
         </div>
 
         <p className="text-[12px] text-gray-700 mb-6 leading-relaxed">
-          <span className="text-red-700">*</span> By signing up, you agree to
-          our{" "}
+          <span className="text-red-700">*</span> Al registrarse estás aceptando
+          nuestros{" "}
           <Link href={"/terms-conditions"}>
             <span className="text-red-500 font-semibold">
-              Terms & Conditions
+              Términos y Condiciones
             </span>
           </Link>{" "}
-          and{" "}
+          y la{" "}
           <Link href={"/privacy-policy"}>
-            <span className="text-red-500 font-semibold">Privacy Policy.</span>
+            <span className="text-red-500 font-semibold">
+              Política de Privacidad.
+            </span>
           </Link>
         </p>
 
@@ -161,18 +163,18 @@ export default function CreateYourAccount() {
           disabled={loading}
           className="w-full h-12 cursor-pointer bg-[#8a1f0b] hover:bg-[#8a1f0ba0] text-white rounded-md text-[16px]"
         >
-          {loading ? "Signing Up..." : "Sign Up"}
+          {loading ? "Registrando..." : "Registrarse"}
         </Button>
       </form>
       {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
 
       <div className="mt-8 text-center text-sm text-gray-700">
-        Already have an account?{" "}
+        ¿Ya tienes una cuenta?{" "}
         <Link
           href="/login"
           className="text-red-500 font-semibold hover:underline"
         >
-          Sign In
+          Inicia Sesión
         </Link>
       </div>
     </div>
