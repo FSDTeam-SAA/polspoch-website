@@ -224,7 +224,7 @@ export default function Navbar() {
                 USER / AVATAR / DROPDOWN
             ================================= */}
             {userLoading ? (
-              <Link href="/account/profile">
+              <Link href={session ? "/account/profile" : "/login"}>
                 <UserCircle2 />
               </Link>
             ) : user ? (
@@ -285,7 +285,7 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <Link href="/account/profile">
+              <Link href="/login">
                 <UserCircle2 />
               </Link>
             )}
@@ -309,12 +309,12 @@ export default function Navbar() {
                 {/* Mobile User Section */}
                 {userLoading ? (
                   <Link
-                    href="/account/profile"
+                    href={session ? "/account/profile" : "/login"}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 px-5 mt-6"
                   >
                     <UserCircle2 />
-                    <span>Sign in</span>
+                    <span>{session ? "Profile" : "Sign in"}</span>
                   </Link>
                 ) : user ? (
                   <div className="px-5 mt-6">
@@ -375,7 +375,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <Link
-                    href="/account/profile"
+                    href="/login"
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 px-5 mt-6"
                   >

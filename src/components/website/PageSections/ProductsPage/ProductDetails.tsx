@@ -143,6 +143,9 @@ export default function ProductDetails() {
   const [selectedUnitSizeMm, setSelectedUnitSizeMm] = useState<number | null>(
     null,
   );
+  const [lengthSelectionType, setLengthSelectionType] = useState<
+    "standard" | "custom" | null
+  >(null);
   const [rangeLengthMm, setRangeLengthMm] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedThumbnail, setSelectedThumbnail] = useState<number>(0);
@@ -161,6 +164,7 @@ export default function ProductDetails() {
     setSelectedSize2(null);
     setSelectedFinishQuality(null);
     setSelectedUnitSizeMm(null);
+    setLengthSelectionType(null);
   }
 
   const featureList = useMemo(() => product?.features || [], [product]);
@@ -380,24 +384,25 @@ export default function ProductDetails() {
   // Priority: Selected Unit > Custom Range > Fallback (1000mm or minRange)
   const effectiveLengthMm = useMemo(() => {
     // 1. User selected a standard unit
-    if (selectedUnitSizeMm !== null) return selectedUnitSizeMm;
+    if (lengthSelectionType === "standard" && selectedUnitSizeMm !== null) {
+      return selectedUnitSizeMm;
+    }
 
     // 2. User selected a custom range
-    if (rangeLengthMm > 0) return rangeLengthMm;
+    if (lengthSelectionType === "custom" && rangeLengthMm > 0) {
+      return rangeLengthMm;
+    }
 
     // 3. Fallback logic
+    if (rangeLengthMm > 0) return rangeLengthMm;
     const min = selectedFeature?.minRange ?? product?.minRange ?? 0;
     // If min > 1000, use min. Otherwise 1000.
     return min > 1000 ? min : 1000;
-  }, [selectedUnitSizeMm, rangeLengthMm, selectedFeature, product]);
+  }, [lengthSelectionType, selectedUnitSizeMm, rangeLengthMm, selectedFeature, product]);
 
   const isUsingFallbackLength = useMemo(() => {
-    return selectedUnitSizeMm === null && rangeLengthMm === 0;
-  }, [selectedUnitSizeMm, rangeLengthMm]);
-
-  // Is length effectively selected? (used for checkout validation)
-  const isLengthSelected =
-    selectedUnitSizeMm !== null || (hasRange && rangeLengthMm > 0);
+    return lengthSelectionType === null;
+  }, [lengthSelectionType]);
 
   const availableUnitSizes = useMemo(
     () => selectedFeature?.unitSizes || [],
@@ -440,13 +445,16 @@ export default function ProductDetails() {
     const val = Number(e.target.value);
     setRangeLengthMm(val);
     setSelectedUnitSizeMm(null);
+    setLengthSelectionType("custom");
   };
 
   const handleUnitSizeSelect = (size: number) => {
     if (selectedUnitSizeMm === size) {
       setSelectedUnitSizeMm(null);
+      setLengthSelectionType(null);
     } else {
       setSelectedUnitSizeMm(size);
+      setLengthSelectionType("standard");
     }
   };
 
@@ -456,6 +464,7 @@ export default function ProductDetails() {
     setSelectedSize2(null);
     setSelectedFinishQuality(null);
     setSelectedUnitSizeMm(null);
+    setLengthSelectionType(null);
     const initialMinRange =
       product?.features?.[0]?.minRange ?? product?.minRange ?? 0;
     setRangeLengthMm(initialMinRange);
@@ -464,7 +473,7 @@ export default function ProductDetails() {
   const canCheckout =
     !!selectedFeature &&
     quantity > 0 &&
-    (hasAnyLengthOption ? isLengthSelected : true) &&
+    (hasAnyLengthOption ? lengthSelectionType !== null : true) &&
     !isShippingLoading;
 
   const hasAnySelection =
@@ -491,18 +500,31 @@ export default function ProductDetails() {
         featuredId: selectedFeature?._id,
         size: selectedFeature?.size1,
         // Send unitSize if explicitly selected, otherwise undefined
-        unitSize: selectedUnitSizeMm ? selectedUnitSizeMm / 1000 : undefined,
+        unitSize: lengthSelectionType === "standard" && selectedUnitSizeMm ? selectedUnitSizeMm / 1000 : undefined,
         // Send range if explicitly selected OR if falling back (when no options exist)
-        // If hasAnyLengthOption is true, we only send range if rangeLengthMm > 0 (checked by canCheckout/logic)
-        // If hasAnyLengthOption is false, we send the effective fallback
-        range: selectedUnitSizeMm
-          ? undefined
-          : (rangeLengthMm > 0 ? rangeLengthMm : effectiveLengthMm) / 1000,
+        range: lengthSelectionType === "custom"
+          ? rangeLengthMm / 1000
+          : (!hasAnyLengthOption ? effectiveLengthMm / 1000 : undefined),
+        // Always send the effective length (Personalización del largo) in mm
+        length: effectiveLengthMm,
       },
       totalAmount: Number(totalPrice.toFixed(2)),
       userId: session?.user?.id,
       guestId: !session?.user?.id ? getOrCreateGuestId() : undefined,
     };
+
+    console.log("Selected Configuration to Add to Cart:", {
+      "Producto": product.productName,
+      "Ancho / Diámetro": selectedSize1,
+      "Altura / Segunda medida": selectedSize2,
+      "Espesor": selectedThickness,
+      "Calidad / Acabado": selectedFinishQuality,
+      "Largo seleccionado (mm)": effectiveLengthMm,
+      "Tipo de largo": lengthSelectionType === "standard" ? "Largo estándar" : "Largo personalizado",
+      "Cantidad": quantity,
+      "Precio unitario": Number(unitPrice.toFixed(2)),
+      "Precio total": Number(totalPrice.toFixed(2)),
+    });
 
     addToCartMutate(payload, {
       onSuccess: () => {
@@ -1007,6 +1029,24 @@ export default function ProductDetails() {
                                     mm
                                   </div>
                                 </div>
+
+                                {/* Confirm/Use custom length button */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLengthSelectionType("custom");
+                                    setSelectedUnitSizeMm(null);
+                                  }}
+                                  className={`w-full py-2 px-3 rounded-lg font-semibold text-xs transition-all ${
+                                    lengthSelectionType === "custom"
+                                      ? "bg-[#7E1800] text-white shadow-md scale-102 ring-2 ring-[#7E1800]/30"
+                                      : "bg-white border border-[#7E1800]/20 text-[#7E1800] hover:bg-[#7E1800]/5 hover:border-[#7E1800]/30"
+                                  }`}
+                                >
+                                  {lengthSelectionType === "custom"
+                                    ? `Largo personalizado seleccionado: ${rangeLengthMm}mm`
+                                    : `Seleccionar largo de ${rangeLengthMm}mm`}
+                                </button>
                               </div>
                             </div>
                           )}
@@ -1219,17 +1259,16 @@ export default function ProductDetails() {
                         ? "Calculando envío..."
                         : canCheckout
                           ? "Añadir al carro"
-                          : "Seleccione el largo para continuar"}
+                          : !selectedFeature
+                            ? "Seleccione las opciones anteriores"
+                            : "Seleccione el largo para continuar"}
                   </button>
 
-                  {selectedFeature &&
-                    !selectedUnitSizeMm &&
-                    (!hasRange || rangeLengthMm === 0) && (
-                      <p className="text-center text-xs font-medium text-[#7E1800] animate-pulse">
-                        ⚠️ Elija un largo estándar o un rango personalizado para
-                        calcular el precio
-                      </p>
-                    )}
+                  {selectedFeature && lengthSelectionType === null && (
+                    <p className="text-center text-xs font-medium text-[#7E1800] animate-pulse">
+                      ⚠️ Elija un largo estándar o confirme el largo personalizado para continuar
+                    </p>
+                  )}
                 </div>
 
                 {!selectedFeature && (

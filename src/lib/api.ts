@@ -188,6 +188,7 @@ export interface AddToCartPayload {
     size?: number;
     unitSize?: number;
     range?: number;
+    length?: number;
   };
   quantity?: number;
   reference?: string;
