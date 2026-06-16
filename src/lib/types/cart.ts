@@ -26,6 +26,9 @@ export interface CartItem {
     totalWidth?: number;
     internalCuts?: number;
     totalWeight?: number;
+    maxDimensionDetected?: number;
+    shippingPrice?: number;
+    shippingMethod?: string;
   };
   product?: {
     productId: {
@@ -37,8 +40,16 @@ export interface CartItem {
     } | null;
     featuredId: string;
     size?: number;
+    size2?: number;
     unitSize?: number;
     range?: number;
+    length?: number;
+    thickness?: number;
+    finishQualitySelected?: string;
+    totalWeight?: number;
+    maxDimensionDetected?: number;
+    shippingPrice?: number;
+    shippingMethod?: string;
     selectedFeature?: ProductFeature;
   };
   userId: {

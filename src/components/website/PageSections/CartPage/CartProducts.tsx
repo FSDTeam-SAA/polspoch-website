@@ -1,7 +1,7 @@
 // src/components/website/PageSections/CartPage/CartProducts.tsx
 
 "use client";
-import { Trash2, Loader2 } from "lucide-react";
+import { Trash2, Loader2, ShoppingCart } from "lucide-react";
 import { useDeleteCart, useGetCart } from "@/lib/hooks/useAddToCart";
 import { useSession } from "next-auth/react";
 import {
@@ -12,6 +12,7 @@ import { useShippingAdd } from "@/lib/hooks/useShippingAdd";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useGetShippingPrice } from "@/lib/hooks/useGetShippingPrice";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -20,7 +21,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,21 @@ import CartItemDetailsModal from "./CartItemDetailsModal";
 import { useMemo } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) return error.message;
+
+  if (typeof error === "object" && error !== null) {
+    const maybeAxiosError = error as {
+      response?: { data?: { message?: string } };
+      message?: string;
+    };
+
+    return maybeAxiosError.response?.data?.message || maybeAxiosError.message || fallback;
+  }
+
+  return fallback;
+};
 
 const CartProducts = () => {
   const router = useRouter();
@@ -91,28 +106,35 @@ const CartProducts = () => {
     deleteCartItem(id);
   };
 
-  // 3. Calculate Subtotal, Weight, and Dimensions (for display)
+  // 3. Calculate product subtotal plus one grouped shipping quote.
   const { subtotal, totalWeight, maxLength } = useMemo(() => {
     let sub = 0;
     let weight = 0;
     let maxL = 0;
 
     cartItems.forEach((item) => {
-      // Each item.totalAmount already includes its shipping cost (set on product page)
       const itemTotal =
         item.totalAmount ||
         (item.serviceId?.price || item.price || 0) * item.quantity;
       sub += itemTotal;
 
-      // Weight and Length for display purposes
-      if (item.product && item.product.selectedFeature) {
-        const feature = item.product.selectedFeature;
-        const lengthMeters = item.product.unitSize || item.product.range || 0;
-        const itemWeight =
-          (feature.kgsPerUnit || 0) * lengthMeters * item.quantity;
-        weight += itemWeight;
-        const lengthMm = lengthMeters * 1000;
-        if (lengthMm > maxL) maxL = lengthMm;
+      if (item.product) {
+        if (item.product.totalWeight) {
+          weight += item.product.totalWeight;
+        } else if (item.product.selectedFeature) {
+          const feature = item.product.selectedFeature;
+          const lengthMeters =
+            item.product.unitSize ||
+            item.product.range ||
+            (item.product.length ? item.product.length / 1000 : 0);
+          weight += (feature.kgsPerUnit || 0) * lengthMeters * item.quantity;
+        }
+
+        const productMaxLength =
+          item.product.maxDimensionDetected ||
+          item.product.length ||
+          (item.product.unitSize || item.product.range || 0) * 1000;
+        if (productMaxLength > maxL) maxL = productMaxLength;
       } else if (item.serviceId) {
         const serviceSizes = Object.values(item.serviceId.sizes || {});
         const maxServiceL =
@@ -120,9 +142,12 @@ const CartProducts = () => {
         if (maxServiceL > maxL) maxL = maxServiceL;
       } else if (item.serviceData) {
         if (item.serviceData.totalWeight) {
-          weight += item.serviceData.totalWeight * item.quantity;
+          weight += item.serviceData.totalWeight;
         }
-        const length = item.serviceData.totalLength || 0;
+        const length =
+          item.serviceData.maxDimensionDetected ||
+          item.serviceData.totalLength ||
+          0;
         if (length > maxL) maxL = length;
       }
     });
@@ -130,13 +155,29 @@ const CartProducts = () => {
     return { subtotal: sub, totalWeight: weight, maxLength: maxL };
   }, [cartItems]);
 
-  const total = subtotal;
+  const { data: shippingData, isFetching: isShippingLoading } = useGetShippingPrice(
+    totalWeight,
+    maxLength,
+    totalWeight > 0 && maxLength > 0,
+  );
+
+  const shippingCost = shippingData?.shippingPrice || 0;
+  const needsShippingQuote =
+    cartItems.length > 0 && totalWeight > 0 && maxLength > 0;
+  const isShippingPending =
+    needsShippingQuote && (isShippingLoading || !shippingData);
+
+  const total = subtotal + shippingCost;
 
   // Handle Checkout (Create Order)
   const handleCheckout = () => {
     if (!session) {
       toast.error("Please login to place your order.");
       router.push("/login");
+      return;
+    }
+    if (isShippingPending) {
+      toast.error("Please wait for transport cost calculation.");
       return;
     }
     setIsCreatingOrder(true);
@@ -157,6 +198,10 @@ const CartProducts = () => {
         const createdOrderId = data?.data?._id || data?._id;
         if (createdOrderId) {
           setOrderId(createdOrderId);
+        } else {
+          toast.error("Order was created but no order ID was returned.");
+          setIsCreatingOrder(false);
+          return;
         }
 
         // Ensure loading shows for at least 1 second
@@ -168,8 +213,9 @@ const CartProducts = () => {
           setShowModal(true);
         }, remainingDelay);
       },
-      onError: (error: Error) => {
+      onError: (error: unknown) => {
         console.error("Failed to create order:", error);
+        toast.error(getErrorMessage(error, "Failed to create order"));
 
         // Still show loading for at least 1 second even on error
         const elapsed = Date.now() - startTime;
@@ -228,11 +274,13 @@ const CartProducts = () => {
               if (data?.data?.url) {
                 window.location.href = data.data.url;
               } else {
+                toast.error("Payment link was not created. Please try again.");
                 setIsProcessingPayment(false);
               }
             },
-            onError: (error) => {
+            onError: (error: unknown) => {
               console.error("Payment checkout failed:", error);
+              toast.error(getErrorMessage(error, "Payment checkout failed"));
               setIsProcessingPayment(false);
             },
           },
@@ -240,6 +288,7 @@ const CartProducts = () => {
       },
       onError: (error: unknown) => {
         console.error("Failed to save shipping address:", error);
+        toast.error(getErrorMessage(error, "Failed to save shipping address"));
         setIsProcessingPayment(false);
       },
     });
@@ -438,15 +487,23 @@ const CartProducts = () => {
             <span>€ {subtotal.toFixed(2)}</span>
           </div>
 
-          {totalWeight > 0 && (
+          {cartItems.length > 0 && (
             <div className="flex justify-between items-center text-gray-500">
               <span className="flex flex-col">
                 <span>Transporte</span>
                 <span className="text-[10px] text-gray-400">
-                  {totalWeight.toFixed(2)}kg • {maxLength / 1000}m max
+                  {totalWeight > 0
+                    ? `${totalWeight.toFixed(2)}kg • ${maxLength / 1000}m max`
+                    : "Pendiente de datos"}
                 </span>
               </span>
-              <span className="text-xs italic">Incluido</span>
+              <span className="text-sm font-medium text-gray-700">
+                {isShippingPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  `€ ${shippingCost.toFixed(2)}`
+                )}
+              </span>
             </div>
           )}
 
@@ -461,35 +518,38 @@ const CartProducts = () => {
         </div>
 
         {/* Button with AlertDialog */}
-        <AlertDialog open={showModal} onOpenChange={setShowModal}>
-          <AlertDialogTrigger asChild>
-            <button
-              onClick={handleCheckout}
-              disabled={isCreatingOrder || cartItems.length === 0}
-              className="w-full rounded-xl bg-[#7E1800] 
-                 py-3.5 text-base font-semibold text-white 
-                 shadow-lg transition-all duration-200
-                 hover:from-red-700 hover:to-red-800 hover:shadow-xl
-                 active:scale-[0.98] cursor-pointer
-                 disabled:opacity-50 disabled:cursor-not-allowed
-                 flex items-center justify-center gap-2"
-            >
-              {isCreatingOrder ? (
-                <>
-                  <Loader2 className="animate-spin" size={20} />
-                  <span>Creando pedido...</span>
-                </>
-              ) : (
-                "Tramitar pedido"
-              )}
-            </button>
-          </AlertDialogTrigger>
+        <button
+          onClick={handleCheckout}
+          disabled={isCreatingOrder || cartItems.length === 0 || isShippingPending}
+          className="w-full rounded-xl bg-[#7E1800] 
+             py-3.5 text-base font-semibold text-white 
+             shadow-lg transition-all duration-200
+             hover:from-red-700 hover:to-red-800 hover:shadow-xl
+             active:scale-[0.98] cursor-pointer
+             disabled:opacity-50 disabled:cursor-not-allowed
+             flex items-center justify-center gap-2"
+        >
+          {isCreatingOrder ? (
+            <>
+              <Loader2 className="animate-spin" size={20} />
+              <span>Creando pedido...</span>
+            </>
+          ) : isShippingPending ? (
+            <>
+              <Loader2 className="animate-spin" size={20} />
+              <span>Calculando transporte...</span>
+            </>
+          ) : (
+            "Tramitar pedido"
+          )}
+        </button>
 
+        <AlertDialog open={showModal} onOpenChange={setShowModal}>
           <AlertDialogContent className="max-w-2xl rounded-2xl p-6">
             <AlertDialogHeader className="space-y-3 text-center">
               {/* Optional icon */}
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                <span className="text-xl">🛒</span>
+                <ShoppingCart className="h-5 w-5 text-[#7E1800]" />
               </div>
 
               <AlertDialogTitle className="text-xl font-bold text-center uppercase">

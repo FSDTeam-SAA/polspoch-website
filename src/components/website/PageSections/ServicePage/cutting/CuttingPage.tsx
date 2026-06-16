@@ -193,6 +193,10 @@ const CuttingPage = () => {
       serviceData: {
         serviceType: "cutting",
         ...calculationResult.summary,
+        maxDimensionDetected:
+          calculationResult.shippingStatus.maxDimensionDetected,
+        shippingPrice: calculationResult.pricing.shippingPrice,
+        shippingMethod: calculationResult.shippingStatus.method,
       },
       pricing: calculationResult.pricing,
       shippingStatus: calculationResult.shippingStatus,
