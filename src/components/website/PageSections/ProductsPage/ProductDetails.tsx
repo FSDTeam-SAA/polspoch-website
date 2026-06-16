@@ -14,6 +14,7 @@ import {
   Ruler,
   Loader2,
   Tag,
+  Truck,
 } from "lucide-react";
 import { useAddToCart } from "@/lib/hooks/useAddToCart";
 import { toast } from "sonner";
@@ -436,11 +437,6 @@ export default function ProductDetails() {
     return pricePerMeter * meters * quantity;
   }, [selectedFeature, effectiveLengthMm, quantity]);
 
-  const totalPrice = useMemo(
-    () => productPrice + shippingCost,
-    [productPrice, shippingCost],
-  );
-
   const handleRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = Number(e.target.value);
     setRangeLengthMm(val);
@@ -499,6 +495,9 @@ export default function ProductDetails() {
         productId: product._id,
         featuredId: selectedFeature?._id,
         size: selectedFeature?.size1,
+        size2: selectedFeature?.size2,
+        thickness: selectedFeature?.thickness,
+        finishQualitySelected: selectedFeature?.finishQuality,
         // Send unitSize if explicitly selected, otherwise undefined
         unitSize: lengthSelectionType === "standard" && selectedUnitSizeMm ? selectedUnitSizeMm / 1000 : undefined,
         // Send range if explicitly selected OR if falling back (when no options exist)
@@ -507,8 +506,15 @@ export default function ProductDetails() {
           : (!hasAnyLengthOption ? effectiveLengthMm / 1000 : undefined),
         // Always send the effective length (Personalización del largo) in mm
         length: effectiveLengthMm,
+        totalWeight: Number(totalWeight.toFixed(2)),
+        maxDimensionDetected: effectiveLengthMm,
+        shippingPrice: Number(shippingCost.toFixed(2)),
+        shippingMethod,
+        basePrice: Number(unitPrice.toFixed(2)),
+        miterPerUnitPrice: selectedFeature?.miterPerUnitPrice,
+        calculatedPrice: Number(productPrice.toFixed(2)),
       },
-      totalAmount: Number(totalPrice.toFixed(2)),
+      totalAmount: Number(productPrice.toFixed(2)),
       userId: session?.user?.id,
       guestId: !session?.user?.id ? getOrCreateGuestId() : undefined,
     };
@@ -523,7 +529,8 @@ export default function ProductDetails() {
       "Tipo de largo": lengthSelectionType === "standard" ? "Largo estándar" : "Largo personalizado",
       "Cantidad": quantity,
       "Precio unitario": Number(unitPrice.toFixed(2)),
-      "Precio total": Number(totalPrice.toFixed(2)),
+      "Precio total productos": Number(productPrice.toFixed(2)),
+      "Envío estimado": Number(shippingCost.toFixed(2)),
     });
 
     addToCartMutate(payload, {
@@ -1102,13 +1109,13 @@ export default function ProductDetails() {
               {/* Shipping Method */}
               {selectedFeature && (
                 <div className="mb-6 mt-4 p-5 rounded-xl border-2 border-[#7E1800]/20 bg-gradient-to-br from-[#7E1800]/5 to-white">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-base font-semibold text-gray-900">
-                      Método de envío
-                    </h3>
-                    <span className="text-xs text-gray-500">
-                      (Calculado automáticamente)
-                    </span>
+	                  <div className="flex items-center gap-2 mb-3">
+	                    <h3 className="text-base font-semibold text-gray-900">
+	                      Estimación de envío
+	                    </h3>
+	                    <span className="text-xs text-gray-500">
+	                      Informativa
+	                    </span>
                     <Tooltip
                       text={TOOLTIPS.shipping}
                       step="shipping"
@@ -1122,18 +1129,18 @@ export default function ProductDetails() {
                       : "bg-blue-50 border-blue-300"
                       } ${isShippingLoading ? "opacity-60" : ""}`}
                   >
-                    {isShippingLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px] rounded-lg z-10">
-                        <Loader2 className="w-6 h-6 animate-spin text-[#7E1800]" />
-                      </div>
-                    )}
+                    <div
+                      className={`absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px] rounded-lg z-10 transition-opacity ${isShippingLoading ? "opacity-100" : "opacity-0 pointer-events-none"
+                        }`}
+                    >
+                      <Loader2 className="w-6 h-6 animate-spin text-[#7E1800]" />
+                    </div>
                     <div>
-                      <div
-                        className={`font-bold text-base ${shippingMethod === "courier" ? "text-green-800" : "text-blue-800"}`}
-                      >
+                      <div className={`font-bold text-base flex items-center gap-2 ${shippingMethod === "courier" ? "text-green-800" : "text-blue-800"}`}>
+                        <Truck className="h-4 w-4" />
                         {shippingMethod === "courier"
-                          ? "🚚 Servicio de mensajería"
-                          : "🚛 Envío en camión"}
+                          ? "Servicio de mensajería"
+                          : "Envío en camión"}
                       </div>
                       <div className="text-xs text-gray-600 mt-1">
                         {shippingMethod === "courier"
@@ -1147,11 +1154,11 @@ export default function ProductDetails() {
                       >
                         €{shippingCost.toFixed(2)}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        Peso total: {totalWeight.toFixed(1)} kg
-                      </div>
-                    </div>
-                  </div>
+	                      <div className="text-xs text-gray-500">
+	                        No incluido en el precio del producto
+	                      </div>
+	                    </div>
+	                  </div>
                 </div>
               )}
 
@@ -1193,26 +1200,14 @@ export default function ProductDetails() {
                         </div>
                       )}
 
-                      {/* <div className="flex justify-between text-lg font-bold mb-2 border-b border-[#7E1800]/10">
-                        <span className="text-gray-600">Importe Total:</span>
-                        <span className="font-semibold text-gray-900">
-                          €{productPrice.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm mb-3 pb-3 border-b border-[#7E1800]/10">
-                        <span className="text-gray-600">Precio de envío:</span>
-                        <span className="font-semibold text-gray-900">
-                          €{shippingCost.toFixed(2)}
-                        </span>
-                      </div> */}
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold text-gray-900">
-                          Importe Total:
-                        </span>
-                        <span className="text-2xl font-bold text-[#7E1800]">
-                          €{totalPrice.toFixed(2)}
-                        </span>
-                      </div>
+	                        <span className="text-lg font-bold text-gray-900">
+	                          Total productos:
+	                        </span>
+	                        <span className="text-2xl font-bold text-[#7E1800]">
+	                          €{productPrice.toFixed(2)}
+	                        </span>
+	                      </div>
                     </div>
                   )}
                 </div>
@@ -1248,25 +1243,36 @@ export default function ProductDetails() {
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                       }`}
                   >
-                    {isPending ? (
-                      <Loader2 className="animate-spin" size={22} />
-                    ) : (
-                      <ShoppingCart size={22} />
-                    )}
-                    {isPending
-                      ? "Añadiendo..."
-                      : isShippingLoading
-                        ? "Calculando envío..."
-                        : canCheckout
-                          ? "Añadir al carro"
-                          : !selectedFeature
-                            ? "Seleccione las opciones anteriores"
-                            : "Seleccione el largo para continuar"}
+                    <span className="relative h-[22px] w-[22px] shrink-0">
+                      <Loader2
+                        className={`absolute inset-0 animate-spin transition-opacity ${isPending ? "opacity-100" : "opacity-0"
+                          }`}
+                        size={22}
+                        aria-hidden={!isPending}
+                      />
+                      <ShoppingCart
+                        className={`absolute inset-0 transition-opacity ${isPending ? "opacity-0" : "opacity-100"
+                          }`}
+                        size={22}
+                        aria-hidden={isPending}
+                      />
+                    </span>
+                    <span>
+                      {isPending
+                        ? "Añadiendo..."
+                        : isShippingLoading
+                          ? "Calculando envío..."
+                          : canCheckout
+                            ? "Añadir al carro"
+                            : !selectedFeature
+                              ? "Seleccione las opciones anteriores"
+                              : "Seleccione el largo para continuar"}
+                    </span>
                   </button>
 
                   {selectedFeature && lengthSelectionType === null && (
                     <p className="text-center text-xs font-medium text-[#7E1800] animate-pulse">
-                      ⚠️ Elija un largo estándar o confirme el largo personalizado para continuar
+                      Elija un largo estándar o confirme el largo personalizado para continuar
                     </p>
                   )}
                 </div>
