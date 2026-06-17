@@ -136,7 +136,7 @@ const Footer = () => {
       <div className="relative mt-12 border-t container mx-auto border-gray-600 pt-6 text-center text-gray-300 text-sm">
         <div className="flex justify-between items-center">
           <p className="text-white">
-            © {new Date().getFullYear()} HIERRO A MEDIDA. All rights reserved.
+            © 2026 HIERRO A MEDIDA. All rights reserved.
           </p>
 
           <div className="flex items-center gap-6">
