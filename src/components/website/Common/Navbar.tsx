@@ -133,16 +133,19 @@ export default function Navbar() {
             {menuItems.map((item) => {
               if (item.hasDropdown) {
                 return (
-                  <div key={item.href} className="relative" ref={servicesRef}>
+                  <div
+                    key={`${item.href}-${item.label}`} // Safeguard the key
+                    className="relative"
+                    ref={servicesRef}
+                    suppressHydrationWarning // Ignore extension attributes injected here
+                  >
                     <button
                       onClick={() => setServicesOpen(!servicesOpen)}
                       className={`flex items-center gap-1 hover:underline hover:font-semibold transition-all duration-200 ${
                         scrolled
                           ? "hover:text-gray-200"
                           : "hover:text-primary/70"
-                      } ${
-                        isServicesActive ? "text-[#7E1800] font-semibold" : ""
-                      }`}
+                      } ${isServicesActive ? "text-[#7E1800] font-semibold" : ""}`}
                     >
                       {item.label}
                       <ChevronDown
@@ -176,15 +179,11 @@ export default function Navbar() {
 
               return (
                 <Link
-                  key={item.href}
+                  key={`${item.href}-${item.label}`}
                   href={item.href}
                   className={`hover:underline hover:font-semibold transition-all duration-200 ${
                     scrolled ? "hover:text-gray-200" : "hover:text-primary/70"
-                  }${
-                    pathname === item.href
-                      ? " text-[#7E1800] font-semibold"
-                      : ""
-                  }`}
+                  } ${pathname === item.href ? " text-[#7E1800] font-semibold" : ""}`}
                 >
                   {item.label}
                 </Link>
@@ -193,7 +192,7 @@ export default function Navbar() {
           </div>
 
           {/* Right Side Icons (Desktop) */}
-          <div
+          <section
             className={`hidden md:flex items-center gap-6 cursor-pointer transition-colors duration-300  ${
               scrolled ? "text-white" : "text-primary"
             }`}
@@ -289,12 +288,12 @@ export default function Navbar() {
                 <UserCircle2 />
               </Link>
             )}
-          </div>
+          </section>
 
           {/* ================================
                 Mobile Hamburger Menu
           ================================= */}
-          <div className="md:hidden">
+          <section className="md:hidden">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -450,7 +449,7 @@ export default function Navbar() {
                 </nav>
               </SheetContent>
             </Sheet>
-          </div>
+          </section>
         </div>
       </nav>
 

@@ -10,7 +10,7 @@ import Script from "next/script";
 export default function page() {
   return (
     <div>
-      <head>
+      <section>
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-GCQDY36ZF3"
@@ -24,7 +24,7 @@ export default function page() {
             gtag('config', 'G-GCQDY36ZF3');
           `}
         </Script>
-      </head>
+      </section>
       <Banner />
       <WorkingProcess />
       <OurProducts />
