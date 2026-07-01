@@ -23,19 +23,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
     const product = productData.data;
 
-    // We try to match SEO against the family name first, as the JSON provides family-level metadata
-    const familyName =
-      typeof product.family === "string"
-        ? product.family
-        : product.family?.familyName;
-
-    const seoData = getSeoMetadata(familyName || product.productName);
+    const seoData = getSeoMetadata(product.productName);
 
     return {
-      title: seoData.title,
+      title: `${product.productName} | Hierro A Medida`,
       description: seoData.description,
     };
-  } catch (error) {
+  } catch {
     return getSeoMetadata(null);
   }
 }
